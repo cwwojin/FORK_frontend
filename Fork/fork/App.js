@@ -26,7 +26,7 @@ import MyPage from './screens/MyPage';
 import Favorites from './screens/Favorites';
 import MyStamps from './screens/MyStamps';
 import MyReviews from './screens/MyReviews';
-{/*import Maps from './screens/Maps';*/}
+import MapView from './screens/MapView.js';
 
 
 
@@ -42,7 +42,7 @@ export default function App() {
             <Stack.Navigator
               screenOptions={{
                 headerShown: false,
-              }} initialRouteName="MyReviews">
+              }} initialRouteName="MapView">
               <Stack.Screen name="SignUpLogIn" component={SignUpLogIn} />
               <Stack.Screen name="UserType" component={UserType} />
               <Stack.Screen name="FacilityInformation" component={FacilityInformation} />
@@ -59,8 +59,8 @@ export default function App() {
               <Stack.Screen name="MyPage" component={MyPage} />
               <Stack.Screen name="Home" component={Home} />
               <Stack.Screen name="Favorites" component={Favorites} />
-          {/* <Stack.Screen name="Maps" component={Maps} />
-              <Stack.Screen name="MyReviews" component={MyReviews} />
+              <Stack.Screen name="MapView" component={MapView} />
+          {/* <Stack.Screen name="MyReviews" component={MyReviews} />
 
               <Stack.Screen name="MyStamps" component={MyStamps} />
               {/* Register the FavoritesScreen */}

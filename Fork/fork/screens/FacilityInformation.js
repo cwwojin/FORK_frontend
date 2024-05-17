@@ -186,8 +186,7 @@ const FacilityInformation = ({navigation}) => {
         </View>
       ))}
       <Button title="Add Menu Item" onPress={addMenuItem} color={Color.orange_700} marginBottom={15}/>
-      <View style={styles.line}></View>
-      <Text style={styles.subHeader}>STAMPS</Text>
+      <Text style={styles.subHeader1}>STAMPS</Text>
       {facilityInfo.stampPrograms.map((program, index) => (
         <View key={index} style={styles.menuItem}>
           <TouchableOpacity onPress={() => selectImage(index, 'stamp')}>
@@ -267,7 +266,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#ccc',
   },
   image: {
-    width: 350,
+    width: 335,
     height: 130,
     alignSelf: 'center',
     borderRadius: Border.br_2xs,
@@ -291,6 +290,13 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginTop: 20,
     marginBottom: 10,
+    marginLeft: 15,
+  },
+  subHeader1: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginTop: 20,
+    marginBottom: 15,
     marginLeft: 15,
   },
   line: {

@@ -416,4 +416,11 @@ export const GlobalStyles = StyleSheet.create({
       position: 'relative',
       marginLeft: 10,
   },
+  inputWrapper3: {
+    width: 340,
+    flexDirection: 'row',
+    alignItems: 'center',
+    position: 'relative',
+    marginRight: 20,
+},
 });
