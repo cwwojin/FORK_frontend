@@ -9,7 +9,7 @@ import { Border, Color } from './GlobalStyles.js';
 
 import SignUpLogIn from './screens/SignUpLogIn.js';
 import UserType from './screens/UserType';
-import FacilityInformation from './screens/FacilityInformation'; 
+import FacilityInformation from './screens/FacilityInformation';
 import SignUpKaist from './screens/SignUpKaist';
 import SignUpFacility from './screens/SignUpFacility';
 import VerifyEmail from './screens/VerifyEmail';
@@ -27,6 +27,8 @@ import Favorites from './screens/Favorites';
 import MyStamps from './screens/MyStamps';
 import MyReviews from './screens/MyReviews';
 import MapView from './screens/MapView.js';
+import FacilityDetail from './screens/FacilityDetail.js';
+{/*import Maps from './screens/Maps';*/ }
 
 
 
@@ -61,6 +63,9 @@ export default function App() {
               <Stack.Screen name="Favorites" component={Favorites} />
               <Stack.Screen name="MapView" component={MapView} />
           {/* <Stack.Screen name="MyReviews" component={MyReviews} />
+              <Stack.Screen name="FacilityDetail" component={FacilityDetail} />
+              {/* <Stack.Screen name="Maps" component={Maps} /> */}
+              <Stack.Screen name="MyReviews" component={MyReviews} />
 
               <Stack.Screen name="MyStamps" component={MyStamps} />
               {/* Register the FavoritesScreen */}
@@ -78,11 +83,11 @@ export default function App() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: Color.white, 
+    backgroundColor: Color.white,
   },
   container: {
     flex: 24,
-    alignItems: 'stretch', 
+    alignItems: 'stretch',
     justifyContent: 'center',
   },
 });

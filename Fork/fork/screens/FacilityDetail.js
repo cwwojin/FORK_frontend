@@ -6,14 +6,15 @@ import {
   SafeAreaView,
   ScrollView,
   TouchableOpacity,
-  FlatList,
+  TextInput,
   StyleSheet,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import ToggleSwitch from 'toggle-switch-react-native';
+import { launchImageLibrary } from 'react-native-image-picker';
 
 
-import { GlobalStyles, Color, FontFamily, FontSize } from '../GlobalStyles';
+import { GlobalStyles, Color, FontFamily, FontSize, Border } from '../GlobalStyles';
 import SquareFacility from '../components/SqureFacility';
 import Hashtag from '../components/Hashtag';
 import Menu from '../components/Menu';
@@ -39,6 +40,13 @@ const FacilityDetail = (
   const [isTimeVisible, setTimeVisible] = useState(false);
   const [tabState, setTabState] = useState("Menu");
   const [reviewFilter, setReviewFilter] = useState(false);
+  const [writeReview, setWriteReview] = useState(false);
+
+  const [reviewScore, setReviewScore] = useState(0);
+  const [reviewImage, setReviewImage] = useState('');
+  const [reviewContent, setReviewContent] = useState('');
+  const [hashtag, setHashtag] = useState('');
+  const [inputHashtag, setInputHashtag] = useState([]);
 
   const toggleTimeVisibility = () => {
     setTimeVisible(!isTimeVisible);
@@ -58,10 +66,51 @@ const FacilityDetail = (
     setReviewFilter(!reviewFilter);
   }
 
+  const toggleWriteReview = () => {
+    setWriteReview(!writeReview);
+  }
+
+  const renderStars = () => {
+    const stars = [];
+    for (let i = 0; i < 5; i++) {
+      stars.push(
+        <TouchableOpacity key={i} onPress={() => setReviewScore(i + 1)}>
+          <Image
+            style={styles.star}
+            tintColor={i >= (reviewScore) && Color.orange_100}
+            source={require('../assets/icons/star.png')}
+          />
+        </TouchableOpacity>
+      );
+    }
+    return stars;
+  };
+
+  const saveReviewImage = () => {
+    const options = {
+      mediaType: 'photo',
+      includeBase64: true,
+      includeExtra: true,
+      saveToPhotos: true,
+    };
+    launchImageLibrary(options, (response) => {
+      if (!response.didCancel) {
+        // Handle the response, for example, set the review image state
+        setReviewImage(response.assets[0].uri);
+      }
+    });
+  }
+
   const getCurrentDayTimeData = () => {
     const currentDay = new Date().toLocaleDateString('en-KR', { weekday: 'long' });
     return timeData.filter(item => item.day === currentDay);
   };
+
+  const pushHashtag = () => {
+    setInputHashtag([...inputHashtag, hashtag]);
+    setHashtag('');
+    console.log(inputHashtag);
+  }
 
   const timeData = [
     { day: 'Monday', openTime: '11:00', closeTime: '21:00' },
@@ -284,8 +333,8 @@ const FacilityDetail = (
                 <View
                   style={{
                     borderBottomColor: Color.lightGrey,
-                    borderBottomWidth: 1, 
-                    marginBottom: 15,                   
+                    borderBottomWidth: 1,
+                    marginBottom: 15,
                   }}
                 />
 
@@ -301,7 +350,8 @@ const FacilityDetail = (
                       reviewImage={item.reviewImage}
                       reviewContent={item.reviewContent}
                       reviewHashtags={item.reviewHashtags}
-                      edit={item.edit}
+                      edit={false}
+                      admin={true}
                     />
                   ))
                 }
@@ -319,6 +369,96 @@ const FacilityDetail = (
           </View>
         </ScrollView>
       </View >
+      {(tabState == 'Review') && (
+        <TouchableOpacity onPress={toggleWriteReview}>
+          <Image
+            source={require('../assets/icons/write_review.png')}
+            style={{ width: 150, height: 150, position: 'absolute', bottom: 0, right: 10 }}
+          />
+        </TouchableOpacity>
+      )}
+      {writeReview && (
+        <View style={styles.overlay}>
+          <View style={styles.background}>
+            <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+              <Text style={GlobalStyles.h2}>Write Reviews</Text>
+              <TouchableOpacity style={{ ...GlobalStyles.topIcon, marginRight: 0 }} onPress={toggleWriteReview}>
+                <Image
+                  source={require('../assets/icons/navigate_close.png')}
+                />
+              </TouchableOpacity>
+            </View>
+            <ScrollView style={{ width: '100%' }} showsVerticalScrollIndicator={false}>
+              <View style={{ width: '100%', alignItems: 'center', paddingVertical: 10 }}>
+                <TouchableOpacity onPress={saveReviewImage}>
+                  {reviewImage ? (
+                    <Image source={reviewImage} style={GlobalStyles.squareImage2} />
+                  ) : (
+                    <Image source={require('../assets/placeholders/long_image.png')} style={GlobalStyles.squareImage2} />
+                  )}
+                </TouchableOpacity>
+                <View
+                  style={{
+                    width: '100%',
+                    flexDirection: 'row',
+                    justifyContent: 'center',
+                    padding: 10,
+                  }}>
+                  {renderStars()}
+                </View>
+                <View style={styles.inputSection}>
+                  <Text style={GlobalStyles.h3}>Review</Text>
+                  <View style={GlobalStyles.inputWrapper3}>
+                    <TextInput
+                      style={GlobalStyles.registrationInput2}
+                      onChangeText={setReviewContent}
+                      value={reviewContent}
+                      placeholder="Review Content"
+                      multiline={true}
+                      numberOfLines={5}
+                    />
+                  </View>
+                </View>
+                <View style={styles.inputSection}>
+                  <Text style={GlobalStyles.h3}>Hashtags</Text>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      flexWrap: 'wrap',
+                      width: '100%',
+                    }}>
+                    {inputHashtag && inputHashtag.map(item => (
+                      <Hashtag tag={item} />
+                    ))}
+                  </View>
+                  <View style={styles.hashtagHolder}>
+                    <TextInput
+                      style={GlobalStyles.hashtag}
+                      onChangeText={setHashtag}
+                      value={hashtag}
+                      placeholder="+ Hashtag"
+                    />
+                  </View>
+                  {hashtag && (
+                    <TouchableOpacity onPress={pushHashtag}>
+                      <View style={styles.hashtagHolder}>
+                        <Text style={{ ...GlobalStyles.hashtag, color: Color.lightGrey }}>Add Hashtag</Text>
+                      </View>
+                    </TouchableOpacity>
+                  )}
+                </View>
+                <View style={{ width: '100%', justifyContent: 'flex-end', flexDirection: 'row', paddingTop: 20 }}>
+                  <TouchableOpacity>
+                    <Text style={GlobalStyles.h4}>Send</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </ScrollView>
+          </View>
+
+        </View>
+      )}
     </SafeAreaView >
   );
 };
@@ -331,6 +471,10 @@ const styles = StyleSheet.create({
     marginLeft: 2,
     marginRight: 7
   },
+  star: {
+    width: 25,
+    height: 25,
+  },
   navigator: {
     width: 22,
     height: 22
@@ -342,6 +486,44 @@ const styles = StyleSheet.create({
     letterSpacing: 0,
     fontSize: FontSize.size_lgi,
     color: Color.orange_700,
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  overlayTouchable: {
+    width: '80%',
+    height: '80%',
+    backgroundColor: 'white',
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  background: {
+    height: '85%',
+    width: '90%',
+    justifyContent: 'flex-start',
+    backgroundColor: Color.white,
+    borderRadius: Border.br_lg,
+    padding: 30,
+    paddingTop: 15,
+    alignItems: 'center'
+  },
+  inputSection: {
+    width: '100%',
+    paddingVertical: 10,
+  },
+  hashtagHolder: {
+    backgroundColor: Color.yellow_100,
+    padding: 10,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    marginHorizontal: 5,
+    marginTop: 9,
+    justifyContent: 'center',
+    borderRadius: Border.br_lg,
   },
 });
 

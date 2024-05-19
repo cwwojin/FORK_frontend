@@ -17,6 +17,7 @@ const Review = ({
   reviewContent,
   reviewHashtags,
   edit,
+  admin,
 }) => {
   const renderStars = () => {
     const stars = [];
@@ -65,6 +66,10 @@ const Review = ({
     }
   };
 
+  const deleteReview = () => {};
+  const keepReview = () => {};
+  const reportReview = () => {};
+
   return (
     <View style={{ width: '100%', alignItems: 'center' }}>
       <View
@@ -80,11 +85,7 @@ const Review = ({
         </TouchableOpacity>
         {edit && (
           <TouchableOpacity
-            onPress={() => {
-              {
-                /*delete */
-              }
-            }}>
+            onPress={deleteReview}>
             <Image
               style={GlobalStyles.icon}
               contentFit="cover"
@@ -94,11 +95,7 @@ const Review = ({
         )}
         {!edit && (
           <TouchableOpacity
-            onPress={() => {
-              {
-                /*report */
-              }
-            }}>
+            onPress={reportReview}>
             <Image
               style={GlobalStyles.icon}
               contentFit="cover"
@@ -190,6 +187,18 @@ const Review = ({
         }}>
         {renderHashtags()}
       </View>
+
+      {admin && (
+        <View style={{ flexDirection: 'row', justifyContent: 'flex-end', width: '100%', paddingBottom: 15 }}>
+          <TouchableOpacity onPress={deleteReview}>
+            <Text style={GlobalStyles.h4}>Delete</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={keepReview}>
+            <Text style={{...GlobalStyles.h4, color: Color.darkgray}}>Keep</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
       <View
         style={{
           borderBottomColor: Color.lightGrey,
