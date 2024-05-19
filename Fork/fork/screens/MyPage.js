@@ -7,6 +7,7 @@ import {
   ScrollView,
   TouchableOpacity,
   StyleSheet,
+  TextInput,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Dropdown } from 'react-native-element-dropdown';
@@ -32,7 +33,13 @@ const MyPage = () => {
   //5 most recent bookmarked facilities [img_url, name, score, address], 5 facilities in order of number of stamps [img_url, name], 5 most recent reviews [img_url, name, score, comment], user [img_url, nickname, email]
 
   const navigation = useNavigation();
-  const userType = 0;
+  const userType = 1;
+
+  const userInfo = {
+    userName: 'foodie',
+    userProfile: userImage,
+    userEmail: 'foodie@kaist.ac.kr'
+  };
 
   const review = [
     { userImage: userImage, userName: 'foodie', reviewDate: '2024.05.06', reviewScore: 5, reviewImage: longImagePlaceholder, reviewContent: 'Loved it', reviewHashtags: ['🥰Lovely', '😋Tasty'], edit: false },
@@ -91,6 +98,13 @@ const MyPage = () => {
 
   const [value, setValue] = useState('');
   const [isFocus, setIsFocus] = useState(false);
+  const [upload, setUpload] = useState(false);
+  const [noticeImage, setNoticeImage] = useState('');
+  const [noticeContent, setNoticeContent] = useState('');
+
+  const toggleUpload = () => {
+    setUpload(!upload);
+  };
 
   const renderLabel = () => {
     if (value || isFocus) {
@@ -117,10 +131,18 @@ const MyPage = () => {
                   paddingBottom: 10,
                 }}>
                 <Text style={GlobalStyles.h1}>My Page</Text>
-                <Image
-                  style={GlobalStyles.topIcon}
-                  source={require('../assets/icons/setting.png')}
-                />
+                <TouchableOpacity onPress={() => {
+                  navigation.navigate("Settings", {
+                    userName: userInfo.userName,
+                    userProfile: userInfo.userImage,
+                    userEmail: userInfo.userEmail
+                  });
+                }}>
+                  <Image
+                    style={GlobalStyles.topIcon}
+                    source={require('../assets/icons/setting.png')}
+                  />
+                </TouchableOpacity>
               </View>
               <View
                 style={{
@@ -176,7 +198,6 @@ const MyPage = () => {
                 </Text>
                 <TouchableOpacity
                   onPress={() => {
-                    console.log('Navigate to Favorites screen');
                     navigation.navigate('Favorites');
                   }}>
                   <Image
@@ -241,7 +262,6 @@ const MyPage = () => {
                 </Text>
                 <TouchableOpacity
                   onPress={() => {
-                    console.log('Navigate to Favorites screen');
                     navigation.navigate('MyStamps');
                   }}>
                   <Image
@@ -279,7 +299,6 @@ const MyPage = () => {
                 </Text>
                 <TouchableOpacity
                   onPress={() => {
-                    console.log('Navigate to Favorites screen');
                     navigation.navigate('MyReviews');
                   }}>
                   <Image
@@ -342,10 +361,18 @@ const MyPage = () => {
                   paddingBottom: 10,
                 }}>
                 <Text style={GlobalStyles.h1}>My Page</Text>
-                <Image
-                  style={GlobalStyles.topIcon}
-                  source={require('../assets/icons/setting.png')}
-                />
+                <TouchableOpacity onPress={() => {
+                  navigation.navigate("Settings", {
+                    userName: userInfo.userName,
+                    userProfile: userInfo.userProfile,
+                    userEmail: userInfo.userEmail
+                  });
+                }}>
+                  <Image
+                    style={GlobalStyles.topIcon}
+                    source={require('../assets/icons/setting.png')}
+                  />
+                </TouchableOpacity>
               </View>
               <View
                 style={{
@@ -419,7 +446,7 @@ const MyPage = () => {
                   />
                 </View>
                 <View style={{ width: '100%', flexDirection: 'row', justifyContent: 'space-between', paddingTop: 15 }}>
-                  <TouchableOpacity style={styles.facilityButton}>
+                  <TouchableOpacity style={styles.facilityButton} onPress={toggleUpload}>
                     <Image
                       source={require('../assets/icons/upload.png')}
                       style={styles.buttonIcon}
@@ -433,7 +460,10 @@ const MyPage = () => {
                     />
                     <Text style={styles.buttonText}>Stamp</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.facilityButton}>
+                  <TouchableOpacity style={styles.facilityButton}
+                    onPress={() => {
+                      navigation.navigate('FacilityDetail');
+                    }}>
                     <Image
                       source={require('../assets/icons/toFacility.png')}
                       style={styles.buttonIcon}
@@ -518,15 +548,57 @@ const MyPage = () => {
 
               <View style={{ width: '100%' }}>
                 <Text style={GlobalStyles.h2}>Stamps</Text>
-                <Stamp 
+                <Stamp
                   stamp={facilityInfo.stamp}
                   stampImage={facilityInfo.stampImage}
                   number={facilityInfo.stamp.length}
                 />
               </View>
-
             </View>
           </ScrollView>
+          {upload && (
+            <View style={styles.overlay}>
+              <View style={styles.background}>
+                <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+                  <Text style={GlobalStyles.h2}>Upload Notice</Text>
+                  <TouchableOpacity style={{ ...GlobalStyles.topIcon, marginRight: 0 }} onPress={toggleUpload}>
+                    <Image
+                      source={require('../assets/icons/navigate_close.png')}
+                    />
+                  </TouchableOpacity>
+                </View>
+                <View style={{ width: '100%', alignItems: 'center', paddingVertical: 10 }}>
+                  <Text style={GlobalStyles.h3}>review</Text>
+                  <TouchableOpacity style={{ width: '100%', justifyContent: 'center' }} onPress={() => { }}>
+                    {noticeImage ? (
+                      <Image source={noticeImage} style={{ width: '100%' }} />
+                    ) : (
+                      <Image source={require('../assets/placeholders/long_image.png')} style={{ width: '100%', height: 144, borderRadius: Border.br_sm }} />
+                    )}
+                  </TouchableOpacity>
+                  <View style={styles.inputSection}>
+                    <Text style={GlobalStyles.h3}>description</Text>
+                    <View style={GlobalStyles.inputWrapper3}>
+                      <TextInput
+                        style={GlobalStyles.registrationInput2}
+                        onChangeText={setNoticeContent}
+                        value={noticeContent}
+                        placeholder="Review Content"
+                        multiline={true}
+                        numberOfLines={5}
+                      />
+                    </View>
+                  </View>
+                  <View style={{ width: '100%', justifyContent: 'flex-end', flexDirection: 'row', paddingTop: 20 }}>
+                    <TouchableOpacity>
+                      <Text style={GlobalStyles.h4}>Send</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
+
+            </View>
+          )}
         </SafeAreaView>
       )}
 
@@ -542,10 +614,18 @@ const MyPage = () => {
                   paddingBottom: 10,
                 }}>
                 <Text style={GlobalStyles.h1}>My Page</Text>
-                <Image
-                  style={GlobalStyles.topIcon}
-                  source={require('../assets/icons/setting.png')}
-                />
+                <TouchableOpacity onPress={() => {
+                  navigation.navigate("Settings", {
+                    userName: userInfo.userName,
+                    userProfile: userInfo.userImage,
+                    userEmail: userInfo.userEmail
+                  });
+                }}>
+                  <Image
+                    style={GlobalStyles.topIcon}
+                    source={require('../assets/icons/setting.png')}
+                  />
+                </TouchableOpacity>
               </View>
               <View
                 style={{
@@ -714,6 +794,34 @@ const styles = StyleSheet.create({
     marginTop: 2,
     marginLeft: 2,
     marginRight: 7
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  overlayTouchable: {
+    width: '80%',
+    height: '80%',
+    backgroundColor: 'white',
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  background: {
+    height: '70%',
+    width: '90%',
+    justifyContent: 'flex-start',
+    backgroundColor: Color.white,
+    borderRadius: Border.br_lg,
+    padding: 30,
+    paddingTop: 15,
+    alignItems: 'center'
+  },
+  inputSection: {
+    width: '100%',
+    paddingVertical: 10,
   },
 });
 

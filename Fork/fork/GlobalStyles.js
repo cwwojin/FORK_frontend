@@ -442,11 +442,8 @@ export const GlobalStyles = StyleSheet.create({
     position: 'relative',
     marginLeft: 10,
   },
-  inputWrapper3: {
-    width: 340,
-    flexDirection: 'row',
+  inputWrapper3: { //for write review / upload notice input
+    width: '100%',
     alignItems: 'center',
-    position: 'relative',
-    marginRight: 20,
 },
 });

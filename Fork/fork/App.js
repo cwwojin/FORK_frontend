@@ -28,6 +28,8 @@ import MyStamps from './screens/MyStamps';
 import MyReviews from './screens/MyReviews';
 import MapView from './screens/MapView.js';
 import FacilityDetail from './screens/FacilityDetail.js';
+import Settings from './screens/Settings.js';
+import testing from './screens/testing.js';
 {/*import Maps from './screens/Maps';*/ }
 
 
@@ -44,7 +46,7 @@ export default function App() {
             <Stack.Navigator
               screenOptions={{
                 headerShown: false,
-              }} initialRouteName="MapView">
+              }} initialRouteName="MyPage">
               <Stack.Screen name="SignUpLogIn" component={SignUpLogIn} />
               <Stack.Screen name="UserType" component={UserType} />
               <Stack.Screen name="FacilityInformation" component={FacilityInformation} />
@@ -62,12 +64,13 @@ export default function App() {
               <Stack.Screen name="Home" component={Home} />
               <Stack.Screen name="Favorites" component={Favorites} />
               <Stack.Screen name="MapView" component={MapView} />
-          {/* <Stack.Screen name="MyReviews" component={MyReviews} />
-              <Stack.Screen name="FacilityDetail" component={FacilityDetail} />
+              {/* <Stack.Screen name="MyReviews" component={MyReviews} />
               {/* <Stack.Screen name="Maps" component={Maps} /> */}
               <Stack.Screen name="MyReviews" component={MyReviews} />
-
+              <Stack.Screen name="FacilityDetail" component={FacilityDetail} />
               <Stack.Screen name="MyStamps" component={MyStamps} />
+              <Stack.Screen name="Settings" component={Settings} />
+              <Stack.Screen name='testing' component={testing} />
               {/* Register the FavoritesScreen */}
             </Stack.Navigator>
           </View>
