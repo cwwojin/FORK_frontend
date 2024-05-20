@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Text,
   View,
@@ -22,24 +22,42 @@ import Report from '../components/Report';
 import Request from '../components/Request';
 import Menu from '../components/Menu';
 import Stamp from '../components/Stamp';
+import NavigationBar from '../components/NavigationBar';
 
 import userImage from '../assets/placeholders/User.png';
 
 //To be deleted
 import longImagePlaceholder from '../assets/placeholders/long_image.png';
+import { USERID, getUserByID } from './api';
 
 const MyPage = () => {
   //Get Informations of facilities
   //5 most recent bookmarked facilities [img_url, name, score, address], 5 facilities in order of number of stamps [img_url, name], 5 most recent reviews [img_url, name, score, comment], user [img_url, nickname, email]
 
-  const navigation = useNavigation();
-  const userType = 1;
+  const [userType, setUserType] = useState(0);
+  const [userInfo, setUserInfo] = useState('');
+  const [userProfile, setUserProfile] = useState(userImage);
 
-  const userInfo = {
-    userName: 'foodie',
-    userProfile: userImage,
-    userEmail: 'foodie@kaist.ac.kr'
-  };
+  useEffect(() => {
+    const fetchUser = async (userID) => {
+      try {
+        const data = await getUserByID(userID);
+        setUserInfo(data.data);
+        setUserType(data.data.user_type);
+        if (data.data.profile_img_uri) {
+          setUserProfile(data.data.profile_img_uri);
+        };
+      } catch (error) {
+        console.log(error.message);
+      }
+    };
+
+    fetchUser(USERID);
+  }, []);
+
+  console.log(userInfo);
+
+  const navigation = useNavigation();
 
   const review = [
     { userImage: userImage, userName: 'foodie', reviewDate: '2024.05.06', reviewScore: 5, reviewImage: longImagePlaceholder, reviewContent: 'Loved it', reviewHashtags: ['🥰Lovely', '😋Tasty'], edit: false },
@@ -119,7 +137,7 @@ const MyPage = () => {
 
   return (
     <>
-      {(userType == 0) && (
+      {(userType == 1) && (
         <SafeAreaView style={GlobalStyles.background}>
           <ScrollView showsVerticalScrollIndicator={false}>
             <View style={GlobalStyles.content}>
@@ -133,9 +151,9 @@ const MyPage = () => {
                 <Text style={GlobalStyles.h1}>My Page</Text>
                 <TouchableOpacity onPress={() => {
                   navigation.navigate("Settings", {
-                    userName: userInfo.userName,
-                    userProfile: userInfo.userImage,
-                    userEmail: userInfo.userEmail
+                    userName: userInfo.account_id,
+                    userProfile: userImage,
+                    userEmail: userInfo.email
                   });
                 }}>
                   <Image
@@ -158,12 +176,12 @@ const MyPage = () => {
                 <View style={{ justifyContent: 'center' }}>
                   <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                     <Text style={{ ...GlobalStyles.body, marginRight: 15 }}>
-                      Foodie
+                      {userInfo.account_id}
                     </Text>
                     <Text style={GlobalStyles.body2}>Edit</Text>
                   </View>
                   <Text style={{ ...GlobalStyles.body2, textTransform: 'none' }}>
-                    foodie@kaist.ac.kr
+                    {userInfo.email}
                   </Text>
                 </View>
               </View>
@@ -349,213 +367,213 @@ const MyPage = () => {
         </SafeAreaView>
       )}
 
-      {(userType == 1) && (
-        <SafeAreaView style={GlobalStyles.background}>
-          <ScrollView showsVerticalScrollIndicator={false}>
-            <View style={GlobalStyles.content}>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  marginTop: -27,
-                  paddingBottom: 10,
-                }}>
-                <Text style={GlobalStyles.h1}>My Page</Text>
-                <TouchableOpacity onPress={() => {
-                  navigation.navigate("Settings", {
-                    userName: userInfo.userName,
-                    userProfile: userInfo.userProfile,
-                    userEmail: userInfo.userEmail
-                  });
-                }}>
-                  <Image
-                    style={GlobalStyles.topIcon}
-                    source={require('../assets/icons/setting.png')}
-                  />
-                </TouchableOpacity>
-              </View>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  width: '100%',
-                  justifyContent: 'flex-start',
-                  marginTop: 10,
-                }}>
-                <Image
-                  style={{ ...GlobalStyles.profileImage, marginRight: 20 }}
-                  source={require('../assets/placeholders/User.png')}
-                />
-                <View style={{ justifyContent: 'center' }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Text style={{ ...GlobalStyles.body, marginRight: 15 }}>
-                      Foodie
-                    </Text>
-                    <Text style={GlobalStyles.body2}>Edit</Text>
-                  </View>
-                  <Text style={{ ...GlobalStyles.body2, textTransform: 'none' }}>
-                    foodie@kaist.ac.kr
-                  </Text>
-                </View>
-              </View>
-
-              <View
-                style={{
-                  width: '100%',
-                }}>
-                <Text
+      {(userType == 2) && (
+        <>
+          <SafeAreaView style={GlobalStyles.background}>
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <View style={GlobalStyles.content}>
+                <View
                   style={{
-                    ...GlobalStyles.h2,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    marginTop: -27,
+                    paddingBottom: 10,
                   }}>
-                  Registration Request
-                </Text>
-                {facilityRequest
-                  .map(item => (
+                  <Text style={GlobalStyles.h1}>My Page</Text>
+                  <TouchableOpacity onPress={() => {
+                    navigation.navigate("Settings", {
+                      userName: userInfo.account_id,
+                      userProfile: userImage,
+                      userEmail: userInfo.email
+                    });
+                  }}>
+                    <Image
+                      style={GlobalStyles.topIcon}
+                      source={require('../assets/icons/setting.png')}
+                    />
+                  </TouchableOpacity>
+                </View>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    width: '100%',
+                    justifyContent: 'flex-start',
+                    marginTop: 10,
+                  }}>
+                  <Image
+                    style={{ ...GlobalStyles.profileImage, marginRight: 20 }}
+                    source={require('../assets/placeholders/User.png')}
+                  />
+                  <View style={{ justifyContent: 'center' }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <Text style={{ ...GlobalStyles.body, marginRight: 15 }}>
+                        {userInfo.account_id}
+                      </Text>
+                      <Text style={GlobalStyles.body2}>Edit</Text>
+                    </View>
+                    <Text style={{ ...GlobalStyles.body2, textTransform: 'none' }}>
+                      {userInfo.email}
+                    </Text>
+                  </View>
+                </View>
+
+                <View
+                  style={{
+                    width: '100%',
+                  }}>
+                  <Text
+                    style={{
+                      ...GlobalStyles.h2,
+                    }}>
+                    Registration Request
+                  </Text>
+                  {facilityRequest.map(item => (
                     <Request
                       facilityName={item.facilityName}
                       facilityImage={item.facilityImage}
                       facilityAddress={item.facilityAddress}
                       state={item.state}
                     />
-                  ))
-                }
-              </View>
-
-              <View style={{ width: '100%', justifyContent: 'flex-start' }}>
-                <View style={styles.container}>
-                  {renderLabel()}
-                  <Dropdown
-                    style={[styles.dropdown, isFocus && { borderColor: Color.orange_700 }]}
-                    placeholderStyle={styles.placeholderStyle}
-                    selectedTextStyle={styles.selectedTextStyle}
-                    inputSearchStyle={styles.inputSearchStyle}
-                    iconStyle={styles.iconStyle}
-                    data={myFacility}
-                    search
-                    maxHeight={300}
-                    labelField="label"
-                    valueField="value"
-                    placeholder={!isFocus ? 'Select facility' : '...'}
-                    searchPlaceholder="Search..."
-                    value={value}
-                    onFocus={() => setIsFocus(true)}
-                    onBlur={() => setIsFocus(false)}
-                    onChange={item => {
-                      setValue(item.value);
-                      setIsFocus(false);
-                    }}
-                  />
-                </View>
-                <View style={{ width: '100%', flexDirection: 'row', justifyContent: 'space-between', paddingTop: 15 }}>
-                  <TouchableOpacity style={styles.facilityButton} onPress={toggleUpload}>
-                    <Image
-                      source={require('../assets/icons/upload.png')}
-                      style={styles.buttonIcon}
-                    />
-                    <Text style={styles.buttonText}>Notice</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.facilityButton}>
-                    <Image
-                      source={require('../assets/icons/giveStamp.png')}
-                      style={styles.buttonIcon}
-                    />
-                    <Text style={styles.buttonText}>Stamp</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.facilityButton}
-                    onPress={() => {
-                      navigation.navigate('FacilityDetail');
-                    }}>
-                    <Image
-                      source={require('../assets/icons/toFacility.png')}
-                      style={styles.buttonIcon}
-                    />
-                    <Text style={styles.buttonText}>Facility</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-              <View style={{ width: '100%' }}>
-                <TouchableOpacity style={{ paddingTop: 15, alignSelf: 'flex-end' }}>
-                  <Text style={GlobalStyles.body3}>Edit</Text>
-                </TouchableOpacity>
-                <Image
-                  source={facilityInfo.facilityImage}
-                  style={{ ...GlobalStyles.longImage, margin: 0, marginTop: 15 }}
-                />
-                <View style={{ width: '100%', flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 15, paddingHorizontal: 5 }}>
-                  <Text style={GlobalStyles.body}>{facilityInfo.facilityName}</Text>
-                  <View style={{ flexDirection: 'row' }}>
-                    <Image
-                      source={require('../assets/icons/star.png')}
-                      style={GlobalStyles.icon}
-                    />
-                    <Text style={GlobalStyles.body2}>{facilityInfo.facilityScore}</Text>
-                  </View>
-                </View>
-                <View style={{ flexDirection: 'row', paddingVertical: 5 }}>
-                  <Image
-                    source={require('../assets/icons/location.png')}
-                    style={GlobalStyles.icon}
-                  />
-                  <Text style={{ ...GlobalStyles.body2, paddingHorizontal: 5 }}>{facilityInfo.facilityAddress}</Text>
-                </View>
-                <View style={{ flexDirection: 'row', paddingVertical: 5 }}>
-                  <Image
-                    source={require('../assets/icons/phone.png')}
-                    style={GlobalStyles.icon}
-                  />
-                  <Text style={{ ...GlobalStyles.body2, paddingHorizontal: 5 }}>{facilityInfo.facilityContact}</Text>
-                </View>
-              </View>
-              <View style={{ flexDirection: 'row', paddingTop: 5, width: '100%', paddingBottom: 20 }}>
-                {facilityInfo.hashtag.map(item => (
-                  <Hashtag
-                    tag={item}
-                  />
-                ))}
-              </View>
-
-              <View
-                style={{
-                  borderBottomColor: Color.lightGrey,
-                  borderBottomWidth: 1,
-                  alignSelf: 'stretch',
-                  marginBottom: 10,
-                }}
-              />
-
-              <View style={{ flexDirection: 'row', width: '100%' }}>
-                <Image
-                  style={styles.timeIcon}
-                  source={require('../assets/icons/hour.png')}
-                />
-                <View>
-                  {facilityInfo.time.map(item => (
-                    <Text key={item.day} style={{ ...GlobalStyles.body2, color: Color.darkgray, paddingVertical: 2 }}>{item.day.substring(0, 3)} : {item.openTime} - {item.closeTime}</Text>
                   ))}
                 </View>
-              </View>
 
-              <View style={{ width: '100%' }}>
-                <Text style={GlobalStyles.h2}>Menu</Text>
-                {facilityInfo.menu.map(item => (
-                  <Menu
-                    menuName={item.name}
-                    menuDescription={item.description}
-                    menuPrice={item.price}
-                    menuImage={item.image}
+                <View style={{ width: '100%', justifyContent: 'flex-start' }}>
+                  <View style={styles.container}>
+                    {renderLabel()}
+                    <Dropdown
+                      style={[styles.dropdown, isFocus && { borderColor: Color.orange_700 }]}
+                      placeholderStyle={styles.placeholderStyle}
+                      selectedTextStyle={styles.selectedTextStyle}
+                      inputSearchStyle={styles.inputSearchStyle}
+                      iconStyle={styles.iconStyle}
+                      data={myFacility}
+                      search
+                      maxHeight={300}
+                      labelField="label"
+                      valueField="value"
+                      placeholder={!isFocus ? 'Select facility' : '...'}
+                      searchPlaceholder="Search..."
+                      value={value}
+                      onFocus={() => setIsFocus(true)}
+                      onBlur={() => setIsFocus(false)}
+                      onChange={item => {
+                        setValue(item.value);
+                        setIsFocus(false);
+                      }}
+                    />
+                  </View>
+                  <View style={{ width: '100%', flexDirection: 'row', justifyContent: 'space-between', paddingTop: 15 }}>
+                    <TouchableOpacity style={styles.facilityButton} onPress={toggleUpload}>
+                      <Image
+                        source={require('../assets/icons/upload.png')}
+                        style={styles.buttonIcon}
+                      />
+                      <Text style={styles.buttonText}>Notice</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.facilityButton}>
+                      <Image
+                        source={require('../assets/icons/giveStamp.png')}
+                        style={styles.buttonIcon}
+                      />
+                      <Text style={styles.buttonText}>Stamp</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.facilityButton}
+                      onPress={() => {
+                        navigation.navigate('FacilityDetail');
+                      }}>
+                      <Image
+                        source={require('../assets/icons/toFacility.png')}
+                        style={styles.buttonIcon}
+                      />
+                      <Text style={styles.buttonText}>Facility</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+                <View style={{ width: '100%' }}>
+                  <TouchableOpacity style={{ paddingTop: 15, alignSelf: 'flex-end' }}>
+                    <Text style={GlobalStyles.body3}>Edit</Text>
+                  </TouchableOpacity>
+                  <Image
+                    source={facilityInfo.facilityImage}
+                    style={{ ...GlobalStyles.longImage, margin: 0, marginTop: 15 }}
                   />
-                ))}
-              </View>
+                  <View style={{ width: '100%', flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 15, paddingHorizontal: 5 }}>
+                    <Text style={GlobalStyles.body}>{facilityInfo.facilityName}</Text>
+                    <View style={{ flexDirection: 'row' }}>
+                      <Image
+                        source={require('../assets/icons/star.png')}
+                        style={GlobalStyles.icon}
+                      />
+                      <Text style={GlobalStyles.body2}>{facilityInfo.facilityScore}</Text>
+                    </View>
+                  </View>
+                  <View style={{ flexDirection: 'row', paddingVertical: 5 }}>
+                    <Image
+                      source={require('../assets/icons/location.png')}
+                      style={GlobalStyles.icon}
+                    />
+                    <Text style={{ ...GlobalStyles.body2, paddingHorizontal: 5 }}>{facilityInfo.facilityAddress}</Text>
+                  </View>
+                  <View style={{ flexDirection: 'row', paddingVertical: 5 }}>
+                    <Image
+                      source={require('../assets/icons/phone.png')}
+                      style={GlobalStyles.icon}
+                    />
+                    <Text style={{ ...GlobalStyles.body2, paddingHorizontal: 5 }}>{facilityInfo.facilityContact}</Text>
+                  </View>
+                </View>
+                <View style={{ flexDirection: 'row', paddingTop: 5, width: '100%', paddingBottom: 20 }}>
+                  {facilityInfo.hashtag.map(item => (
+                    <Hashtag
+                      tag={item}
+                    />
+                  ))}
+                </View>
 
-              <View style={{ width: '100%' }}>
-                <Text style={GlobalStyles.h2}>Stamps</Text>
-                <Stamp
-                  stamp={facilityInfo.stamp}
-                  stampImage={facilityInfo.stampImage}
-                  number={facilityInfo.stamp.length}
+                <View
+                  style={{
+                    borderBottomColor: Color.lightGrey,
+                    borderBottomWidth: 1,
+                    alignSelf: 'stretch',
+                    marginBottom: 10,
+                  }}
                 />
+
+                <View style={{ flexDirection: 'row', width: '100%' }}>
+                  <Image
+                    style={styles.timeIcon}
+                    source={require('../assets/icons/hour.png')}
+                  />
+                  <View>
+                    {facilityInfo.time.map(item => (
+                      <Text key={item.day} style={{ ...GlobalStyles.body2, color: Color.darkgray, paddingVertical: 2 }}>{item.day.substring(0, 3)} : {item.openTime} - {item.closeTime}</Text>
+                    ))}
+                  </View>
+                </View>
+
+                <View style={{ width: '100%' }}>
+                  <Text style={GlobalStyles.h2}>Menu</Text>
+                  {facilityInfo.menu.map(item => (
+                    <Menu
+                      menuName={item.name}
+                      menuDescription={item.description}
+                      menuPrice={item.price}
+                      menuImage={item.image}
+                    />
+                  ))}
+                </View>
+
+                <View style={{ width: '100%' }}>
+                  <Text style={GlobalStyles.h2}>Stamps</Text>
+                  <Stamp
+                    stamp={facilityInfo.stamp}
+                    stampImage={facilityInfo.stampImage}
+                    number={facilityInfo.stamp.length}
+                  />
+                </View>
               </View>
-            </View>
-          </ScrollView>
+            </ScrollView>
+          </SafeAreaView>
           {upload && (
             <View style={styles.overlay}>
               <View style={styles.background}>
@@ -599,10 +617,10 @@ const MyPage = () => {
 
             </View>
           )}
-        </SafeAreaView>
+        </>
       )}
 
-      {(userType == 2) && (
+      {(userType == 0) && (
         <SafeAreaView style={GlobalStyles.background}>
           <ScrollView showsVerticalScrollIndicator={false}>
             <View style={GlobalStyles.content}>
@@ -616,9 +634,9 @@ const MyPage = () => {
                 <Text style={GlobalStyles.h1}>My Page</Text>
                 <TouchableOpacity onPress={() => {
                   navigation.navigate("Settings", {
-                    userName: userInfo.userName,
-                    userProfile: userInfo.userImage,
-                    userEmail: userInfo.userEmail
+                    userName: userInfo.account_id,
+                    userProfile: userImage,
+                    userEmail: userInfo.email
                   });
                 }}>
                   <Image
@@ -641,12 +659,12 @@ const MyPage = () => {
                 <View style={{ justifyContent: 'center' }}>
                   <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                     <Text style={{ ...GlobalStyles.body, marginRight: 15 }}>
-                      Foodie
+                      {userInfo.account_id}
                     </Text>
                     <Text style={GlobalStyles.body2}>Edit</Text>
                   </View>
                   <Text style={{ ...GlobalStyles.body2, textTransform: 'none' }}>
-                    foodie@kaist.ac.kr
+                    {userInfo.email}
                   </Text>
                 </View>
               </View>
@@ -726,8 +744,15 @@ const MyPage = () => {
           </ScrollView>
         </SafeAreaView>
       )}
+      <NavigationBar
+        homeb={false}
+        mapb={false}
+        favoritesb={false}
+        myPageb={true}
+        navigation={navigation}
+      />
     </>
-  );
+  )
 };
 
 const styles = StyleSheet.create({

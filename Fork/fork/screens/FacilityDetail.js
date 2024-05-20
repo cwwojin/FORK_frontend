@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Text,
   View,
@@ -9,7 +9,7 @@ import {
   TextInput,
   StyleSheet,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import ToggleSwitch from 'toggle-switch-react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 
@@ -20,24 +20,55 @@ import Hashtag from '../components/Hashtag';
 import Menu from '../components/Menu';
 import Review from '../components/Review';
 import Notice from '../components/Notice';
+import Stamp from '../components/Stamp';
 
 
 import userImage from '../assets/placeholders/User.png';
 
 //To be deleted
 import longImagePlaceholder from '../assets/placeholders/long_image.png';
+import { fetchImage, getFacilityByID, getReviewByQuery, parseImageUri } from './api';
 
-const FacilityDetail = (
-  { facility_name, }
-) => {
-  //Get Informations of facilities
-  //facility information [name, ], 5 facilities in order of number of stamps [img_url, name], 5 most recent reviews [img_url, name, score, comment], user [img_url, nickname, email]
+const FacilityDetail = () => {
+
+  const route = useRoute();
+
+  const { facilityID } = route.params;
+
+  const [facilityInfo, setFacilityInfo] = useState('');
+  const [reviewList, setReviewList] = useState('');
+
+  useEffect(() => {
+    const fetchFacility = async (facilityID) => {
+      try {
+        const data = await getFacilityByID(facilityID);
+        setFacilityInfo(data.data);
+        console.log(data.data);
+        console.log(data.data.hashtag);
+      } catch (error) {
+        console.log(error.message);
+      }
+    };
+    const fetchReviews = async (facilityID) => {
+      try {
+        const data = await getReviewByQuery('', facilityID);
+        setReviewList(data.data);
+        console.log(data.data);
+      } catch (error) {
+        console.log(error.message);
+      }
+    };
+    fetchFacility(facilityID);
+    fetchReviews(facilityID);
+  }, []);
 
   const navigation = useNavigation();
 
   reviewHashtags = ['🍣 Japanese Food', '🥬 Vegetarian']
 
   const [isTimeVisible, setTimeVisible] = useState(false);
+  const [bookmarked, setBookmarked] = useState(false);
+  const [stamp, setStamp] = useState(false);
   const [tabState, setTabState] = useState("Menu");
   const [reviewFilter, setReviewFilter] = useState(false);
   const [writeReview, setWriteReview] = useState(false);
@@ -51,6 +82,14 @@ const FacilityDetail = (
   const toggleTimeVisibility = () => {
     setTimeVisible(!isTimeVisible);
   };
+
+  const toggleBookmarked = () => {
+    setBookmarked(!bookmarked);
+  };
+
+  const toggleStamp = () => {
+    setStamp(!stamp);
+  }
 
   const switchTabMenu = () => {
     setTabState("Menu");
@@ -132,14 +171,6 @@ const FacilityDetail = (
   const topHashtags = [
     "🕯️ Good mood", "🍴 Tasty", "😊 Kind", "🍴 Tasty", "😊 Kind"
   ];
-  const review = [
-    { userImage: userImage, userName: 'foodie', reviewDate: '2024.05.06', reviewScore: 5, reviewImage: longImagePlaceholder, reviewContent: 'Loved it', reviewHashtags: ['🥰Lovely', '😋Tasty'], edit: false },
-    { userImage: userImage, userName: 'foodie', reviewDate: '2024.05.06', reviewScore: 5, reviewImage: longImagePlaceholder, reviewContent: 'Loved it', reviewHashtags: ['🥰Lovely', '😋Tasty'], edit: false },
-    { userImage: userImage, userName: 'foodie', reviewDate: '2024.05.06', reviewScore: 5, reviewImage: longImagePlaceholder, reviewContent: 'Loved it', reviewHashtags: ['🥰Lovely', '😋Tasty'], edit: false },
-    { userImage: userImage, userName: 'foodie', reviewDate: '2024.05.06', reviewScore: 5, reviewContent: 'Loved it', reviewHashtags: ['🥰Lovely', '😋Tasty'], edit: false },
-    { userImage: userImage, userName: 'foodie', reviewDate: '2024.05.06', reviewScore: 5, reviewContent: 'Loved it', reviewHashtags: ['🥰Lovely', '😋Tasty'], edit: false },
-    { userImage: userImage, userName: 'foodie', reviewDate: '2024.05.06', reviewScore: 5, reviewContent: 'Loved it', reviewHashtags: ['🥰Lovely', '😋Tasty'], edit: false },
-  ];
 
   const notice = [
     { image: userImage, name: 'Yosida', date: '2024.05.06', noticeImage: longImagePlaceholder, content: 'We are not opening today >< Have a nice holiday!' },
@@ -166,26 +197,43 @@ const FacilityDetail = (
 
   return (
     <SafeAreaView style={GlobalStyles.background}>
-      <View style={GlobalStyles.content}>
+      <View style={GlobalStyles.contentNoNav}>
 
-        <View style={{ width: '100%', flexDirection: 'row' }}>
-          <TouchableOpacity
-            onPress={() => {
-              navigation.goBack();
-            }}>
-            <Image
-              style={GlobalStyles.icon}
-              source={require('../assets/icons/navigate_left.png')}
-            />
-          </TouchableOpacity>
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              marginTop: -27,
-              paddingBottom: 10,
-            }}>
-            <Text style={GlobalStyles.h1}>{facility_name} yosida</Text>
+        <View style={{ width: '100%', flexDirection: 'row', justifyContent: 'space-between' }}>
+          <View style={{ flexDirection: 'row' }}>
+            <TouchableOpacity
+              onPress={() => {
+                navigation.goBack();
+              }}>
+              <Image
+                style={GlobalStyles.icon}
+                source={require('../assets/icons/navigate_left.png')}
+              />
+            </TouchableOpacity>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                marginTop: -27,
+                paddingBottom: 10,
+                width: '70%'
+              }}>
+              <Text style={GlobalStyles.h1} numberOfLines={1}>{facilityInfo.name}</Text>
+            </View>
+          </View>
+          <View style={{ flexDirection: 'row' }}>
+            <TouchableOpacity onPress={toggleStamp}>
+              <Image
+                style={{ width: 30, height: 30, marginRight: 10 }}
+                source={require('../assets/icons/stampCard.png')}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={toggleBookmarked}>
+              <Image
+                style={{ width: 30, height: 30 }}
+                source={bookmarked ? require('../assets/icons/bookmark_on.png') : require('../assets/icons/bookmark_off2.png')}
+              />
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -201,21 +249,21 @@ const FacilityDetail = (
                 style={{ ...GlobalStyles.icon, marginRight: 5 }}
                 source={require('../assets/icons/location.png')}
               />
-              <Text style={GlobalStyles.body2}>facilityAddress</Text>
+              <Text style={GlobalStyles.body2}>{facilityInfo.english_address}</Text>
             </View>
             <View style={{ flexDirection: 'row' }}>
               <Image
                 style={styles.icon}
                 source={require('../assets/icons/phone.png')}
               />
-              <Text style={GlobalStyles.body2}>facility phone number</Text>
+              <Text style={GlobalStyles.body2}>{facilityInfo.phone}</Text>
             </View>
             <View style={{ flexDirection: 'row' }}>
               <Image
                 style={{ ...GlobalStyles.icon, marginRight: 5 }}
                 source={require('../assets/icons/star.png')}
               />
-              <Text style={GlobalStyles.body2}>4.7</Text>
+              <Text style={GlobalStyles.body2}>{facilityInfo.avg_score}</Text>
             </View>
             <View
               style={{
@@ -338,18 +386,18 @@ const FacilityDetail = (
                   }}
                 />
 
-                {review
-                  .filter(item => !reviewFilter || (reviewFilter && item.reviewImage)) // Apply filter conditionally based on reviewFilter state
+                {reviewList
+                  .filter(item => !reviewFilter || (reviewFilter && item.img_uri)) // Apply filter conditionally based on reviewFilter state
                   .map(item => (
                     <Review
-                      key={item.reviewId} // Make sure to provide a unique key prop
+                      key={item.id} // Make sure to provide a unique key prop
                       userImage={item.userImage}
                       userName={item.userName}
-                      reviewDate={item.reviewDate}
-                      reviewScore={item.reviewScore}
-                      reviewImage={item.reviewImage}
-                      reviewContent={item.reviewContent}
-                      reviewHashtags={item.reviewHashtags}
+                      reviewDate={item.post_date}
+                      reviewScore={item.score}
+                      reviewImage={item.img_uri ? fetchImage(item.img_uri) : item.img_uri}
+                      reviewContent={item.content}
+                      reviewHashtags={item.hashtags}
                       edit={false}
                       admin={true}
                     />
@@ -455,6 +503,29 @@ const FacilityDetail = (
                 </View>
               </View>
             </ScrollView>
+          </View>
+
+        </View>
+      )}
+      {stamp && (
+        <View style={styles.overlay}>
+          <View style={{ ...styles.background, justifyContent: 'center', height: '50%' }}>
+            <View style={{ width: '100%' }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+                <TouchableOpacity style={{ marginRight: -10 }} onPress={toggleStamp}>
+                  <Image
+                    source={require('../assets/icons/navigate_close.png')}
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
+            <View style={{ width: '100%', alignItems: 'center', paddingVertical: 10 }}>
+              <Stamp
+                number={5}
+                stamp={['', '', 'free drink', '', '', '', 'free meal']}
+                stampImage={require('../assets/icons/stamp.png')}
+              />
+            </View>
           </View>
 
         </View>

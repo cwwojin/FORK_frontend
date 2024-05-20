@@ -4,7 +4,7 @@ import {
   View,
   Image,
   SafeAreaView,
-  ScrollView,
+  TextInput,
   TouchableOpacity,
   StyleSheet,
   Alert
@@ -12,7 +12,7 @@ import {
 import { useNavigation, useRoute } from '@react-navigation/native';
 import ToggleSwitch from 'toggle-switch-react-native';
 
-import { GlobalStyles, Color, Border } from '../GlobalStyles';
+import { GlobalStyles, Color, Border, FontSize } from '../GlobalStyles';
 
 
 const Settings = () => {
@@ -28,6 +28,9 @@ const Settings = () => {
   const [accessLocation, setAccessLocation] = useState(false);
   const [language, setLanguage] = useState(false);
 
+  const [report, setReport] = useState(false);
+  const [reportContent, setReportContent] = useState('');
+
   const togglePushNotification = () => {
     setPushNotification(!pushNotification);
   };
@@ -36,6 +39,10 @@ const Settings = () => {
   };
   const toggleLaguage = () => {
     setLanguage(!language);
+  };
+
+  const toggleReport = () => {
+    setReport(!report);
   };
 
   const logout = () => {
@@ -204,7 +211,7 @@ const Settings = () => {
 
         <View style={{ width: '100%', paddingVertical: 5 }}>
           <Text style={GlobalStyles.h2}>Support</Text>
-          <TouchableOpacity style={styles.container} onPress={logout}>
+          <TouchableOpacity style={styles.container} onPress={toggleReport}>
             <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: Color.yellow_100, width: '100%', paddingVertical: 10, borderRadius: Border.br_2xs }}>
               <Image
                 source={require('../assets/icons/report.png')}
@@ -215,7 +222,54 @@ const Settings = () => {
           </TouchableOpacity>
         </View>
 
+        {report && (
+          <View style={styles.overlay}>
+            <View style={styles.background}>
+              <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+                <Text style={GlobalStyles.h2}>Issue Report</Text>
+                <TouchableOpacity style={{ ...GlobalStyles.topIcon, marginRight: 0 }} onPress={toggleReport}>
+                  <Image
+                    source={require('../assets/icons/navigate_close.png')}
+                  />
+                </TouchableOpacity>
+              </View>
+              <View style={{ width: '100%', alignItems: 'center' }}>
+                <View style={styles.inputSection}>
+                  <Text style={GlobalStyles.h3}>title</Text>
+                  <View style={GlobalStyles.inputWrapper3}>
+                    <TextInput
+                      style={styles.registrationInput1}
+                      onChangeText={setReportContent}
+                      value={reportContent}
+                      placeholder="Review Content"
+                      multiline={true}
+                      numberOfLines={1}
+                    />
+                  </View>
+                </View>
+                <View style={styles.inputSection}>
+                  <Text style={GlobalStyles.h3}>description</Text>
+                  <View style={GlobalStyles.inputWrapper3}>
+                    <TextInput
+                      style={styles.registrationInput2}
+                      onChangeText={setReportContent}
+                      value={reportContent}
+                      placeholder="Review Content"
+                      multiline={true}
+                      numberOfLines={5}
+                    />
+                  </View>
+                </View>
+                <View style={{ width: '100%', justifyContent: 'flex-end', flexDirection: 'row', paddingTop: 20 }}>
+                  <TouchableOpacity>
+                    <Text style={GlobalStyles.h4}>Send</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
 
+          </View>
+        )}
       </View>
     </SafeAreaView>
   );
@@ -233,7 +287,59 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     padding: 10,
     alignItems: 'center'
-  }
-})
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  overlayTouchable: {
+    width: '80%',
+    height: '80%',
+    backgroundColor: 'white',
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  background: {
+    height: '70%',
+    width: '90%',
+    justifyContent: 'flex-start',
+    backgroundColor: Color.white,
+    borderRadius: Border.br_lg,
+    padding: 30,
+    paddingTop: 15,
+    alignItems: 'center'
+  },
+  inputSection: {
+    width: '100%',
+    paddingVertical: 10,
+  },
+  registrationInput1: {
+    width: '100%',
+    borderColor: Color.lightGrey,
+    paddingVertical: 20,
+    paddingTop: 20,
+    fontSize: FontSize.size_sm,
+    color: Color.black,
+    paddingHorizontal: 25,
+    borderRadius: Border.br_9xs,
+    borderWidth: 2,
+    height: 60,
+  },
+  registrationInput2: {
+    width: '100%',
+    borderColor: Color.lightGrey,
+    paddingVertical: 20,
+    paddingTop: 20,
+    fontSize: FontSize.size_sm,
+    color: Color.black,
+    paddingHorizontal: 25,
+    borderRadius: Border.br_9xs,
+    borderWidth: 2,
+    height: 180,
+  },
+});
 
 export default Settings;

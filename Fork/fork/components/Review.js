@@ -138,7 +138,7 @@ const Review = ({
               style={{ ...GlobalStyles.body2, marginRight: 10 }}
               numberOfLines={1}
               ellipsizeMode="tail">
-              {reviewDate}
+              {reviewDate.substring(0, 10)}
             </Text>
           </View>
           <View
@@ -163,7 +163,7 @@ const Review = ({
           <Image
             style={GlobalStyles.squareImage2}
             contentFit="cover"
-            source={reviewImage}
+            source={{uri: reviewImage}}
           />
         )}
         <View style={{ width: '75%', paddingVertical: 20 }}>
@@ -203,7 +203,6 @@ const Review = ({
         style={{
           borderBottomColor: Color.lightGrey,
           borderBottomWidth: 1,
-          alignSelf: 'stretch',
           marginBottom: 10,
         }}
       />

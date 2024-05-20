@@ -158,7 +158,13 @@ export const GlobalStyles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    margin: 20,
+    padding: 20,
+    alignItems: 'center',
+    paddingBottom: 50,
+  },
+  contentNoNav: {
+    flex: 1,
+    padding: 20,
     alignItems: 'center',
   },
   longImage: {
