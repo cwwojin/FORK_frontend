@@ -1,5 +1,8 @@
-import React from 'react';
-import { StyleSheet, SafeAreaView, View } from 'react-native';
+import React, { useEffect, useState  }  from 'react';
+import { StyleSheet, SafeAreaView, View, Alert, Platform, Text  } from 'react-native';
+//import { request, PERMISSIONS, RESULTS } from 'react-native-permissions';
+//import * as Permissions from 'expo-permissions';
+import * as Location from 'expo-location';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -29,10 +32,20 @@ import MyReviews from './screens/MyReviews';
 import MapView from './screens/MapView.js';
 
 
+const requestLocationPermission = async () => {
+  let { status } = await Location.requestForegroundPermissionsAsync();
+  if (status !== 'granted') {
+    Alert.alert('Permission denied', 'Location permission is required to use this feature.');
+  } else {
+    console.log('Location permission granted');
+  }
+};
 
 const Stack = createStackNavigator();
 
-export default function App() {
+const App = () => {
+  
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <TranslatorProvider>
@@ -86,3 +99,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 });
+
+export default App;

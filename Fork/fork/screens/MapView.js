@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback }  from 'react';
-import { StyleSheet, Text, View, Image, SafeAreaView, ScrollView, TextInput, Button, TouchableOpacity  } from 'react-native';
+import { StyleSheet, Text, View, Image, SafeAreaView, ScrollView, TextInput, Button, TouchableOpacity, Alert, Platform  } from 'react-native';
 import { Color, GlobalStyles } from '../GlobalStyles';
 import SquareFacility from '../components/SqureFacility';
 import LongFacility from '../components/LongFacility';
@@ -8,9 +8,11 @@ import { WebView } from 'react-native-webview';
 import { fetchFacilityWithName, mockFetchFacilityWithName, fetchFacilitiesInBounds, mockFetchFacilitiesInBounds } from './api';  
 import { FacilityDetails } from './MapViewFunctions';
 import { isOpenNow } from './MapViewFunctions';
+//import Geolocation from '@react-native-community/geolocation';
+import * as Location from 'expo-location';
 
 const MapView = () => {
-  const isTesting = true;
+  const isTesting = false;
   const [searchQuery, setSearchQuery] = useState('');
   const webViewRef = useRef(null);
   const [webViewReady, setWebViewReady] = useState(false);
@@ -19,12 +21,80 @@ const MapView = () => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [mapCenter, setMapCenter] = useState({ lat: 36.3715, lng: 127.3625 }); // Default center
   const [mapZoom, setMapZoom] = useState(3); // Default zoom level
+  const [filterExpanded, setFilterExpanded] = useState(false);
 
   // State variables for map bounds
   const [neLat, setNeLat] = useState(null);
   const [neLng, setNeLng] = useState(null);
   const [swLat, setSwLat] = useState(null);
   const [swLng, setSwLng] = useState(null);
+
+  const [selectedCuisines, setSelectedCuisines] = useState([]);
+  const [selectedDietaryPreferences, setSelectedDietaryPreferences] = useState([]);
+
+  var isUserMarkerVisible = false;
+
+  const cuisines = [
+    { id: 'korean', name: 'Korean', typeIcon: require('../assets/icons/attributes/korean.png') },
+    { id: 'japanese', name: 'Japanese', typeIcon: require('../assets/icons/attributes/japanese.png') },
+    { id: 'chinese', name: 'Chinese', typeIcon: require('../assets/icons/attributes/chinese.png') },
+    { id: 'asian', name: 'Asian', typeIcon: require('../assets/icons/attributes/asian.png') },
+    { id: 'western', name: 'Western', typeIcon: require('../assets/icons/attributes/western.png') },
+    { id: 'pizza', name: 'Pizza', typeIcon: require('../assets/icons/attributes/pizza.png') },
+    { id: 'burger', name: 'Burger', typeIcon: require('../assets/icons/attributes/burger.png') },
+    { id: 'chicken', name: 'Chicken', typeIcon: require('../assets/icons/attributes/chicken.png') },
+    { id: 'salad', name: 'Salad', typeIcon: require('../assets/icons/attributes/salad.png') },
+    { id: 'cafe', name: 'Cafe', typeIcon: require('../assets/icons/attributes/coffee.png') },
+    { id: 'bar', name: 'Bar', typeIcon: require('../assets/icons/attributes/bar.png') },
+  ];
+
+  const dietaryPreferences = [
+    { id: 'vegetarian', name: 'Vegetarian', typeIcon: require('../assets/icons/attributes/vegetarian.png')  },
+    { id: 'vegan', name: 'Vegan', typeIcon: require('../assets/icons/attributes/salad.png')  },
+    { id: 'pescatarian', name: 'Pescatarian', typeIcon: require('../assets/icons/attributes/pescatarian.png')  },
+    { id: 'halal', name: 'Halal', typeIcon: require('../assets/icons/attributes/halal.png')  },
+    { id: 'lactose-free', name: 'Lactose-Free', typeIcon: require('../assets/icons/attributes/lactosefree.png')  },
+    { id: 'gluten-free', name: 'Gluten-Free', typeIcon: require('../assets/icons/attributes/glutenfree.png')  },
+  ];
+  
+  const handleSelectCuisine = (cuisine) => {
+    setSelectedCuisines(prev => {
+      if (prev.includes(cuisine)) return prev.filter(item => item !== cuisine);
+      else return [...prev, cuisine];
+    });
+  };
+
+  const handleSelectDietaryPreference = (preference) => {
+    setSelectedDietaryPreferences(prev => {
+      if (prev.includes(preference)) return prev.filter(item => item !== preference);
+      else return [...prev, preference];
+    });
+  };
+
+  const handleLocate = async () => {
+    if (isUserMarkerVisible) {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission to access location was denied');
+        return;
+      }
+      console.log("Permission to access location was granted")
+      let location = await Location.getCurrentPositionAsync({});
+      const { latitude, longitude } = location.coords;
+      
+      const locationData = {
+        type: 'addUserMarker',
+        lat: latitude,
+        lng: longitude
+      };
+      webViewRef.current.postMessage(JSON.stringify(locationData));
+    } else {  // If the marker should be hidden after toggling
+      const removeMarkerData = {
+        type: 'removeUserMarker'
+      };
+      webViewRef.current.postMessage(JSON.stringify(removeMarkerData));
+    }
+  };
 
   const mapHtml = `
   <!DOCTYPE html>
@@ -41,7 +111,8 @@ const MapView = () => {
         position: absolute;
         right: 35px; /* Right spacing */
         top: 50%; /* Vertically middle */
-        transform: translateY(80%);
+        /*transform: translateY(80%);*/
+        transform: translateY(20%);
         z-index: 5;
       }
       .button {
@@ -51,6 +122,23 @@ const MapView = () => {
         cursor: pointer;
         background-color: #fff;
         border: none;
+        border-radius: 50%; /* Circular buttons */
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        width: 100px; /* Diameter of buttons */
+        height: 100px; /* Diameter of buttons */
+        font-size: 48px; /* Font size for '+' and '-' */
+        color: #EA7700; /* Font color for '+' and '-' */
+        font-weight: bold; /* Font weight for '+' and '-' */
+        text-align: center;
+        line-height: 50px; /* Center the text vertically */
+      }
+      .buttonOn {
+        display: block;
+        padding: 12px;
+        margin-top: 10px;
+        cursor: pointer;
+        background-color: #fff;
+        border: 2px solid #EA7700;
         border-radius: 50%; /* Circular buttons */
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         width: 100px; /* Diameter of buttons */
@@ -80,13 +168,15 @@ const MapView = () => {
     <div id="zoomControls">
       <button class="button" onclick="zoomIn()">+</button>
       <button class="button" onclick="zoomOut()">-</button>
+      <button class="button" id="locateButton" onclick="toggleLocate()">📍</button>
     </div>
     <div id="map"></div>
     <script>
       var map;
+      var userMarkerVisible = false; 
       var container = document.getElementById('map');
       var options = {
-        center: new kakao.maps.LatLng(36.3715, 127.3625,),
+        center: new kakao.maps.LatLng(36.3695, 127.3625,),
         level: 3
       };
 
@@ -104,13 +194,33 @@ const MapView = () => {
           }));
         });
 
+        window.userMarker = null;
         window.markers = [];
         window.overlays = [];
-        window.addEventListener('message', receiveMessage);
+        window.addEventListener('message', handleMessage);
+      }
+
+      function toggleLocate() {
+        userMarkerVisible = !userMarkerVisible; // Toggle the marker visibility state
+        var locateButton = document.getElementById('locateButton');
+        
+        if (locateButton.classList.contains('buttonOn')) {
+          locateButton.classList.remove('buttonOn'); // Remove 'buttonOn' to show default style
+          locateButton.classList.add('button'); // Add 'button' to ensure styling consistency
+        } else {
+          locateButton.classList.remove('button'); // Remove 'button' if it exists
+          locateButton.classList.add('buttonOn'); // Add 'buttonOn' to show active state
+        }
+        window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'debug', message: "toggling" + userMarkerVisible }));
+        window.ReactNativeWebView.postMessage(JSON.stringify({
+          type: 'markerVisibilityChanged',
+          isVisible: userMarkerVisible
+        }));
       }
       
       function handleMessage(event) {
         var data = JSON.parse(event.data);
+        createOrUpdateMarker(data);
         if (data.type === 'restoreMapState') {
           var newCenter = new kakao.maps.LatLng(data.lat, data.lng);
           if (!map.getCenter().equals(newCenter) || map.getLevel() !== data.zoom) {
@@ -118,15 +228,46 @@ const MapView = () => {
             map.setLevel(data.zoom);
           }
         }
+        if (data.type === 'addUserMarker') {
+          const addingMarker = {
+            type: 'debug', 
+            message:"Adding marker at latitude: " + data.lat + ", longitude: " + data.lng + ", result: " + newMarkerPosition + ", target:" + window.userMarker
+          };
+          window.ReactNativeWebView.postMessage(JSON.stringify(addingMarker));
+          if (window.userMarker) {
+            const updateMarker = {
+              type: 'debug', 
+              message:"Update user marker"
+            };
+            window.ReactNativeWebView.postMessage(JSON.stringify(updateMarker));
+            var newMarkerPosition = new kakao.maps.LatLng(data.lat, data.lng);
+            window.userMarker.setPosition(newMarkerPosition);
+          } else {
+            const updateMarker = {
+              type: 'debug', 
+              message:"New user marker"
+            };
+            window.ReactNativeWebView.postMessage(JSON.stringify(updateMarker));
+            var imgUrl = 'https://images.emojiterra.com/google/android-12l/512px/1f4cd.png';
+            var imgSize = new kakao.maps.Size(90, 90); 
+            var img = new kakao.maps.MarkerImage(imgUrl, new kakao.maps.Size(imgSize, imgSize));
+            var imgOption = {offset: new kakao.maps.Point(27, 69)}; 
+            var markerImage = new kakao.maps.MarkerImage(imgUrl, imgSize, imgOption);
+            var markerPosition = new kakao.maps.LatLng(data.lat, data.lng);
+            window.userMarker = new kakao.maps.Marker({
+                position: markerPosition,
+                image: markerImage, 
+                map: map
+            });
+          }
+        } else if (data.type === 'removeUserMarker') {
+          if (window.userMarker) {
+            window.userMarker.setMap(null);
+            window.userMarker = null;
+          }
+        } 
       }
 
-      window.addEventListener('message', handleMessage);
-
-      function receiveMessage(event) {
-        var data = JSON.parse(event.data);
-        createOrUpdateMarker(data);
-      }
-      
       function adjustMarkerSize() {
         var currentZoom = map.getLevel();
         var size = calculateMarkerSize(currentZoom);
@@ -148,6 +289,11 @@ const MapView = () => {
             marker.setImage(markerImage);
           }
         });
+        /* if (window.userMarker) {
+            var newUserMarkerSize = new kakao.maps.Size(size, size);
+            var newUserMarkerImage = new kakao.maps.MarkerImage(window.userMarker.getImage().src, newUserMarkerSize);
+            window.userMarker.setImage(newUserMarkerImage);
+        } */
       }
       
       function createOrUpdateMarker(data) {
@@ -166,6 +312,7 @@ const MapView = () => {
             window.overlays.forEach(overlay => overlay.setMap(null));
             window.overlays = [];
           }
+
 
           // Iterate over facilities data if it's an array
           data.facilities.forEach(facility => {
@@ -228,22 +375,16 @@ const MapView = () => {
   `;
 
   const handleSearch = async () => {
-    //console.log("handleSearch called", { searchQuery, webViewReady });
     if (searchQuery.trim() && webViewReady) {
-      //console.log("Passed conditions for fetching");
       try {
         let facilities = [];
         if (isTesting) {
-          //console.log("Testing");
-          facilities = await mockFetchFacilityWithName(searchQuery); // Use mock function
+          facilities = await mockFetchFacilityWithName(searchQuery); 
         } else {
-          facilities = await fetchFacilityWithName(searchQuery); // Use real API functionconst facilities
+          facilities = await fetchFacilityWithName(searchQuery); 
         }
-        //console.log("Facilities fetched:", facilities);
-        // Sending facilities data to WebView
         if (webViewRef.current && facilities.length > 0) {
-          const { lat, lng, avg_score } = facilities[0]; // Assuming you want to center on the first returned facility
-          //console.log("Facility data:", { lat, lng, avg_score });
+          const { lat, lng, avg_score } = facilities[0]; 
           webViewRef.current.postMessage(JSON.stringify({
             type: 'centerMap',
             lat: lat,
@@ -265,7 +406,6 @@ const MapView = () => {
   const fetchAndUpdateFacilities = 
     useCallback(async (neLat, neLng, swLat, swLng) => {
       try {
-        console.log("In fetchAndUpdateFacilities");
         let facilities = [];
         if (isTesting) {
           console.log("Testing");
@@ -273,7 +413,6 @@ const MapView = () => {
         } else {
           facilities = await fetchFacilitiesInBounds(neLat, neLng, swLat, swLng); // Use real API function
         }
-        console.log("Facilities in view fetched:", facilities);
 
         if (showOnlyOpen) {
           facilities = facilities.filter(facility => {
@@ -284,15 +423,21 @@ const MapView = () => {
 
         // Process the facilities to update markers on the map
         if (webViewRef.current && facilities.length > 0) {
-          const { lat, lng, avg_score } = facilities[0]; // Assuming you want to center on the first returned facility
-          //console.log("Facility data:", { lat, lng, avg_score });
+          const { lat, lng, avg_score } = facilities[0];
           webViewRef.current.postMessage(JSON.stringify({
             type: 'centerMap',
             facilities: facilities,
             shouldCenter: false
           }));
         }
-        setDisplayedFacilities(facilities);
+        if (Array.isArray(facilities)) {  // Check if the fetched data is an array
+          setDisplayedFacilities(facilities);
+        } else {
+          console.error("Fetched data is not an array:", facilities);
+          setDisplayedFacilities([]);  // Set to empty array if fetched data is invalid
+        }
+
+  
       } catch (error) {
         console.error('Failed to load facilities in view:', error);
       }
@@ -302,9 +447,12 @@ const MapView = () => {
   // Function to receive messages from the WebView
   const onWebViewMessage = (event) => {
     const data = JSON.parse(event.nativeEvent.data);
-    console.log('onWebViewMessage called. Provided data:', data);
+    if (data.type === 'markerVisibilityChanged') {
+      isUserMarkerVisible = data.isVisible;
+      handleLocate();
+
+    }
     if (data.type === 'updateBounds') {
-      console.log('neLat', data.neLat);
       setNeLat(data.neLat);
       setNeLng(data.neLng);
       setSwLat(data.swLat);
@@ -315,14 +463,17 @@ const MapView = () => {
       setMapCenter((prev) => (prev.lat !== data.centerLat || prev.lng !== data.centerLng) ? { lat: data.centerLat, lng: data.centerLng } : prev);
       setMapZoom((prev) => data.zoomLevel !== prev ? data.zoomLevel : prev);
     }
+    if (data.type === 'locationUpdate') {
+      console.log('Updated Location:', data.lat, data.lon);
+    }
+    if (data.type === 'debug') {
+      console.log('DEBUG', data.message);
+    }
   };
 
   const handleShowOnlyOpenToggle = () => {
     setShowOnlyOpen(!showOnlyOpen);
-  
-    // Immediately update the displayed facilities based on the new state
     if (!showOnlyOpen) {
-      // Filter the currently displayed facilities to show only open ones
       const openFacilities = displayedFacilities.filter(facility => {
         const { status } = isOpenNow(facility.opening_hours);
         return status === "Open";
@@ -333,15 +484,6 @@ const MapView = () => {
       fetchAndUpdateFacilities(neLat, neLng, swLat, swLng);
     }
   };
-
-  /* const renderOpeningHours = (hours) => {
-    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    return hours.map(hour => (
-        <Text key={hour.day}>
-            {days[hour.day]}: {hour.open_time} - {hour.close_time}
-        </Text>
-    ));
-  }; */
 
   useEffect(() => {
     if (webViewReady && neLat && neLng && swLat && swLng) {
@@ -364,7 +506,7 @@ const MapView = () => {
   return (
     <View style={styles.container}>
       {webViewReady && (
-        <View>
+        <View style={styles.topContainer}>
           <View style={styles.searchContainer}>
             <TextInput
               style={styles.searchInput}
@@ -380,22 +522,62 @@ const MapView = () => {
               />
             </TouchableOpacity>
           </View>
-          <TouchableOpacity
-            onPress={() => setShowOnlyOpen(!showOnlyOpen)}
-            style={styles.toggleButton}
-            activeOpacity={0.7}>  
-            <Text style={styles.toggleButtonText}>
-                {showOnlyOpen ? "All Facilities" : "Open Facilities Only"}
-            </Text>
-          </TouchableOpacity>
+          <View style={styles.allOptionsContainer}>
+            <TouchableOpacity onPress={() => setFilterExpanded(!filterExpanded)} style={styles.filterButton} activeOpacity={0.7}>
+              <Text style={styles.filterButtonText}>Filter</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => setShowOnlyOpen(!showOnlyOpen)}
+              style={styles.toggleButton}
+              activeOpacity={0.7}>  
+              <Text style={styles.toggleButtonText}>
+                  {showOnlyOpen ? "All Facilities" : "Open Facilities Only"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+          {filterExpanded && (<ScrollView style={filterExpanded? styles.filtersContainer: styles.filtersContainerCollapsed}>
+            <Text style={styles.subHeader}>CUISINE TYPE</Text>
+            <View style={styles.grid}>
+              {cuisines.map((item) => (
+                <TouchableOpacity
+                  key={item.id}
+                  style={[styles.option, selectedCuisines.includes(item.id) && styles.selected]}
+                  onPress={() => handleSelectCuisine(item.id)}
+                >
+                  <Image source={item.typeIcon} style={styles.typeIcon} />
+                  <Text>{item.name}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <Text style={styles.subHeader}>DIETARY PREFERENCE</Text>
+            <View style={styles.grid}>
+              {dietaryPreferences.map((item) => (
+                <TouchableOpacity
+                  key={item.id}
+                  style={[styles.option, selectedDietaryPreferences.includes(item.id) && styles.selected]}
+                  onPress={() => handleSelectDietaryPreference(item.id)}
+                >
+                  <Image 
+                    source={item.typeIcon} 
+                    style={[
+                      styles.typeIcon, 
+                      (item.id === 'lactose-free' || item.id === 'gluten-free') && styles.typeDoubleIconcon
+                    ]}
+                  />
+                  <Text>{item.name}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </ScrollView>)}
         </View>
       )}
-      <View style={isExpanded ? styles.mainContainerCollapsed : styles.mainContainer}>
+      <View style={filterExpanded? styles.mainContainerExpanded: styles.mainContainer}>
         <WebView 
           ref={webViewRef}
           originWhitelist={['*']}
           source={{ html: mapHtml }}
-          style={isExpanded ? styles.webViewCollapsed : styles.webView}
+          style={(isExpanded || filterExpanded)? styles.webViewCollapsed : styles.webView}
           onMessage={onWebViewMessage}
           onLoad={() => {
             console.log("WebView loaded");
@@ -414,9 +596,9 @@ const MapView = () => {
               />
           </TouchableOpacity>
           <ScrollView style={styles.ScrollView}>
-            {displayedFacilities.map(facility => (
-              <FacilityDetails key={facility.id} facility={facility} />
-            ))}
+          {Array.isArray(displayedFacilities) ? displayedFacilities.map(facility => (
+            <FacilityDetails key={facility.id} facility={facility} />
+          )) : <Text>Loading facilities...</Text>}
           </ScrollView>
         </View>
       </View>
@@ -426,6 +608,10 @@ const MapView = () => {
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+    backgroundColor: 'white', 
+  },
+  topContainer: {
     flex: 1,
     backgroundColor: 'white', 
   },
@@ -451,13 +637,100 @@ const styles = StyleSheet.create({
     height: 30,
   },
 
-  mainContainer: {
+  allOptionsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-evenly', 
+    borderRadius: 20,
+    marginRight: 10,
+    marginLeft: 10,
+    backgroundColor: 'white', 
+    height: 40,
+  },
+  filtersContainer: {
     flex: 1,
+    marginLeft: 5,
+    backgroundColor: 'white', 
+  },
+  filtersContainerCollapsed: {
+    flex: 1, 
+    opacity: 0.0, 
+  },
+  filterButton: {
+    backgroundColor: '#EA7700',
+    padding: 10,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    margin: 7,
+    height: 30,
+    width: 70,
+    elevation: 5,
+  },
+  filterButtonText: {
+    color: 'white',
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+  toggleButton: {
+    backgroundColor: '#EA7700',
+    padding: 10,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    margin: 7,
+    height: 30,
+    width: 120,
+    elevation: 5,
+  },
+  toggleButtonText: {
+    color: 'white', 
+    fontSize: 10,
+    fontWeight: 'bold', 
+  },
+  subHeader: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginTop: 10,
+    marginBottom: 10,
+    marginLeft: 5,
+  },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'flex-start',
+    marginBottom: 40,
+  },
+  option: {
+    padding: 10,
+    margin: 5,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    alignItems: 'center',
+    width: '30%',
+    borderRadius: 10,
+  },
+  selected: {
+    borderColor: 'orange',
+  },
+  typeIcon: {
+    width: 50,
+    height: 50,
+    marginBottom: 5,
+  },
+  typeDoubleIcon: {
+    width: 50,
+    height: 30,
+    marginBottom: 5,
+  },
+
+  mainContainer: {
+    flex: 8,
     backgroundColor: 'white', 
   },
   mainContainerCollapsed: {
-    flex: 1,
-    backgroundColor: 'white',
+    flex: 1, 
+    opacity: 0.0, 
+    backgroundColor: 'white', 
   },
 
   webView: {
@@ -465,13 +738,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   webViewCollapsed: {
-    /* flex: 0, 
-    height: 0, 
-    width: 0, 
-    overflow: 'hidden', 
-    opacity: 0, */
     flex: 1, 
-    opacity: 0.0, // Make invisible but still rendered
+    opacity: 0.0, 
   },
   
   subContainer: {
@@ -517,27 +785,6 @@ const styles = StyleSheet.create({
     height: 27,
     transform: [{ rotate: '90deg' }],
   },
-  toggleButton: {
-    backgroundColor: '#EA7700',
-    padding: 10,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    margin: 7,
-    height: 30,
-    width: 120,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-    marginLeft: 257,
-},
-toggleButtonText: {
-    color: 'white', 
-    fontSize: 10,
-    fontWeight: 'bold', 
-},
 });
 
 export default MapView;

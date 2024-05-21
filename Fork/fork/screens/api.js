@@ -46,25 +46,38 @@ const mockData = [
 export const fetchFacilityWithName = async (facilityName) => {
     try {
         const response = await fetch(`${BASE_URL}/facilities?name=${encodeURIComponent(facilityName)}`);
+        console.log('Response in real fetchMethod: ', response)
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            throw new Error('Network response was not ok in real fetchMethod');
         }
         return await response.json();
     } catch (error) {
-        console.error('Error fetching facilities:', error);
+        console.error('Error fetching facilities in real fetchMethod:', error);
         throw error;
     }
 };
 
 export const fetchFacilitiesInBounds = async (northEastLat, northEastLng, southWestLat, southWestLng) => {
     try {
-        const response = await fetch(`${BASE_URL}/facilities?northEastLat=${encodeURIComponent(northEastLat)}&northEastLng=${encodeURIComponent(northEastLng)}&southWestLat=${encodeURIComponent(southWestLat)}&southWestLng=${encodeURIComponent(southWestLng)}`);
+        const latMin = Math.min(northEastLat, southWestLat)
+        const latMax = Math.max(northEastLat, southWestLat)
+        const lngMin = Math.min(northEastLng, southWestLng)
+        const lngMax = Math.max(northEastLng, southWestLng)
+
+        const url = `${BASE_URL}/map?latMin=${encodeURIComponent(latMin)}&lngMin=${encodeURIComponent(lngMin)}&latMax=${encodeURIComponent(latMax)}&lngMax=${encodeURIComponent(lngMax)}`;
+        const response = await fetch(url);
+       
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            throw new Error('Network response was not ok in real fetchMethod');
         }
-        return await response.json();
+
+        const jsonResponse = await response.json();
+        const facilitiesData = jsonResponse.data; 
+        console.log('JSON Response in real fetchMethod:', facilitiesData);
+        return facilitiesData;
+        
     } catch (error) {
-        console.error('Error fetching facilities:', error);
+        console.error('Error fetching facilities in real fetchMethod:', error);
         throw error;
     }
 };

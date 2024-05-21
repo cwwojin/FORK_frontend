@@ -69,21 +69,21 @@ const Survey = ({ navigation }) => {
       <Text style={styles.subHeader}>DIETARY PREFERENCE</Text>
       <View style={styles.grid}>
         {dietaryPreferences.map((item) => (
-    <TouchableOpacity
-      key={item.id}
-      style={[styles.option, selectedDietaryPreferences.includes(item.id) && styles.selected]}
-      onPress={() => handleSelectDietaryPreference(item.id)}
-    >
-      <Image 
-        source={item.icon} 
-        style={[
-          styles.icon, 
-          (item.id === 'lactose-free' || item.id === 'gluten-free') && styles.doubleIcon
-        ]}
-      />
-      <Text>{item.name}</Text>
-    </TouchableOpacity>
-  ))}
+          <TouchableOpacity
+            key={item.id}
+            style={[styles.option, selectedDietaryPreferences.includes(item.id) && styles.selected]}
+            onPress={() => handleSelectDietaryPreference(item.id)}
+          >
+            <Image 
+              source={item.icon} 
+              style={[
+                styles.icon, 
+                (item.id === 'lactose-free' || item.id === 'gluten-free') && styles.doubleIcon
+              ]}
+            />
+            <Text>{item.name}</Text>
+          </TouchableOpacity>
+        ))}
       </View>
       <View style={styles.mainArea}>
         <TouchableOpacity style={GlobalStyles.confirmButton}onPress={onConfirm}>

@@ -3,6 +3,11 @@ import { StyleSheet, Text, View, Image, SafeAreaView, ScrollView, TextInput, But
 import { Color, GlobalStyles } from '../GlobalStyles';
 
 export const isOpenNow = (openingHours) => {
+    if (!openingHours) {
+        // If openingHours is undefined or not provided, assume closed or handle accordingly
+        return { status: "Unknown", color: 'grey' };
+    } 
+
     const now = new Date();
     const dayOfWeek = now.getDay(); // Sunday - Saturday : 0 - 6
     const currentTime = now.toTimeString().substr(0, 5); // "HH:MM" format
@@ -23,20 +28,22 @@ export const isOpenNow = (openingHours) => {
 };
 
 export const FacilityDetails = ({ facility }) => {
-    const { status, color } = isOpenNow(facility.opening_hours);
+    // const { status, color } = isOpenNow(facility.opening_hours);
+    const scoreDisplay = facility.avg_score !== null ? facility.avg_score.toFixed(1) : "N/A";
+
     return (
       <View style={styles.facilityContainer}>
-        <Image 
+        {/* <Image 
           source={{ uri: facility.profile_img_uri }} 
           style={styles.facilityImage}
           resizeMode="cover"
-        />
+        /> */}
         <View style={styles.titleContainer}>
             <View style={styles.nameStatusContainer}>
                 <Text style={styles.facilityName}>{facility.name}</Text>
-                <Text style={[styles.openClosedText, { color: color }]}>{status}</Text>
+                {/* <Text style={[styles.openClosedText, { color: color }]}>{status}</Text> */}
             </View>
-          <Text style={styles.facilityScore}>{facility.avg_score.toFixed(1)}</Text>
+          <Text style={styles.facilityScore}>{scoreDisplay}</Text>
         </View>
         <Text style={styles.facilityLocation}>{facility.location}</Text>
         <Text style={styles.facilityDescription}>{facility.description}</Text>
