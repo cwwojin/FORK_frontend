@@ -29,14 +29,13 @@ import stampImage from '../assets/icons/stamp.png';
 
 //To be deleted
 import longImagePlaceholder from '../assets/placeholders/long_image.png';
-import { fetchImage, getFacilityByID, getFacilityMenu, getFacilityPreferences, getFacilityStamp, getFacilityStampRuleByID, getReviewByQuery, getUserByID, USERID } from './api';
+import { fetchImage, getFacilityByID, getFacilityMenu, getFacilityOpeningHour, getFacilityPreferences, getFacilityStamp, getFacilityStampRuleByID, getReviewByQuery, getUserByID, USERID } from './api';
 
 const FacilityDetail = () => {
 
   const route = useRoute();
 
-  // const { facilityID } = route.params;
-  const facilityID = 1;
+  const { facilityID } = route.params;
 
   const [facilityInfo, setFacilityInfo] = useState({});
   const [reviewList, setReviewList] = useState('');
@@ -45,33 +44,26 @@ const FacilityDetail = () => {
   const [stampLogo, setStampLogo] = useState(stampImage);
   const [myStamp, setMyStamp] = useState(0);
   const [preferences, setPreferences] = useState('');
-  const [menuList, setMenuList] = useState([]);
+  const [menuImages, setMenuImages] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchFacility = async (facilityID) => {
       try {
         const data = await getFacilityByID(facilityID);
+        console.log(data);
         setFacilityInfo(data);
-        const preference = await getFacilityPreferences(facilityID);
-        setPreferences(preference);
-        const stamps = await getFacilityStampRuleByID(facilityID);
-        if (stamps.logo_img_uri) {
-          const stampImage = await fetchImage(stamps.logo_img_uri);
-          setStampLogo(stampImage);
+        const newMenuImageList = {};
+        for (const item of data.menu) {
+          if (item.img_uri) {
+            const imageUrl = await fetchImage(item.img_uri);
+            newMenuImageList[item.id] = imageUrl;
+            console.log(newMenuImageList);
+          } else {
+            newMenuImageList[item.id] = longImagePlaceholder;
+          }
         }
-        if (stamps.rewards) {
-          const maxCnt = Math.max(...stamps.rewards.map(reward => reward.cnt));
-          const newStampRule = Array(maxCnt).fill('');
-          stamps.rewards.forEach(reward => {
-            newStampRule[reward.cnt - 1] = reward.name;
-          });
-          setStampRule(newStampRule);
-        }
-        const newMyStamp = await getFacilityStamp(facilityID);
-        if (newMyStamp) {
-          setMyStamp(newMyStamp.cnt);
-        }
+        setMenuImages(newMenuImageList);
       } catch (error) {
         console.log(error.message);
       }
@@ -86,7 +78,6 @@ const FacilityDetail = () => {
           const userInfo = await getUserByID(item.author_id);
           if (item.img_uri) {
             const imageUrl = await fetchImage(item.img_uri);
-            console.log("img", imageUrl);
             newImageList[item.id] = imageUrl;
           }
           if (userInfo.profile_img_uri) {
@@ -136,21 +127,11 @@ const FacilityDetail = () => {
       } catch (error) {
         console.log(error.message);
       }
-    }
-    const fetchMenu = async (facilityID) => {
-      try {
-        const newMenu = await getFacilityMenu(facilityID);
-        console.log("newMenu", newMenu);
-        setMenuList(newMenu);
-      } catch (error) {
-        console.log(error.message);
-      }
-    }
+    };
     fetchFacility(facilityID);
     fetchReviews(facilityID);
     fetchStamp(facilityID);
     fetchPreferences(facilityID);
-    fetchMenu(facilityID);
   }, []);
 
   const navigation = useNavigation();
@@ -417,12 +398,13 @@ const FacilityDetail = () => {
             </TouchableOpacity>
           </View>
           <View>
-            {(tabState == "Menu") && menu.map(item => (
+            {(tabState == "Menu") && facilityInfo.menu?.map(item => (
               <Menu
+                key={item.id}
                 menuName={item.name}
                 menuDescription={item.description}
                 menuPrice={item.price}
-                menuImage={item.image}
+                menuImage={menuImages[item.id]}
               />
             ))}
             {(tabState == "Review" && isLoading) && (

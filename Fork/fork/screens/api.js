@@ -349,6 +349,25 @@ export const getFacilityMenu = async (facilityID) => {
     }
 };
 
+export const getFacilityOpeningHour = async (facilityID) => {
+    try {
+        const response = await fetch(`${BASE_URL}/facilities/${encodeURIComponent(facilityID)}/opening-hours`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        return data.data;
+    } catch (error) {
+        console.error('Error fetching stamp rule:', error);
+        throw error;
+    }
+};
+
 // --------------REVIEW-----------------
 
 export const getReviewByQuery = async (userID, facilityId, hasImage, hashtags) => {

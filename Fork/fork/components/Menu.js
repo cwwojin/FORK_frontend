@@ -1,8 +1,6 @@
 import { Image, View, Text } from 'react-native';
 import { Color, GlobalStyles } from '../GlobalStyles.js';
 
-import Hashtag from './Hashtag';
-
 const Menu = ({
   menuName,
   menuDescription,
@@ -17,16 +15,16 @@ const Menu = ({
           flexDirection: 'row',
           alignItems: 'center',
           width: '100%',
-          justifyContent: 'flex-start',
+          justifyContent: 'space-between',
           paddingVertical: 10
         }}>
         <Image
           style={GlobalStyles.squareImage2}
           contentFit="cover"
-          source={menuImage}
+          source={Number.isInteger(menuImage) ? menuImage : { uri: menuImage }}
         />
-        <View style={{ width: '65%', paddingVertical: 10 }}>
-          <View style={{paddingBottom: 10}}>
+        <View style={{ width: '60%', paddingVertical: 10 }}>
+          <View style={{ paddingBottom: 10 }}>
             <Text
               style={{
                 ...GlobalStyles.body,
@@ -43,7 +41,7 @@ const Menu = ({
               {menuDescription}
             </Text>
           </View>
-          <Text style={{...GlobalStyles.body4}}>{menuPrice} Won</Text>
+          <Text style={{ ...GlobalStyles.body4 }}>{menuPrice} Won</Text>
         </View>
       </View>
       <View

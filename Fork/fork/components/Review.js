@@ -134,7 +134,7 @@ const Review = ({
             marginRight: 15,
           }}
           contentFit="cover"
-          source={userImage}
+          source={Number.isInteger(userImage) ? userImage : { uri: userImage }}
         />
         <View>
           <View
