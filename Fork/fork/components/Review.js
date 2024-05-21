@@ -19,6 +19,9 @@ const Review = ({
   edit,
   admin,
 }) => {
+
+  console.log(reviewImage);
+
   const renderStars = () => {
     const stars = [];
     for (let i = 0; i < reviewScore; i++) {
@@ -66,24 +69,25 @@ const Review = ({
     }
   };
 
-  const deleteReview = () => {};
-  const keepReview = () => {};
-  const reportReview = () => {};
+  const deleteReview = () => { };
+  const keepReview = () => { };
+  const reportReview = () => { };
+  const editReview = () => { };
 
   return (
     <View style={{ width: '100%', alignItems: 'center' }}>
-      <View
-        style={{
-          width: '95%',
-          flexDirection: 'row',
-          justifyContent: 'flex-end',
-        }}>
-        <TouchableOpacity onPress={onTranslate}>
-          <Text style={{ ...GlobalStyles.body2, marginRight: 12 }}>
-            Translate
-          </Text>
-        </TouchableOpacity>
-        {edit && (
+      {edit && (
+        <View
+          style={{
+            width: '95%',
+            flexDirection: 'row',
+            justifyContent: 'flex-end',
+          }}>
+          <TouchableOpacity onPress={editReview}>
+            <Text style={{ ...GlobalStyles.body2, marginRight: 12 }}>
+              Edit
+            </Text>
+          </TouchableOpacity>
           <TouchableOpacity
             onPress={deleteReview}>
             <Image
@@ -92,8 +96,20 @@ const Review = ({
               source={require('../assets/icons/delete.png')}
             />
           </TouchableOpacity>
-        )}
-        {!edit && (
+        </View>
+      )}
+      {!edit && (
+        <View
+          style={{
+            width: '95%',
+            flexDirection: 'row',
+            justifyContent: 'flex-end',
+          }}>
+          <TouchableOpacity onPress={onTranslate}>
+            <Text style={{ ...GlobalStyles.body2, marginRight: 12 }}>
+              Translate
+            </Text>
+          </TouchableOpacity>
           <TouchableOpacity
             onPress={reportReview}>
             <Image
@@ -102,8 +118,8 @@ const Review = ({
               source={require('../assets/icons/report.png')}
             />
           </TouchableOpacity>
-        )}
-      </View>
+        </View>
+      )}
 
       <View
         style={{
@@ -163,7 +179,7 @@ const Review = ({
           <Image
             style={GlobalStyles.squareImage2}
             contentFit="cover"
-            source={{uri: reviewImage}}
+            source={{ uri: reviewImage }}
           />
         )}
         <View style={{ width: '75%', paddingVertical: 20 }}>
@@ -194,7 +210,7 @@ const Review = ({
             <Text style={GlobalStyles.h4}>Delete</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={keepReview}>
-            <Text style={{...GlobalStyles.h4, color: Color.darkgray}}>Keep</Text>
+            <Text style={{ ...GlobalStyles.h4, color: Color.darkgray }}>Keep</Text>
           </TouchableOpacity>
         </View>
       )}

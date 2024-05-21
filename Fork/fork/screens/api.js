@@ -11,26 +11,17 @@ const FORK_URL = `${API_ENDPOINT}/dev/`
 // S3 endpoint
 const S3_ENDPOINT = `${API_ENDPOINT}/s3`
 
-
-const splitS3Uri = (uri) => {
+export const fetchImage = async (uri) => {
     const url = new URL(uri);
-    return {
+    const result = {
         Bucket: url.hostname,
         Key: url.pathname.startsWith('/') ? url.pathname.slice(1) : url.pathname
-    };
-};
-
-const parseImageUri = async (uri) => {
-    const result = splitS3Uri(uri);
+    }
     const parsedKey = result.Key.replaceAll("/", "%2F");
     const requestFilePath = `${result.Bucket}/${parsedKey}`;
-    return `${S3_ENDPOINT}/${requestFilePath}`;
-}
-
-export const fetchImage = async (uri) => {
-    const result = await parseImageUri(uri);
+    const resultUrl = `${S3_ENDPOINT}/${requestFilePath}`;
     try {
-        const response = await fetch(result, {
+        const response = await fetch(resultUrl, {
             method: 'GET',
             headers: {
                 Accept: 'image/png',
@@ -43,12 +34,11 @@ export const fetchImage = async (uri) => {
 
         const blob = await response.blob();
         const imageUrl = URL.createObjectURL(blob);
-        console.log(imageUrl);
         return imageUrl;
     } catch (error) {
         console.error('Error fetching image:', error);
     }
-};
+}
 
 export const getAllUsders = async () => {
     try {
@@ -194,7 +184,7 @@ export const getUserByID = async (userID) => {
             throw new Error('Network response was not ok');
         }
         const data = await response.json();
-        return data;
+        return data.data;
     } catch (error) {
         console.error('Error fetching user:', error);
         throw error;
@@ -282,9 +272,66 @@ export const getFacilityByID = async (facilityID) => {
             throw new Error('Network response was not ok');
         }
         const data = await response.json();
-        return data;
+        return data.data;
     } catch (error) {
         console.error('Error fetching user:', error);
+        throw error;
+    }
+};
+
+export const getFacilityStampRuleByID = async (facilityID) => {
+    try {
+        const response = await fetch(`${BASE_URL}/facilities/${encodeURIComponent(facilityID)}/stamp-ruleset`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        return data.data;
+    } catch (error) {
+        console.error('Error fetching stamp rule:', error);
+        throw error;
+    }
+};
+
+export const getFacilityPreferences = async (facilityID) => {
+    try {
+        const response = await fetch(`${BASE_URL}/facilities/${encodeURIComponent(facilityID)}/preferences`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        return data.data;
+    } catch (error) {
+        console.error('Error fetching stamp rule:', error);
+        throw error;
+    }
+};
+
+export const getFacilityMenu = async (facilityID) => {
+    try {
+        const response = await fetch(`${BASE_URL}/facilities/${encodeURIComponent(facilityID)}/menu`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        return data.data;
+    } catch (error) {
+        console.error('Error fetching stamp rule:', error);
         throw error;
     }
 };
@@ -293,17 +340,23 @@ export const getFacilityByID = async (facilityID) => {
 
 export const getReviewByQuery = async (userID, facilityId, hasImage, hashtags) => {
     try {
-        const response = await fetch(`${BASE_URL}/reviews`, {
+        // Construct query parameters
+        const queryParams = new URLSearchParams();
+
+        // Conditionally append parameters if they are not null
+        if (facilityId) queryParams.append('facility', encodeURIComponent(facilityId));
+        if (userID) queryParams.append('user', encodeURIComponent(userID));
+        if (hasImage) queryParams.append('hasImage', encodeURIComponent(hasImage));
+        if (hashtags) queryParams.append('hashtags', encodeURIComponent(hashtags));
+        const queryString = queryParams.toString();
+
+        const url = `${BASE_URL}/reviews?${queryString}`;
+
+        const response = await fetch(url, {
             method: 'GET',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
             },
-            query: JSON.stringify({
-                facility: (encodeURIComponent(facilityId)),
-                user: (encodeURIComponent(userID)),
-                hasImage: (encodeURIComponent(hasImage)),
-                hashtags: (encodeURIComponent(hashtags))
-            })
         });
 
         if (!response.ok) {
@@ -311,10 +364,41 @@ export const getReviewByQuery = async (userID, facilityId, hasImage, hashtags) =
         }
 
         const data = await response.json();
-        console.log('Favorite added successfully:', data);
-        return data;
+        return data.data;
     } catch (error) {
-        console.error('Error adding favorite:', error);
+        console.error('Error fetching reviews:', error);
+    }
+};
+
+// --------------STAMP-----------------
+
+export const getFacilityStamp = async (facilityID) => {
+    try {
+        const response = await fetch(`${BASE_URL}/stamps?user=${encodeURIComponent(USERID)}&facility=${encodeURIComponent(facilityID)}`);
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        return data.dat;
+    } catch (error) {
+        console.error('Error fetching facility stamp:', error);
         throw error;
     }
 };
+
+export const getStampBook = async () => {
+    try {
+        const response = await fetch(`${BASE_URL}/stamps?user=${encodeURIComponent(USERID)}`);
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        console.log(data);
+        return data;
+    } catch (error) {
+        console.error('Error fetching facility stamp:', error);
+        throw error;
+    }
+};
+
+getStampBook(2);

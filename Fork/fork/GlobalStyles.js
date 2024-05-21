@@ -13,10 +13,10 @@ export const FontFamily = {
 export const FontSize = {
   size_xl: 24,
   size_lgi: 20,
-  size_mid: 19,
-  size_sm: 17,
+  size_mid: 17,
+  size_sm: 15,
   size_xs: 15,
-  size_smi: 13,
+  size_smi: 11,
 
   size_5xs: 8,
   size_mini: 17,

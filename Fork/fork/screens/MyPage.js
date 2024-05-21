@@ -42,10 +42,10 @@ const MyPage = () => {
     const fetchUser = async (userID) => {
       try {
         const data = await getUserByID(userID);
-        setUserInfo(data.data);
-        setUserType(data.data.user_type);
+        setUserInfo(data);
+        setUserType(data.user_type);
         if (data.data.profile_img_uri) {
-          setUserProfile(data.data.profile_img_uri);
+          setUserProfile(data.profile_img_uri);
         };
       } catch (error) {
         console.log(error.message);

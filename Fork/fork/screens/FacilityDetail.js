@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   TextInput,
   StyleSheet,
+  ActivityIndicator,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import ToggleSwitch from 'toggle-switch-react-native';
@@ -24,48 +25,139 @@ import Stamp from '../components/Stamp';
 
 
 import userImage from '../assets/placeholders/User.png';
+import stampImage from '../assets/icons/stamp.png';
 
 //To be deleted
 import longImagePlaceholder from '../assets/placeholders/long_image.png';
-import { fetchImage, getFacilityByID, getReviewByQuery, parseImageUri } from './api';
+import { fetchImage, getFacilityByID, getFacilityMenu, getFacilityPreferences, getFacilityStamp, getFacilityStampRuleByID, getReviewByQuery, getUserByID, USERID } from './api';
 
 const FacilityDetail = () => {
 
   const route = useRoute();
 
-  const { facilityID } = route.params;
+  // const { facilityID } = route.params;
+  const facilityID = 1;
 
-  const [facilityInfo, setFacilityInfo] = useState('');
+  const [facilityInfo, setFacilityInfo] = useState({});
   const [reviewList, setReviewList] = useState('');
+  const [reviewUserInfo, setReviewUserInfo] = useState({});
+  const [stampRule, setStampRule] = useState([]);
+  const [stampLogo, setStampLogo] = useState(stampImage);
+  const [myStamp, setMyStamp] = useState(0);
+  const [preferences, setPreferences] = useState('');
+  const [menuList, setMenuList] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchFacility = async (facilityID) => {
       try {
         const data = await getFacilityByID(facilityID);
-        setFacilityInfo(data.data);
-        console.log(data.data);
-        console.log(data.data.hashtag);
+        setFacilityInfo(data);
+        const preference = await getFacilityPreferences(facilityID);
+        setPreferences(preference);
+        const stamps = await getFacilityStampRuleByID(facilityID);
+        if (stamps.logo_img_uri) {
+          const stampImage = await fetchImage(stamps.logo_img_uri);
+          setStampLogo(stampImage);
+        }
+        if (stamps.rewards) {
+          const maxCnt = Math.max(...stamps.rewards.map(reward => reward.cnt));
+          const newStampRule = Array(maxCnt).fill('');
+          stamps.rewards.forEach(reward => {
+            newStampRule[reward.cnt - 1] = reward.name;
+          });
+          setStampRule(newStampRule);
+        }
+        const newMyStamp = await getFacilityStamp(facilityID);
+        if (newMyStamp) {
+          setMyStamp(newMyStamp.cnt);
+        }
       } catch (error) {
         console.log(error.message);
       }
     };
     const fetchReviews = async (facilityID) => {
       try {
-        const data = await getReviewByQuery('', facilityID);
-        setReviewList(data.data);
-        console.log(data.data);
+        const data = await getReviewByQuery('', facilityID, '', '');
+        setReviewList(data);
+        const newImageList = {};
+        const newReviewUserList = {};
+        for (const item of data) {
+          const userInfo = await getUserByID(item.author_id);
+          if (item.img_uri) {
+            const imageUrl = await fetchImage(item.img_uri);
+            console.log("img", imageUrl);
+            newImageList[item.id] = imageUrl;
+          }
+          if (userInfo.profile_img_uri) {
+
+            const profileUrl = await fetchImage(userInfo.profile_img_uri);
+            newReviewUserList[item.id] = { userName: userInfo.account_id, userImage: profileUrl }
+          } else {
+            newReviewUserList[item.id] = { userName: userInfo.account_id, userImage: userImage }
+          }
+        }
+        setReviewImageList(newImageList);
+        setReviewUserInfo(newReviewUserList);
+        console.log(newImageList);
+        setIsLoading(false);
+        console.log(data);
       } catch (error) {
         console.log(error.message);
       }
     };
+    const fetchStamp = async (facilityID) => {
+      try {
+        const stamps = await getFacilityStampRuleByID(facilityID);
+        if (stamps.logo_img_uri) {
+          const stampImage = await fetchImage(stamps.logo_img_uri);
+          setStampLogo(stampImage);
+        }
+        if (stamps.rewards) {
+          const maxCnt = Math.max(...stamps.rewards.map(reward => reward.cnt));
+          const newStampRule = Array(maxCnt).fill('');
+          stamps.rewards.forEach(reward => {
+            newStampRule[reward.cnt - 1] = reward.name;
+          });
+          setStampRule(newStampRule);
+        }
+        const newMyStamp = await getFacilityStamp(facilityID);
+        if (newMyStamp) {
+          setMyStamp(newMyStamp.cnt);
+        }
+      } catch (error) {
+        console.log(error.message);
+      }
+    };
+    const fetchPreferences = async (facilityID) => {
+      try {
+        const preference = await getFacilityPreferences(facilityID);
+        setPreferences(preference);
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+    const fetchMenu = async (facilityID) => {
+      try {
+        const newMenu = await getFacilityMenu(facilityID);
+        console.log("newMenu", newMenu);
+        setMenuList(newMenu);
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
     fetchFacility(facilityID);
     fetchReviews(facilityID);
+    fetchStamp(facilityID);
+    fetchPreferences(facilityID);
+    fetchMenu(facilityID);
   }, []);
 
   const navigation = useNavigation();
 
   reviewHashtags = ['🍣 Japanese Food', '🥬 Vegetarian']
 
+  const [reviewImageList, setReviewImageList] = useState([]);
   const [isTimeVisible, setTimeVisible] = useState(false);
   const [bookmarked, setBookmarked] = useState(false);
   const [stamp, setStamp] = useState(false);
@@ -181,20 +273,6 @@ const FacilityDetail = () => {
     { image: userImage, name: 'Yosida', date: '2024.05.06', content: 'We are not opening today >< Have a nice holiday!' },
   ];
 
-  const renderHashtags = () => {
-    const hashtags = [];
-
-    if (Array.isArray(reviewHashtags)) {
-      for (let i = 0; i < reviewHashtags.length; i++) {
-        hashtags.push(<Hashtag tag={reviewHashtags[i]} />);
-      }
-    } else {
-      console.error('reviewHashtags is not an array.');
-    }
-
-    return hashtags;
-  };
-
   return (
     <SafeAreaView style={GlobalStyles.background}>
       <View style={GlobalStyles.contentNoNav}>
@@ -274,7 +352,9 @@ const FacilityDetail = () => {
                 paddingTop: 10,
                 paddingBottom: 15,
               }}>
-              {renderHashtags()}
+              {preferences && preferences.map(item => (
+                <Hashtag tag={item} />
+              ))}
             </View>
           </View>
 
@@ -345,6 +425,12 @@ const FacilityDetail = () => {
                 menuImage={item.image}
               />
             ))}
+            {(tabState == "Review" && isLoading) && (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#0000ff" />
+                <Text>Loading reviews...</Text>
+              </View>
+            )}
             {(tabState == "Review") && (
               <>
                 <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
@@ -391,15 +477,15 @@ const FacilityDetail = () => {
                   .map(item => (
                     <Review
                       key={item.id} // Make sure to provide a unique key prop
-                      userImage={item.userImage}
-                      userName={item.userName}
+                      userImage={reviewUserInfo[item.id]?.userImage}
+                      userName={reviewUserInfo[item.id]?.userName}
+                      edit={USERID == item.author_id}
                       reviewDate={item.post_date}
                       reviewScore={item.score}
-                      reviewImage={item.img_uri ? fetchImage(item.img_uri) : item.img_uri}
+                      reviewImage={item.img_uri ? reviewImageList[item.id] : item.img_uri}
                       reviewContent={item.content}
                       reviewHashtags={item.hashtags}
-                      edit={false}
-                      admin={true}
+                      admin={false}
                     />
                   ))
                 }
@@ -520,11 +606,17 @@ const FacilityDetail = () => {
               </View>
             </View>
             <View style={{ width: '100%', alignItems: 'center', paddingVertical: 10 }}>
-              <Stamp
-                number={5}
-                stamp={['', '', 'free drink', '', '', '', 'free meal']}
-                stampImage={require('../assets/icons/stamp.png')}
-              />
+              {!(stampRule == []) &&
+                <>
+                  <Stamp
+                    number={myStamp}
+                    stamp={stampRule}
+                    stampImage={stampLogo}
+                  />
+                  <Text style={GlobalStyles.body}>Buyer ID: {USERID}</Text>
+                </>
+              }
+              {(stampRule == []) && <Text style={GlobalStyles.body}>Stamps not created</Text>}
             </View>
           </View>
 
@@ -595,6 +687,11 @@ const styles = StyleSheet.create({
     marginTop: 9,
     justifyContent: 'center',
     borderRadius: Border.br_lg,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 
