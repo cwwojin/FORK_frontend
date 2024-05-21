@@ -12,7 +12,7 @@ import { Border, Color } from './GlobalStyles.js';
 
 import SignUpLogIn from './screens/SignUpLogIn.js';
 import UserType from './screens/UserType';
-import FacilityInformation from './screens/FacilityInformation'; 
+import FacilityInformation from './screens/FacilityInformation';
 import SignUpKaist from './screens/SignUpKaist';
 import SignUpFacility from './screens/SignUpFacility';
 import VerifyEmail from './screens/VerifyEmail';
@@ -30,6 +30,10 @@ import Favorites from './screens/Favorites';
 import MyStamps from './screens/MyStamps';
 import MyReviews from './screens/MyReviews';
 import MapView from './screens/MapView.js';
+import FacilityDetail from './screens/FacilityDetail.js';
+import Settings from './screens/Settings.js';
+import testing from './screens/testing.js';
+{/*import Maps from './screens/Maps';*/ }
 
 
 const requestLocationPermission = async () => {
@@ -55,7 +59,7 @@ const App = () => {
             <Stack.Navigator
               screenOptions={{
                 headerShown: false,
-              }} initialRouteName="MapView">
+              }} initialRouteName="Home">
               <Stack.Screen name="SignUpLogIn" component={SignUpLogIn} />
               <Stack.Screen name="UserType" component={UserType} />
               <Stack.Screen name="FacilityInformation" component={FacilityInformation} />
@@ -73,9 +77,13 @@ const App = () => {
               <Stack.Screen name="Home" component={Home} />
               <Stack.Screen name="Favorites" component={Favorites} />
               <Stack.Screen name="MapView" component={MapView} />
-          {/* <Stack.Screen name="MyReviews" component={MyReviews} />
-
+              {/* <Stack.Screen name="MyReviews" component={MyReviews} />
+              {/* <Stack.Screen name="Maps" component={Maps} /> */}
+              <Stack.Screen name="MyReviews" component={MyReviews} />
+              <Stack.Screen name="FacilityDetail" component={FacilityDetail} />
               <Stack.Screen name="MyStamps" component={MyStamps} />
+              <Stack.Screen name="Settings" component={Settings} />
+              <Stack.Screen name='testing' component={testing} />
               {/* Register the FavoritesScreen */}
             </Stack.Navigator>
           </View>
@@ -91,11 +99,11 @@ const App = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: Color.white, 
+    backgroundColor: Color.white,
   },
   container: {
     flex: 24,
-    alignItems: 'stretch', 
+    alignItems: 'stretch',
     justifyContent: 'center',
   },
 });

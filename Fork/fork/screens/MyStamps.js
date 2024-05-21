@@ -11,11 +11,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 
 import { FontFamily, FontSize, Color, GlobalStyles } from '../GlobalStyles';
-import SquareFacility from '../components/SqureFacility';
-import UserList from '../components/UserList';
-import Hashtag from '../components/Hashtag';
-import Notice from '../components/Notice';
-import Review from '../components/Review';
+import Stamp from '../components/Stamp';
 
 import userImage from '../assets/placeholders/User.png';
 
@@ -25,8 +21,32 @@ import longImagePlaceholder from '../assets/placeholders/long_image.png';
 const MyStamps = () => {
   //Get Informations of facilities
   //all the facilities information with stamps [img_url, name, number_of_stamps, stamp_information(array: ['', '', '', 'free drink', '', '', 'free meal']) ], recent notices of each restaurants [img_url, name, notice_img_url, notice_contents]
-  
+
   const navigation = useNavigation();
+
+  const myStamps = [
+    {
+      facilityName: 'yosida',
+      facilityprofile: require('../assets/placeholders/User.png'),
+      number: 4,
+      stamp: ['', '', 'free drink', '', '', '', 'free meal'],
+      stampImage: require('../assets/icons/stamp.png')
+    },
+    {
+      facilityName: 'Malgm',
+      facilityprofile: require('../assets/placeholders/User.png'),
+      number: 3,
+      stamp: ['', '', 'free drink', '', '', '', 'free meal'],
+      stampImage: require('../assets/icons/stamp.png')
+    },
+    {
+      facilityName: 'Eoeun Sushi',
+      facilityprofile: require('../assets/placeholders/User.png'),
+      number: 6,
+      stamp: ['', '', 'free drink', '', '', '', 'free meal'],
+      stampImage: require('../assets/icons/stamp.png')
+    }
+  ]
 
   return (
     <SafeAreaView style={GlobalStyles.background}>
@@ -58,26 +78,27 @@ const MyStamps = () => {
             marginBottom: -27,
           }}
           showsVerticalScrollIndicator={false}>
-          <Review
-            userImage={userImage}
-            userName={'Foodie'}
-            reviewDate={'2024.05.06'}
-            reviewImage={longImagePlaceholder}
-            noticeContent={'We are not opening today >< Have a nice holiday!'}
-          />
-          <Notice
-            facilityImage={userImage}
-            facilityName={'yosida'}
-            noticeDate={'2024.05.06'}
-            noticeContent={'We are not opening today >< Have a nice holiday!'}
-          />
-          <Notice
-            facilityImage={userImage}
-            facilityName={'yosida'}
-            noticeDate={'2024.05.06'}
-            noticeImage={longImagePlaceholder}
-            noticeContent={'We are not opening today >< Have a nice holiday!'}
-          />
+          {
+            myStamps.map(item => (
+              <>
+                <Stamp
+                  facilityName={item.facilityName}
+                  facilityprofile={item.facilityprofile}
+                  number={item.number}
+                  stamp={item.stamp}
+                  stampImage={item.stampImage}
+                />
+                <View
+                  style={{
+                    borderBottomColor: Color.lightGrey,
+                    borderBottomWidth: 1,
+                    alignSelf: 'stretch',
+                    marginBottom: 15,
+                  }}
+                />
+              </>
+            ))
+          }
         </ScrollView>
       </View>
     </SafeAreaView>

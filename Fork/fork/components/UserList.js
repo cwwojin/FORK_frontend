@@ -10,7 +10,7 @@ const UserList = ({ UserImage, UserName }) => {
         source={UserImage}
       />
       <Text
-        style={{ ...GlobalStyles.body, marginTop: 5}}
+        style={{ ...GlobalStyles.body4, marginTop: 5}}
         numberOfLines={1}
         ellipsizeMode="tail">
         {UserName}

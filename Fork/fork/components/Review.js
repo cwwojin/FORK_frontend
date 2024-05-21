@@ -17,7 +17,11 @@ const Review = ({
   reviewContent,
   reviewHashtags,
   edit,
+  admin,
 }) => {
+
+  console.log(reviewImage);
+
   const renderStars = () => {
     const stars = [];
     for (let i = 0; i < reviewScore; i++) {
@@ -65,48 +69,57 @@ const Review = ({
     }
   };
 
+  const deleteReview = () => { };
+  const keepReview = () => { };
+  const reportReview = () => { };
+  const editReview = () => { };
+
   return (
     <View style={{ width: '100%', alignItems: 'center' }}>
-      <View
-        style={{
-          width: '95%',
-          flexDirection: 'row',
-          justifyContent: 'flex-end',
-        }}>
-        <TouchableOpacity onPress={onTranslate}>
-          <Text style={{ ...GlobalStyles.body2, marginRight: 12 }}>
-            Translate
-          </Text>
-        </TouchableOpacity>
-        {edit && (
+      {edit && (
+        <View
+          style={{
+            width: '95%',
+            flexDirection: 'row',
+            justifyContent: 'flex-end',
+          }}>
+          <TouchableOpacity onPress={editReview}>
+            <Text style={{ ...GlobalStyles.body2, marginRight: 12 }}>
+              Edit
+            </Text>
+          </TouchableOpacity>
           <TouchableOpacity
-            onPress={() => {
-              {
-                /*delete */
-              }
-            }}>
+            onPress={deleteReview}>
             <Image
               style={GlobalStyles.icon}
               contentFit="cover"
               source={require('../assets/icons/delete.png')}
             />
           </TouchableOpacity>
-        )}
-        {!edit && (
+        </View>
+      )}
+      {!edit && (
+        <View
+          style={{
+            width: '95%',
+            flexDirection: 'row',
+            justifyContent: 'flex-end',
+          }}>
+          <TouchableOpacity onPress={onTranslate}>
+            <Text style={{ ...GlobalStyles.body2, marginRight: 12 }}>
+              Translate
+            </Text>
+          </TouchableOpacity>
           <TouchableOpacity
-            onPress={() => {
-              {
-                /*report */
-              }
-            }}>
+            onPress={reportReview}>
             <Image
               style={GlobalStyles.icon}
               contentFit="cover"
               source={require('../assets/icons/report.png')}
             />
           </TouchableOpacity>
-        )}
-      </View>
+        </View>
+      )}
 
       <View
         style={{
@@ -141,7 +154,7 @@ const Review = ({
               style={{ ...GlobalStyles.body2, marginRight: 10 }}
               numberOfLines={1}
               ellipsizeMode="tail">
-              {reviewDate}
+              {reviewDate.substring(0, 10)}
             </Text>
           </View>
           <View
@@ -166,7 +179,7 @@ const Review = ({
           <Image
             style={GlobalStyles.squareImage2}
             contentFit="cover"
-            source={reviewImage}
+            source={{ uri: reviewImage }}
           />
         )}
         <View style={{ width: '75%', paddingVertical: 20 }}>
@@ -190,11 +203,22 @@ const Review = ({
         }}>
         {renderHashtags()}
       </View>
+
+      {admin && (
+        <View style={{ flexDirection: 'row', justifyContent: 'flex-end', width: '100%', paddingBottom: 15 }}>
+          <TouchableOpacity onPress={deleteReview}>
+            <Text style={GlobalStyles.h4}>Delete</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={keepReview}>
+            <Text style={{ ...GlobalStyles.h4, color: Color.darkgray }}>Keep</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
       <View
         style={{
           borderBottomColor: Color.lightGrey,
           borderBottomWidth: 1,
-          alignSelf: 'stretch',
           marginBottom: 10,
         }}
       />

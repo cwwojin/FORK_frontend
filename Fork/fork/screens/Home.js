@@ -6,9 +6,12 @@ import {
   SafeAreaView,
   ScrollView,
 } from 'react-native';
+import { useNavigation, useRoute } from '@react-navigation/native';
+
 import { Color, GlobalStyles } from '../GlobalStyles';
 import SquareFacility from '../components/SqureFacility';
 import LongFacility from '../components/LongFacility';
+import NavigationBar from '../components/NavigationBar';
 
 //To be deleted
 import longImagePlaceholder from '../assets/placeholders/long_image.png';
@@ -16,6 +19,7 @@ import longImagePlaceholder from '../assets/placeholders/long_image.png';
 const Home = () => {
   //Get Informations of facilities
   //img url for ad, Top 5 trending facilities [img_url, name, score, address], Top 5 new failities, Recommendation of 2 restaurants
+  const navigation = useNavigation();
 
   return (
     <SafeAreaView style={GlobalStyles.background}>
@@ -134,6 +138,14 @@ const Home = () => {
           />
         </View>
       </ScrollView>
+
+    <NavigationBar 
+      homeb={true}
+      mapb={false}
+      favoritesb={false}
+      myPageb={false}
+      navigation={navigation}
+    />
     </SafeAreaView>
   );
 };

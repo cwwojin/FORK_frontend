@@ -1,17 +1,21 @@
 import React, { useEffect, useState, useRef, useCallback }  from 'react';
-import { StyleSheet, Text, View, Image, SafeAreaView, ScrollView, TextInput, Button, TouchableOpacity, Alert, Platform  } from 'react-native';
+import { StyleSheet, Text, View, Image, SafeAreaView, ScrollView, TextInput, Button, TouchableOpacity, Alert, Platform   } from 'react-native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { Color, GlobalStyles } from '../GlobalStyles';
+
 import SquareFacility from '../components/SqureFacility';
 import LongFacility from '../components/LongFacility';
 import NavigationBar from '../components/NavigationBar';
 import { WebView } from 'react-native-webview';
-import { fetchFacilityWithName, mockFetchFacilityWithName, fetchFacilitiesInBounds, mockFetchFacilitiesInBounds } from './api';  
+import { fetchFacilityWithName, mockFetchFacilityWithName, fetchFacilitiesInBounds, mockFetchFacilitiesInBounds } from './api';
 import { FacilityDetails } from './MapViewFunctions';
 import { isOpenNow } from './MapViewFunctions';
 //import Geolocation from '@react-native-community/geolocation';
 import * as Location from 'expo-location';
 
 const MapView = () => {
+  const navigation = useNavigation();
+
   const isTesting = false;
   const [searchQuery, setSearchQuery] = useState('');
   const webViewRef = useRef(null);
@@ -390,20 +394,20 @@ const MapView = () => {
             lat: lat,
             lng: lng,
             avg_score: avg_score,
-            shouldCenter: true 
+            shouldCenter: true
           }));
         } else {
           console.error("WebView is not mounted yet or the ref is not attached.");
         }
       } catch (error) {
-          console.error('Failed to load facilities:', error);
+        console.error('Failed to load facilities:', error);
       }
     } else if (!webViewReady) {
       console.error("WebView is not ready yet.");
     }
   };
-  
-  const fetchAndUpdateFacilities = 
+
+  const fetchAndUpdateFacilities =
     useCallback(async (neLat, neLng, swLat, swLng) => {
       try {
         let facilities = [];
@@ -441,7 +445,7 @@ const MapView = () => {
       } catch (error) {
         console.error('Failed to load facilities in view:', error);
       }
-    }, [isTesting, showOnlyOpen]); 
+    }, [isTesting, showOnlyOpen]);
 
 
   // Function to receive messages from the WebView
@@ -458,7 +462,7 @@ const MapView = () => {
       setSwLat(data.swLat);
       setSwLng(data.swLng);
       fetchAndUpdateFacilities(data.neLat, data.neLng, data.swLat, data.swLng);
-    } 
+    }
     if (data.type === 'updateCenterAndZoom') {
       setMapCenter((prev) => (prev.lat !== data.centerLat || prev.lng !== data.centerLng) ? { lat: data.centerLat, lng: data.centerLng } : prev);
       setMapZoom((prev) => data.zoomLevel !== prev ? data.zoomLevel : prev);
@@ -513,7 +517,7 @@ const MapView = () => {
               placeholder="Enter facility name"
               value={searchQuery}
               onChangeText={setSearchQuery}
-              onSubmitEditing={handleSearch} 
+              onSubmitEditing={handleSearch}
             />
             <TouchableOpacity onPress={handleSearch}>
               <Image
@@ -590,10 +594,10 @@ const MapView = () => {
         />
         <View style={isExpanded ? styles.subContainerExpanded : styles.subContainer}>
           <TouchableOpacity style={styles.expandButton} onPress={() => setIsExpanded(!isExpanded)}>
-              <Image
-                  source={{ uri: 'https://icones.pro/wp-content/uploads/2021/06/symbole-fleche-droite-orange.png' }}
-                  style={isExpanded ? styles.expandImageRotated : styles.expandImage}
-              />
+            <Image
+              source={{ uri: 'https://icones.pro/wp-content/uploads/2021/06/symbole-fleche-droite-orange.png' }}
+              style={isExpanded ? styles.expandImageRotated : styles.expandImage}
+            />
           </TouchableOpacity>
           <ScrollView style={styles.ScrollView}>
           {Array.isArray(displayedFacilities) ? displayedFacilities.map(facility => (
@@ -602,6 +606,13 @@ const MapView = () => {
           </ScrollView>
         </View>
       </View>
+      <NavigationBar
+        homeb={false}
+        mapb={true}
+        favoritesb={false}
+        myPageb={false}
+        navigation={navigation}
+      />
     </View>
   );
 };
@@ -609,7 +620,13 @@ const MapView = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white', 
+    backgroundColor: 'white',
+    paddingBottom: 40,
+  },
+  topContainer: {
+    flex: 1,
+    backgroundColor: 'white',
+    paddingBottom: 40,
   },
   topContainer: {
     flex: 1,
@@ -624,7 +641,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginRight: 10,
     marginLeft: 10,
-    backgroundColor: 'white', 
+    backgroundColor: 'white',
     height: 40,
   },
   searchInput: {
@@ -741,11 +758,11 @@ const styles = StyleSheet.create({
     flex: 1, 
     opacity: 0.0, 
   },
-  
+
   subContainer: {
     flex: 1,
     backgroundColor: 'white',
-    alignItems: 'stretch', 
+    alignItems: 'stretch',
     justifyContent: 'flex-start',
   },
   subContainerExpanded: {
@@ -764,16 +781,16 @@ const styles = StyleSheet.create({
   },
   subContainerText: {
     fontSize: 16,
-    color: '#333', 
+    color: '#333',
   },
   expandButton: {
     position: 'absolute',
-    top: 4, 
-    left: 0, 
-    right: 0, 
+    top: 4,
+    left: 0,
+    right: 0,
     zIndex: 10,
     alignItems: 'center',
-    justifyContent: 'center', 
+    justifyContent: 'center',
   },
   expandImage: {
     width: 35,

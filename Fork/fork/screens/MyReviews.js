@@ -18,7 +18,7 @@ import userImage from '../assets/placeholders/User.png';
 import longImagePlaceholder from '../assets/placeholders/long_image.png';
 const hashtags = ['🥰Lovely', '😋Tasty'];
 
-const Favorites = () => {
+const MyReviews = () => {
   //Get Informations of facilities
   //All the reviews [facility_img, facility_name, score(int), date(string), review_img, review_content, hashtags(Array)]
 
@@ -90,4 +90,4 @@ const Favorites = () => {
   );
 };
 
-export default Favorites;
+export default MyReviews;

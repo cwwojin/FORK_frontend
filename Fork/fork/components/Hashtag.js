@@ -8,7 +8,7 @@ const Hashtag = ({ tag }) => {
         style={GlobalStyles.hashtag}
         numberOfLines={1}
         ellipsizeMode="tail">
-        {tag}
+        {tag.name ? tag.name : tag}
       </Text>
     </View>
   );

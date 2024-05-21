@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Text,
   View,
@@ -6,43 +6,182 @@ import {
   SafeAreaView,
   ScrollView,
   TouchableOpacity,
-  FlatList,
+  TextInput,
   StyleSheet,
+  ActivityIndicator,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import ToggleSwitch from 'toggle-switch-react-native';
+import { launchImageLibrary } from 'react-native-image-picker';
 
 
-import { GlobalStyles, Color, FontFamily, FontSize } from '../GlobalStyles';
+import { GlobalStyles, Color, FontFamily, FontSize, Border } from '../GlobalStyles';
 import SquareFacility from '../components/SqureFacility';
 import Hashtag from '../components/Hashtag';
 import Menu from '../components/Menu';
 import Review from '../components/Review';
 import Notice from '../components/Notice';
+import Stamp from '../components/Stamp';
 
 
 import userImage from '../assets/placeholders/User.png';
+import stampImage from '../assets/icons/stamp.png';
 
 //To be deleted
 import longImagePlaceholder from '../assets/placeholders/long_image.png';
+import { fetchImage, getFacilityByID, getFacilityMenu, getFacilityPreferences, getFacilityStamp, getFacilityStampRuleByID, getReviewByQuery, getUserByID, USERID } from './api';
 
-const FacilityDetail = (
-  { facility_name, }
-) => {
-  //Get Informations of facilities
-  //facility information [name, ], 5 facilities in order of number of stamps [img_url, name], 5 most recent reviews [img_url, name, score, comment], user [img_url, nickname, email]
+const FacilityDetail = () => {
+
+  const route = useRoute();
+
+  // const { facilityID } = route.params;
+  const facilityID = 1;
+
+  const [facilityInfo, setFacilityInfo] = useState({});
+  const [reviewList, setReviewList] = useState('');
+  const [reviewUserInfo, setReviewUserInfo] = useState({});
+  const [stampRule, setStampRule] = useState([]);
+  const [stampLogo, setStampLogo] = useState(stampImage);
+  const [myStamp, setMyStamp] = useState(0);
+  const [preferences, setPreferences] = useState('');
+  const [menuList, setMenuList] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchFacility = async (facilityID) => {
+      try {
+        const data = await getFacilityByID(facilityID);
+        setFacilityInfo(data);
+        const preference = await getFacilityPreferences(facilityID);
+        setPreferences(preference);
+        const stamps = await getFacilityStampRuleByID(facilityID);
+        if (stamps.logo_img_uri) {
+          const stampImage = await fetchImage(stamps.logo_img_uri);
+          setStampLogo(stampImage);
+        }
+        if (stamps.rewards) {
+          const maxCnt = Math.max(...stamps.rewards.map(reward => reward.cnt));
+          const newStampRule = Array(maxCnt).fill('');
+          stamps.rewards.forEach(reward => {
+            newStampRule[reward.cnt - 1] = reward.name;
+          });
+          setStampRule(newStampRule);
+        }
+        const newMyStamp = await getFacilityStamp(facilityID);
+        if (newMyStamp) {
+          setMyStamp(newMyStamp.cnt);
+        }
+      } catch (error) {
+        console.log(error.message);
+      }
+    };
+    const fetchReviews = async (facilityID) => {
+      try {
+        const data = await getReviewByQuery('', facilityID, '', '');
+        setReviewList(data);
+        const newImageList = {};
+        const newReviewUserList = {};
+        for (const item of data) {
+          const userInfo = await getUserByID(item.author_id);
+          if (item.img_uri) {
+            const imageUrl = await fetchImage(item.img_uri);
+            console.log("img", imageUrl);
+            newImageList[item.id] = imageUrl;
+          }
+          if (userInfo.profile_img_uri) {
+
+            const profileUrl = await fetchImage(userInfo.profile_img_uri);
+            newReviewUserList[item.id] = { userName: userInfo.account_id, userImage: profileUrl }
+          } else {
+            newReviewUserList[item.id] = { userName: userInfo.account_id, userImage: userImage }
+          }
+        }
+        setReviewImageList(newImageList);
+        setReviewUserInfo(newReviewUserList);
+        console.log(newImageList);
+        setIsLoading(false);
+        console.log(data);
+      } catch (error) {
+        console.log(error.message);
+      }
+    };
+    const fetchStamp = async (facilityID) => {
+      try {
+        const stamps = await getFacilityStampRuleByID(facilityID);
+        if (stamps.logo_img_uri) {
+          const stampImage = await fetchImage(stamps.logo_img_uri);
+          setStampLogo(stampImage);
+        }
+        if (stamps.rewards) {
+          const maxCnt = Math.max(...stamps.rewards.map(reward => reward.cnt));
+          const newStampRule = Array(maxCnt).fill('');
+          stamps.rewards.forEach(reward => {
+            newStampRule[reward.cnt - 1] = reward.name;
+          });
+          setStampRule(newStampRule);
+        }
+        const newMyStamp = await getFacilityStamp(facilityID);
+        if (newMyStamp) {
+          setMyStamp(newMyStamp.cnt);
+        }
+      } catch (error) {
+        console.log(error.message);
+      }
+    };
+    const fetchPreferences = async (facilityID) => {
+      try {
+        const preference = await getFacilityPreferences(facilityID);
+        setPreferences(preference);
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+    const fetchMenu = async (facilityID) => {
+      try {
+        const newMenu = await getFacilityMenu(facilityID);
+        console.log("newMenu", newMenu);
+        setMenuList(newMenu);
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+    fetchFacility(facilityID);
+    fetchReviews(facilityID);
+    fetchStamp(facilityID);
+    fetchPreferences(facilityID);
+    fetchMenu(facilityID);
+  }, []);
 
   const navigation = useNavigation();
 
   reviewHashtags = ['🍣 Japanese Food', '🥬 Vegetarian']
 
+  const [reviewImageList, setReviewImageList] = useState([]);
   const [isTimeVisible, setTimeVisible] = useState(false);
+  const [bookmarked, setBookmarked] = useState(false);
+  const [stamp, setStamp] = useState(false);
   const [tabState, setTabState] = useState("Menu");
   const [reviewFilter, setReviewFilter] = useState(false);
+  const [writeReview, setWriteReview] = useState(false);
+
+  const [reviewScore, setReviewScore] = useState(0);
+  const [reviewImage, setReviewImage] = useState('');
+  const [reviewContent, setReviewContent] = useState('');
+  const [hashtag, setHashtag] = useState('');
+  const [inputHashtag, setInputHashtag] = useState([]);
 
   const toggleTimeVisibility = () => {
     setTimeVisible(!isTimeVisible);
   };
+
+  const toggleBookmarked = () => {
+    setBookmarked(!bookmarked);
+  };
+
+  const toggleStamp = () => {
+    setStamp(!stamp);
+  }
 
   const switchTabMenu = () => {
     setTabState("Menu");
@@ -58,10 +197,51 @@ const FacilityDetail = (
     setReviewFilter(!reviewFilter);
   }
 
+  const toggleWriteReview = () => {
+    setWriteReview(!writeReview);
+  }
+
+  const renderStars = () => {
+    const stars = [];
+    for (let i = 0; i < 5; i++) {
+      stars.push(
+        <TouchableOpacity key={i} onPress={() => setReviewScore(i + 1)}>
+          <Image
+            style={styles.star}
+            tintColor={i >= (reviewScore) && Color.orange_100}
+            source={require('../assets/icons/star.png')}
+          />
+        </TouchableOpacity>
+      );
+    }
+    return stars;
+  };
+
+  const saveReviewImage = () => {
+    const options = {
+      mediaType: 'photo',
+      includeBase64: true,
+      includeExtra: true,
+      saveToPhotos: true,
+    };
+    launchImageLibrary(options, (response) => {
+      if (!response.didCancel) {
+        // Handle the response, for example, set the review image state
+        setReviewImage(response.assets[0].uri);
+      }
+    });
+  }
+
   const getCurrentDayTimeData = () => {
     const currentDay = new Date().toLocaleDateString('en-KR', { weekday: 'long' });
     return timeData.filter(item => item.day === currentDay);
   };
+
+  const pushHashtag = () => {
+    setInputHashtag([...inputHashtag, hashtag]);
+    setHashtag('');
+    console.log(inputHashtag);
+  }
 
   const timeData = [
     { day: 'Monday', openTime: '11:00', closeTime: '21:00' },
@@ -83,14 +263,6 @@ const FacilityDetail = (
   const topHashtags = [
     "🕯️ Good mood", "🍴 Tasty", "😊 Kind", "🍴 Tasty", "😊 Kind"
   ];
-  const review = [
-    { userImage: userImage, userName: 'foodie', reviewDate: '2024.05.06', reviewScore: 5, reviewImage: longImagePlaceholder, reviewContent: 'Loved it', reviewHashtags: ['🥰Lovely', '😋Tasty'], edit: false },
-    { userImage: userImage, userName: 'foodie', reviewDate: '2024.05.06', reviewScore: 5, reviewImage: longImagePlaceholder, reviewContent: 'Loved it', reviewHashtags: ['🥰Lovely', '😋Tasty'], edit: false },
-    { userImage: userImage, userName: 'foodie', reviewDate: '2024.05.06', reviewScore: 5, reviewImage: longImagePlaceholder, reviewContent: 'Loved it', reviewHashtags: ['🥰Lovely', '😋Tasty'], edit: false },
-    { userImage: userImage, userName: 'foodie', reviewDate: '2024.05.06', reviewScore: 5, reviewContent: 'Loved it', reviewHashtags: ['🥰Lovely', '😋Tasty'], edit: false },
-    { userImage: userImage, userName: 'foodie', reviewDate: '2024.05.06', reviewScore: 5, reviewContent: 'Loved it', reviewHashtags: ['🥰Lovely', '😋Tasty'], edit: false },
-    { userImage: userImage, userName: 'foodie', reviewDate: '2024.05.06', reviewScore: 5, reviewContent: 'Loved it', reviewHashtags: ['🥰Lovely', '😋Tasty'], edit: false },
-  ];
 
   const notice = [
     { image: userImage, name: 'Yosida', date: '2024.05.06', noticeImage: longImagePlaceholder, content: 'We are not opening today >< Have a nice holiday!' },
@@ -101,42 +273,45 @@ const FacilityDetail = (
     { image: userImage, name: 'Yosida', date: '2024.05.06', content: 'We are not opening today >< Have a nice holiday!' },
   ];
 
-  const renderHashtags = () => {
-    const hashtags = [];
-
-    if (Array.isArray(reviewHashtags)) {
-      for (let i = 0; i < reviewHashtags.length; i++) {
-        hashtags.push(<Hashtag tag={reviewHashtags[i]} />);
-      }
-    } else {
-      console.error('reviewHashtags is not an array.');
-    }
-
-    return hashtags;
-  };
-
   return (
     <SafeAreaView style={GlobalStyles.background}>
-      <View style={GlobalStyles.content}>
+      <View style={GlobalStyles.contentNoNav}>
 
-        <View style={{ width: '100%', flexDirection: 'row' }}>
-          <TouchableOpacity
-            onPress={() => {
-              navigation.goBack();
-            }}>
-            <Image
-              style={GlobalStyles.icon}
-              source={require('../assets/icons/navigate_left.png')}
-            />
-          </TouchableOpacity>
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              marginTop: -27,
-              paddingBottom: 10,
-            }}>
-            <Text style={GlobalStyles.h1}>{facility_name} yosida</Text>
+        <View style={{ width: '100%', flexDirection: 'row', justifyContent: 'space-between' }}>
+          <View style={{ flexDirection: 'row' }}>
+            <TouchableOpacity
+              onPress={() => {
+                navigation.goBack();
+              }}>
+              <Image
+                style={GlobalStyles.icon}
+                source={require('../assets/icons/navigate_left.png')}
+              />
+            </TouchableOpacity>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                marginTop: -27,
+                paddingBottom: 10,
+                width: '70%'
+              }}>
+              <Text style={GlobalStyles.h1} numberOfLines={1}>{facilityInfo.name}</Text>
+            </View>
+          </View>
+          <View style={{ flexDirection: 'row' }}>
+            <TouchableOpacity onPress={toggleStamp}>
+              <Image
+                style={{ width: 30, height: 30, marginRight: 10 }}
+                source={require('../assets/icons/stampCard.png')}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={toggleBookmarked}>
+              <Image
+                style={{ width: 30, height: 30 }}
+                source={bookmarked ? require('../assets/icons/bookmark_on.png') : require('../assets/icons/bookmark_off2.png')}
+              />
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -152,21 +327,21 @@ const FacilityDetail = (
                 style={{ ...GlobalStyles.icon, marginRight: 5 }}
                 source={require('../assets/icons/location.png')}
               />
-              <Text style={GlobalStyles.body2}>facilityAddress</Text>
+              <Text style={GlobalStyles.body2}>{facilityInfo.english_address}</Text>
             </View>
             <View style={{ flexDirection: 'row' }}>
               <Image
                 style={styles.icon}
                 source={require('../assets/icons/phone.png')}
               />
-              <Text style={GlobalStyles.body2}>facility phone number</Text>
+              <Text style={GlobalStyles.body2}>{facilityInfo.phone}</Text>
             </View>
             <View style={{ flexDirection: 'row' }}>
               <Image
                 style={{ ...GlobalStyles.icon, marginRight: 5 }}
                 source={require('../assets/icons/star.png')}
               />
-              <Text style={GlobalStyles.body2}>4.7</Text>
+              <Text style={GlobalStyles.body2}>{facilityInfo.avg_score}</Text>
             </View>
             <View
               style={{
@@ -177,7 +352,9 @@ const FacilityDetail = (
                 paddingTop: 10,
                 paddingBottom: 15,
               }}>
-              {renderHashtags()}
+              {preferences && preferences.map(item => (
+                <Hashtag tag={item} />
+              ))}
             </View>
           </View>
 
@@ -248,6 +425,12 @@ const FacilityDetail = (
                 menuImage={item.image}
               />
             ))}
+            {(tabState == "Review" && isLoading) && (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#0000ff" />
+                <Text>Loading reviews...</Text>
+              </View>
+            )}
             {(tabState == "Review") && (
               <>
                 <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
@@ -284,24 +467,25 @@ const FacilityDetail = (
                 <View
                   style={{
                     borderBottomColor: Color.lightGrey,
-                    borderBottomWidth: 1, 
-                    marginBottom: 15,                   
+                    borderBottomWidth: 1,
+                    marginBottom: 15,
                   }}
                 />
 
-                {review
-                  .filter(item => !reviewFilter || (reviewFilter && item.reviewImage)) // Apply filter conditionally based on reviewFilter state
+                {reviewList
+                  .filter(item => !reviewFilter || (reviewFilter && item.img_uri)) // Apply filter conditionally based on reviewFilter state
                   .map(item => (
                     <Review
-                      key={item.reviewId} // Make sure to provide a unique key prop
-                      userImage={item.userImage}
-                      userName={item.userName}
-                      reviewDate={item.reviewDate}
-                      reviewScore={item.reviewScore}
-                      reviewImage={item.reviewImage}
-                      reviewContent={item.reviewContent}
-                      reviewHashtags={item.reviewHashtags}
-                      edit={item.edit}
+                      key={item.id} // Make sure to provide a unique key prop
+                      userImage={reviewUserInfo[item.id]?.userImage}
+                      userName={reviewUserInfo[item.id]?.userName}
+                      edit={USERID == item.author_id}
+                      reviewDate={item.post_date}
+                      reviewScore={item.score}
+                      reviewImage={item.img_uri ? reviewImageList[item.id] : item.img_uri}
+                      reviewContent={item.content}
+                      reviewHashtags={item.hashtags}
+                      admin={false}
                     />
                   ))
                 }
@@ -319,6 +503,125 @@ const FacilityDetail = (
           </View>
         </ScrollView>
       </View >
+      {(tabState == 'Review') && (
+        <TouchableOpacity onPress={toggleWriteReview}>
+          <Image
+            source={require('../assets/icons/write_review.png')}
+            style={{ width: 150, height: 150, position: 'absolute', bottom: 0, right: 10 }}
+          />
+        </TouchableOpacity>
+      )}
+      {writeReview && (
+        <View style={styles.overlay}>
+          <View style={styles.background}>
+            <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+              <Text style={GlobalStyles.h2}>Write Reviews</Text>
+              <TouchableOpacity style={{ ...GlobalStyles.topIcon, marginRight: 0 }} onPress={toggleWriteReview}>
+                <Image
+                  source={require('../assets/icons/navigate_close.png')}
+                />
+              </TouchableOpacity>
+            </View>
+            <ScrollView style={{ width: '100%' }} showsVerticalScrollIndicator={false}>
+              <View style={{ width: '100%', alignItems: 'center', paddingVertical: 10 }}>
+                <TouchableOpacity onPress={saveReviewImage}>
+                  {reviewImage ? (
+                    <Image source={reviewImage} style={GlobalStyles.squareImage2} />
+                  ) : (
+                    <Image source={require('../assets/placeholders/long_image.png')} style={GlobalStyles.squareImage2} />
+                  )}
+                </TouchableOpacity>
+                <View
+                  style={{
+                    width: '100%',
+                    flexDirection: 'row',
+                    justifyContent: 'center',
+                    padding: 10,
+                  }}>
+                  {renderStars()}
+                </View>
+                <View style={styles.inputSection}>
+                  <Text style={GlobalStyles.h3}>Review</Text>
+                  <View style={GlobalStyles.inputWrapper3}>
+                    <TextInput
+                      style={GlobalStyles.registrationInput2}
+                      onChangeText={setReviewContent}
+                      value={reviewContent}
+                      placeholder="Review Content"
+                      multiline={true}
+                      numberOfLines={5}
+                    />
+                  </View>
+                </View>
+                <View style={styles.inputSection}>
+                  <Text style={GlobalStyles.h3}>Hashtags</Text>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      flexWrap: 'wrap',
+                      width: '100%',
+                    }}>
+                    {inputHashtag && inputHashtag.map(item => (
+                      <Hashtag tag={item} />
+                    ))}
+                  </View>
+                  <View style={styles.hashtagHolder}>
+                    <TextInput
+                      style={GlobalStyles.hashtag}
+                      onChangeText={setHashtag}
+                      value={hashtag}
+                      placeholder="+ Hashtag"
+                    />
+                  </View>
+                  {hashtag && (
+                    <TouchableOpacity onPress={pushHashtag}>
+                      <View style={styles.hashtagHolder}>
+                        <Text style={{ ...GlobalStyles.hashtag, color: Color.lightGrey }}>Add Hashtag</Text>
+                      </View>
+                    </TouchableOpacity>
+                  )}
+                </View>
+                <View style={{ width: '100%', justifyContent: 'flex-end', flexDirection: 'row', paddingTop: 20 }}>
+                  <TouchableOpacity>
+                    <Text style={GlobalStyles.h4}>Send</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </ScrollView>
+          </View>
+
+        </View>
+      )}
+      {stamp && (
+        <View style={styles.overlay}>
+          <View style={{ ...styles.background, justifyContent: 'center', height: '50%' }}>
+            <View style={{ width: '100%' }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+                <TouchableOpacity style={{ marginRight: -10 }} onPress={toggleStamp}>
+                  <Image
+                    source={require('../assets/icons/navigate_close.png')}
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
+            <View style={{ width: '100%', alignItems: 'center', paddingVertical: 10 }}>
+              {!(stampRule == []) &&
+                <>
+                  <Stamp
+                    number={myStamp}
+                    stamp={stampRule}
+                    stampImage={stampLogo}
+                  />
+                  <Text style={GlobalStyles.body}>Buyer ID: {USERID}</Text>
+                </>
+              }
+              {(stampRule == []) && <Text style={GlobalStyles.body}>Stamps not created</Text>}
+            </View>
+          </View>
+
+        </View>
+      )}
     </SafeAreaView >
   );
 };
@@ -331,6 +634,10 @@ const styles = StyleSheet.create({
     marginLeft: 2,
     marginRight: 7
   },
+  star: {
+    width: 25,
+    height: 25,
+  },
   navigator: {
     width: 22,
     height: 22
@@ -342,6 +649,49 @@ const styles = StyleSheet.create({
     letterSpacing: 0,
     fontSize: FontSize.size_lgi,
     color: Color.orange_700,
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  overlayTouchable: {
+    width: '80%',
+    height: '80%',
+    backgroundColor: 'white',
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  background: {
+    height: '85%',
+    width: '90%',
+    justifyContent: 'flex-start',
+    backgroundColor: Color.white,
+    borderRadius: Border.br_lg,
+    padding: 30,
+    paddingTop: 15,
+    alignItems: 'center'
+  },
+  inputSection: {
+    width: '100%',
+    paddingVertical: 10,
+  },
+  hashtagHolder: {
+    backgroundColor: Color.yellow_100,
+    padding: 10,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    marginHorizontal: 5,
+    marginTop: 9,
+    justifyContent: 'center',
+    borderRadius: Border.br_lg,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 
