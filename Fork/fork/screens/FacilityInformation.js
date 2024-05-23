@@ -1,9 +1,8 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import { ScrollView, View, Text, TouchableOpacity, StyleSheet, Image, TextInput, Button } from 'react-native';
 import { Border, Color, GlobalStyles } from "../GlobalStyles.js"; 
-import { launchImageLibrary } from 'react-native-image-picker';
 import placeholderImage from '../assets/placeholders/long_image.png';
-
+import * as ImagePicker from 'expo-image-picker';
 
 const FacilityInformation = ({navigation}) => {
 
@@ -43,36 +42,53 @@ const FacilityInformation = ({navigation}) => {
     const newStampPrograms = [...facilityInfo.stampPrograms];
     newStampPrograms[index][field] = value;
     setFacilityInfo({ ...facilityInfo, stampPrograms: newStampPrograms });
-};
+  };
 
-  const selectImage = (index, type) => {
-    const options = {
-      mediaType: 'photo',
-      quality: 1,
-    };
+  const requestMediaLibraryPermissions = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+        alert('Sorry, we need camera roll permissions to make this work!');
+        return false;
+    }
+    return true;
+  };
 
-    launchImageLibrary(options, (response) => {
-        if (response.didCancel) {
-            console.log('User cancelled image picker');
-        } else if (response.error) {
-            console.log('ImagePicker Error: ', response.error);
-        } else {
-            const source = { uri: response.assets[0].uri };
+  const selectImage = async (index, type) => {
+    try {
+        const hasPermission = await requestMediaLibraryPermissions();
+        if (!hasPermission) return;
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 1,
+        });
+        console.log("Result object:", result);
+        if (!result.canceled && result.assets && result.assets.length > 0) {
+            const source = { uri: result.assets[0].uri };
+            console.log("source uri : " + source.uri);
             if (type === 'facility') {
-              setFacilityImageUri(source.uri);
+                setFacilityImageUri(source.uri);
+                console.log("here");
             } else if (type === 'stamp') {
-              updateStampProgram(index, 'imageUri', source.uri);
+                updateStampProgram(index, 'imageUri', source.uri);
             }
-        }
-    });
-};
-
+        
+          }    
+    } catch (error) {
+        console.error('Error selecting image:', error);
+    }
+  };
 
   const updateMenuItem = (index, field, value) => {
     const newMenuItems = [...facilityInfo.menuItems];
     newMenuItems[index][field] = value;
     setFacilityInfo({ ...facilityInfo, menuItems: newMenuItems});
   };
+
+  useEffect(() => {
+    console.log("Updated facilityImageUri: ", facilityImageUri);
+  }, [facilityImageUri]);
 
   return (
     <ScrollView style={styles.container}>
