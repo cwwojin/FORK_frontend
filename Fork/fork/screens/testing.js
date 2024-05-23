@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Image, Text, ActivityIndicator, StyleSheet } from 'react-native';
 
-const testing = () => {
+const Testing = () => {
   const [imageUrl, setImageUrl] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -77,4 +77,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default testing;
+export default Testing;

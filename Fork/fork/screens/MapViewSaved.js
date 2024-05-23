@@ -63,7 +63,7 @@ const MapView = () => {
   const handleSelectCuisine = (cuisine) => {
     setSelectedCuisines(prev => {
       const newCuisines = prev.includes(cuisine) ? prev.filter(item => item !== cuisine) : [...prev, cuisine];
-      fetchAndUpdateFacilities('', neLat, neLng, swLat, swLng);
+      fetchAndUpdateFacilities(neLat, neLng, swLat, swLng);
       return newCuisines;
     });
   };
@@ -71,7 +71,7 @@ const MapView = () => {
   const handleSelectDietaryPreference = (preference) => {
     setSelectedDietaryPreferences(prev => {
       const newPreferences = prev.includes(preference) ? prev.filter(item => item !== preference) : [...prev, preference];
-      fetchAndUpdateFacilities('', neLat, neLng, swLat, swLng);
+      fetchAndUpdateFacilities(neLat, neLng, swLat, swLng);
       return newPreferences;
     });
   };
@@ -379,82 +379,107 @@ const MapView = () => {
   </html>
   `;
 
-  const handleSearch = () => {
-    fetchAndUpdateFacilities(searchQuery);
+  const handleSearch = async () => {
+    if (searchQuery.trim() && webViewReady) {
+      try {
+        let facilities = [];
+        if (isTesting) {
+          facilities = await mockFetchFacilityWithName(searchQuery); 
+        } else {
+          facilities = await fetchFacilityWithName(searchQuery); 
+        }
+        if (webViewRef.current) {
+          const { data } = facilities;
+          if (data && data.length > 0) {
+            const { lat, lng, avg_score } = data[0];
+            console.log("lat : " + lat + ", lng : "+ lng + ", avg_score : "+avg_score);
+            webViewRef.current.postMessage(JSON.stringify({
+              type: 'centerMap',
+              lat: lat,
+              lng: lng,
+              avg_score: avg_score,
+              shouldCenter: true
+            }));
+            //setDisplayedFacilities(data);
+          } else {
+            console.error("No facilities found or data is empty.");
+          }
+        } else {
+          console.error("Fetch facility with name: WebView is not mounted yet or the ref is not attached.");
+        }
+      } catch (error) {
+        console.error('Failed to load facilities:', error);
+      }
+    } else if (!webViewReady) {
+      console.error("WebView is not ready yet.");
+    }
   };
 
-  const fetchAndUpdateFacilities = useCallback(async (searchQuery = '', neLat = null, neLng = null, swLat = null, swLng = null) => 
-  {
-    let facilities = [];
-
-    try {
-      if (searchQuery) {
-          const result = isTesting ? await mockFetchFacilityWithName(searchQuery) : await fetchFacilityWithName(searchQuery);
-          facilities = result.data || [];
-      } else if (neLat && neLng && swLat && swLng) {
-          facilities = isTesting ? await mockFetchFacilitiesInBounds(neLat, neLng, swLat, swLng) : await fetchFacilitiesInBounds(neLat, neLng, swLat, swLng);
-      }
-
-      if (showOnlyOpen) {
-        facilities = facilities.filter(facility => {
-          const { status } = isOpenNow(facility.opening_hours);
-          return status === "Open";
-        })
-      }
-
-      //console.log("facilities before filtering " + facilities + "displayed ones " + displayedFacilities);
-      if (selectedCuisines.length > 0 || selectedDietaryPreferences.length > 0) {
-        //console.log("selectedCuisines.length" + selectedCuisines.length);
-        //console.log("selectedCuisines" + selectedCuisines);
-        //console.log("selectedDiets.length" + selectedDietaryPreferences.length);
-        facilities = facilities.filter(facility => {
-          const validPreferences = facility.preferences ? facility.preferences.filter(pref => pref) : [];
-          //console.log("validPreferences" + validPreferences[0])
-          const facilityCuisines = validPreferences.filter(pref => pref.type === 0).map(pref => pref.name);
-          //console.log(facility.name + " => Cuisine type : " + facilityCuisines);
-          const facilityDiets = validPreferences.filter(pref => pref.type === 1).map(pref => pref.name);
-          //console.log(facility.name + " => Diet type : " + facilityDiets);
-          //console.log("selectedCuisines" + selectedCuisines);
-          const hasSelectedCuisine = selectedCuisines.some(cuisine => 
-            facilityCuisines.map(c => c.toLowerCase()).includes(cuisine.toLowerCase()));
-          //console.log("hasSelectedCuisine" + hasSelectedCuisine);
-          const hasSelectedDiet = selectedDietaryPreferences.some(diet => 
-            facilityDiets.map(c => c.toLowerCase()).includes(diet.toLowerCase()));
-          return hasSelectedCuisine || hasSelectedDiet;
-        });
-      }
-
-      const uniqueFacilities = facilities.reduce((acc, current) => {
-        const x = acc.find(item => item.id === current.id);
-        if (!x) {
-          return acc.concat([current]);
+  const fetchAndUpdateFacilities =
+    useCallback(async (neLat, neLng, swLat, swLng) => {
+      try {
+        let facilities = [];
+        if (isTesting) {
+          //console.log("Testing");
+          facilities = await mockFetchFacilitiesInBounds(neLat, neLng, swLat, swLng); 
         } else {
-          return acc;
+          facilities = await fetchFacilitiesInBounds(neLat, neLng, swLat, swLng);
         }
-      }, []);
 
-      if (webViewRef.current && uniqueFacilities.length > 0) {
-        const { lat, lng, avg_score } = facilities[0];
-        webViewRef.current.postMessage(JSON.stringify({
-          type: 'centerMap',
-          facilities: uniqueFacilities,
-          shouldCenter: false
-        }));
-      }
-      if (Array.isArray(uniqueFacilities) && uniqueFacilities.length > 0) { 
-        setDisplayedFacilities(uniqueFacilities);
-      } else {
-        console.error("Fetched data is not an array:", uniqueFacilities);
-        setDisplayedFacilities([]);  
-      }
+        if (showOnlyOpen) {
+          facilities = facilities.filter(facility => {
+            const { status } = isOpenNow(facility.opening_hours);
+            return status === "Open";
+          })
+        }
+        //console.log("facilities before filtering " + facilities + "displayed ones " + displayedFacilities);
+        if (selectedCuisines.length > 0 || selectedDietaryPreferences.length > 0) {
+          //console.log("selectedCuisines.length" + selectedCuisines.length);
+          //console.log("selectedCuisines" + selectedCuisines);
+          //console.log("selectedDiets.length" + selectedDietaryPreferences.length);
+          facilities = facilities.filter(facility => {
+            const validPreferences = facility.preferences ? facility.preferences.filter(pref => pref) : [];
+            //console.log("validPreferences" + validPreferences[0])
+            const facilityCuisines = validPreferences.filter(pref => pref.type === 0).map(pref => pref.name);
+            //console.log(facility.name + " => Cuisine type : " + facilityCuisines);
+            const facilityDiets = validPreferences.filter(pref => pref.type === 1).map(pref => pref.name);
+            //console.log(facility.name + " => Diet type : " + facilityDiets);
+            //console.log("selectedCuisines" + selectedCuisines);
+            const hasSelectedCuisine = selectedCuisines.some(cuisine => 
+              facilityCuisines.map(c => c.toLowerCase()).includes(cuisine.toLowerCase()));
+            //console.log("hasSelectedCuisine" + hasSelectedCuisine);
+            const hasSelectedDiet = selectedDietaryPreferences.some(diet => 
+              facilityDiets.map(c => c.toLowerCase()).includes(diet.toLowerCase()));
+            return hasSelectedCuisine || hasSelectedDiet;
+          });
+        }
+        //console.log("facilities after filtering " + facilities + "displayed ones " + displayedFacilities);
 
-    } catch (error) {
-      console.error('Failed to fetch facilities:', error);
-      setDisplayedFacilities([]);
-    }
-  }, [isTesting, showOnlyOpen, selectedCuisines, selectedDietaryPreferences, setDisplayedFacilities, webViewRef]);  // Dependencies necessary for useCallback
+        // Process the facilities to update markers on the map
+        if (webViewRef.current && facilities.length > 0) {
+          const { lat, lng, avg_score } = facilities[0];
+          webViewRef.current.postMessage(JSON.stringify({
+            type: 'centerMap',
+            facilities: facilities,
+            shouldCenter: false
+          }));
+        }
+        if (Array.isArray(facilities)) {  // Check if the fetched data is an array
+          setDisplayedFacilities(facilities);
+        } else {
+          console.error("Fetched data is not an array:", facilities);
+          setDisplayedFacilities([]);  // Set to empty array if fetched data is invalid
+        }
 
   
+      } catch (error) {
+        console.error('Failed to load facilities after filter?:', error);
+      }
+    
+    }, [isTesting, showOnlyOpen, selectedCuisines, selectedDietaryPreferences]);
+
+
+  // Function to receive messages from the WebView
   const onWebViewMessage = (event) => {
     const data = JSON.parse(event.nativeEvent.data);
     if (data.type === 'markerVisibilityChanged') {
@@ -467,11 +492,7 @@ const MapView = () => {
       setNeLng(data.neLng);
       setSwLat(data.swLat);
       setSwLng(data.swLng);
-      if (!searchQuery) {
-        fetchAndUpdateFacilities('', data.neLat, data.neLng, data.swLat, data.swLng);
-      } else {
-        console.log("Bounds updated but not fetching new facilities due to active search");
-      }
+      fetchAndUpdateFacilities(data.neLat, data.neLng, data.swLat, data.swLng);
     }
     if (data.type === 'updateCenterAndZoom') {
       setMapCenter((prev) => (prev.lat !== data.centerLat || prev.lng !== data.centerLng) ? { lat: data.centerLat, lng: data.centerLng } : prev);
@@ -495,15 +516,15 @@ const MapView = () => {
       setDisplayedFacilities(openFacilities);
     } else {
       // If showing all facilities, fetch or restore the original list
-      fetchAndUpdateFacilities('', neLat, neLng, swLat, swLng);
+      fetchAndUpdateFacilities(neLat, neLng, swLat, swLng);
     }
   };
 
   useEffect(() => {
-    if (webViewReady && neLat && neLng && swLat && swLng && searchQuery === '') {
-      fetchAndUpdateFacilities('', neLat, neLng, swLat, swLng);
+    if (webViewReady && neLat && neLng && swLat && swLng) {
+      fetchAndUpdateFacilities(neLat, neLng, swLat, swLng);
     }
-  }, [showOnlyOpen, selectedCuisines, selectedDietaryPreferences, neLat, neLng, swLat, swLng, webViewReady, searchQuery]);
+  }, [showOnlyOpen, selectedCuisines, selectedDietaryPreferences, neLat, neLng, swLat, swLng, webViewReady]);
 
   useEffect(() => {
     if (webViewRef.current && webViewReady && isExpanded) {

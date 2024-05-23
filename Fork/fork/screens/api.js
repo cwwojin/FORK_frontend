@@ -101,12 +101,14 @@ const mockData = [
 ];
 export const fetchFacilityWithName = async (facilityName) => {
     try {
-        const response = await fetch(`${BASE_URL}/facilities?name=${encodeURIComponent(facilityName)}`);
-        console.log('Response in real fetchMethod: ', response)
+        const response = await fetch(`${BASE_URL}/map/search?name=${encodeURIComponent(facilityName)}`);
+        
         if (!response.ok) {
             throw new Error('Network response was not ok in real fetchMethod');
         }
-        return await response.json();
+        finalResponse = await response.json() 
+        //console.log('Response in real fetchMethod: ', finalResponse)
+        return finalResponse;
     } catch (error) {
         console.error('Error fetching facilities in real fetchMethod:', error);
         throw error;
@@ -129,7 +131,7 @@ export const fetchFacilitiesInBounds = async (northEastLat, northEastLng, southW
 
         const jsonResponse = await response.json();
         const facilitiesData = jsonResponse.data; 
-        console.log('JSON Response in real fetchMethod:', facilitiesData);
+        //console.log('JSON Response in real fetchMethod:', facilitiesData);
         return facilitiesData;
         
     } catch (error) {

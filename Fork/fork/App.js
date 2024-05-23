@@ -32,7 +32,7 @@ import MyReviews from './screens/MyReviews';
 import MapView from './screens/MapView.js';
 import FacilityDetail from './screens/FacilityDetail.js';
 import Settings from './screens/Settings.js';
-import testing from './screens/testing.js';
+import Testing from './screens/Testing.js';
 {/*import Maps from './screens/Maps';*/ }
 
 
@@ -59,7 +59,7 @@ const App = () => {
             <Stack.Navigator
               screenOptions={{
                 headerShown: false,
-              }} initialRouteName="Home">
+              }} initialRouteName="MapView">
               <Stack.Screen name="SignUpLogIn" component={SignUpLogIn} />
               <Stack.Screen name="UserType" component={UserType} />
               <Stack.Screen name="FacilityInformation" component={FacilityInformation} />
@@ -83,7 +83,7 @@ const App = () => {
               <Stack.Screen name="FacilityDetail" component={FacilityDetail} />
               <Stack.Screen name="MyStamps" component={MyStamps} />
               <Stack.Screen name="Settings" component={Settings} />
-              <Stack.Screen name='testing' component={testing} />
+              <Stack.Screen name='Testing' component={Testing} />
               {/* Register the FavoritesScreen */}
             </Stack.Navigator>
           </View>
