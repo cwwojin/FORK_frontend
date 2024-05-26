@@ -34,6 +34,7 @@ export const fetchImage = async (uri) => {
 
         const blob = await response.blob();
         const imageUrl = URL.createObjectURL(blob);
+        console.log("fetched", imageUrl);
         return imageUrl;
     } catch (error) {
         console.error('Error fetching image:', error);
@@ -228,6 +229,26 @@ export const getUserFavorites = async (userID) => {
         return data;
     } catch (error) {
         console.error('Error fetching user:', error);
+        throw error;
+    }
+};
+
+
+export const isFacilityBookmarked = async (facilityID) => {
+    try {
+        const response = await fetch(`${BASE_URL}/users/favorite/${encodeURIComponent(USERID)}/has/${encodeURIComponent(facilityID)}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        if (!response.ok) {
+            throw new Error('Network response was not ok got checking bookmarked');
+        }
+        const data = await response.json();
+        return data.data;
+    } catch (error) {
+        console.error('Error fetching stamp rule:', error);
         throw error;
     }
 };
