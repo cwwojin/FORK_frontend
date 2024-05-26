@@ -29,7 +29,7 @@ import stampImage from '../assets/icons/stamp.png';
 
 //To be deleted
 import longImagePlaceholder from '../assets/placeholders/long_image.png';
-import { fetchImage, getFacilityByID, getFacilityMenu, getFacilityOpeningHour, getFacilityPreferences, getFacilityStamp, getFacilityStampRuleByID, getReviewByQuery, getUserByID, USERID } from './api';
+import { fetchImage, getFacilityByID, getFacilityMenu, getFacilityOpeningHour, getFacilityPreferences, getFacilityStamp, getFacilityStampRuleByID, getReviewByQuery, getUserByID, isFacilityBookmarked, USERID } from './api';
 
 const FacilityDetail = () => {
 
@@ -44,7 +44,9 @@ const FacilityDetail = () => {
   const [stampLogo, setStampLogo] = useState(stampImage);
   const [myStamp, setMyStamp] = useState(0);
   const [preferences, setPreferences] = useState('');
+  const [bookmarked, setBookmarked] = useState(false);
   const [menuImages, setMenuImages] = useState([]);
+  const [timeData, setTimeData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -53,8 +55,29 @@ const FacilityDetail = () => {
         const data = await getFacilityByID(facilityID);
         console.log(data);
         setFacilityInfo(data);
+
+        const newtimeData = [
+          { index: 1, day: 'Monday', openTime: '', closeTime: '' },
+          { index: 2, day: 'Tuesday', openTime: '', closeTime: '' },
+          { index: 3, day: 'Wednesday', openTime: '', closeTime: '' },
+          { index: 4, day: 'Thursday', openTime: '', closeTime: '' },
+          { index: 5, day: 'Friday', openTime: '', closeTime: '' },
+          { index: 6, day: 'Saturday', openTime: '', closeTime: '' },
+          { index: 0, day: 'Sunday', openTime: '', closeTime: '' },
+
+        ];
+        data.opening_hours.forEach(({ day, open_time, close_time }) => {
+          const item = newtimeData.find(entry => entry.index === day);
+          if (item) {
+            item.openTime = open_time.slice(0, 5);  // Remove seconds
+            item.closeTime = close_time.slice(0, 5); // Remove seconds
+          }
+        });
+        console.log("timeData", newtimeData)
+        setTimeData(newtimeData)
+
         const newMenuImageList = {};
-        for (const item of data.menu) {
+        for (const item of data.menus) {
           if (item.img_uri) {
             const imageUrl = await fetchImage(item.img_uri);
             newMenuImageList[item.id] = imageUrl;
@@ -108,7 +131,7 @@ const FacilityDetail = () => {
           const maxCnt = Math.max(...stamps.rewards.map(reward => reward.cnt));
           const newStampRule = Array(maxCnt).fill('');
           stamps.rewards.forEach(reward => {
-            newStampRule[reward.cnt - 1] = reward.name;
+            newStampRule[reward.cnt - 1] = reward?.name;
           });
           setStampRule(newStampRule);
         }
@@ -128,10 +151,19 @@ const FacilityDetail = () => {
         console.log(error.message);
       }
     };
+    const isBookmarked = async (facilityID) => {
+      try {
+        const bookmark = await isFacilityBookmarked(facilityID);
+        setBookmarked(bookmark);
+      } catch (error) {
+        console.log(error.message);
+      }
+    };
     fetchFacility(facilityID);
     fetchReviews(facilityID);
     fetchStamp(facilityID);
     fetchPreferences(facilityID);
+    isBookmarked(facilityID);
   }, []);
 
   const navigation = useNavigation();
@@ -140,7 +172,6 @@ const FacilityDetail = () => {
 
   const [reviewImageList, setReviewImageList] = useState([]);
   const [isTimeVisible, setTimeVisible] = useState(false);
-  const [bookmarked, setBookmarked] = useState(false);
   const [stamp, setStamp] = useState(false);
   const [tabState, setTabState] = useState("Menu");
   const [reviewFilter, setReviewFilter] = useState(false);
@@ -224,22 +255,6 @@ const FacilityDetail = () => {
     console.log(inputHashtag);
   }
 
-  const timeData = [
-    { day: 'Monday', openTime: '11:00', closeTime: '21:00' },
-    { day: 'Tuesday', openTime: '11:00', closeTime: '21:00' },
-    { day: 'Wednesday', openTime: '11:00', closeTime: '21:00' },
-    { day: 'Thursday', openTime: '11:00', closeTime: '21:00' },
-    { day: 'Friday' },
-    { day: 'Saturday', openTime: '11:00', closeTime: '21:00' },
-    { day: 'Sunday', openTime: '11:00', closeTime: '21:00' },
-  ];
-
-  const menu = [
-    { name: 'rice with chicken', description: 'Rice with soy-sauced chicken', price: 10000, image: require('../assets/placeholders/long_image.png') },
-    { name: 'rice with chicken', description: 'Rice with soy-sauced chicken', price: 10000, image: require('../assets/placeholders/long_image.png') },
-    { name: 'rice with chicken', description: 'Rice with soy-sauced chicken', price: 10000, image: require('../assets/placeholders/long_image.png') },
-  ];
-
   const summaryReview = "Clean, kind and tasty";
   const topHashtags = [
     "🕯️ Good mood", "🍴 Tasty", "😊 Kind", "🍴 Tasty", "😊 Kind"
@@ -277,7 +292,7 @@ const FacilityDetail = () => {
                 paddingBottom: 10,
                 width: '70%'
               }}>
-              <Text style={GlobalStyles.h1} numberOfLines={1}>{facilityInfo.name}</Text>
+              <Text style={GlobalStyles.h1} numberOfLines={1}>{facilityInfo?.name}</Text>
             </View>
           </View>
           <View style={{ flexDirection: 'row' }}>
@@ -398,7 +413,7 @@ const FacilityDetail = () => {
             </TouchableOpacity>
           </View>
           <View>
-            {(tabState == "Menu") && facilityInfo.menu?.map(item => (
+            {(tabState == "Menu") && facilityInfo.menus?.filter(item => item !== null).map(item => (
               <Menu
                 key={item.id}
                 menuName={item.name}
@@ -473,7 +488,7 @@ const FacilityDetail = () => {
                 }
               </>
             )}
-            {(tabState == "Notice") && notice.map(item => (
+            {(tabState == "Notice") && notice?.map(item => (
               <Notice
                 facilityImage={item.image}
                 facilityName={item.name}
