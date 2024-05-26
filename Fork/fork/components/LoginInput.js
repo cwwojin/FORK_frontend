@@ -46,7 +46,7 @@ const LoginInput = () => {
           <TouchableOpacity style={GlobalStyles.confirmButton} onPress={() => 
             {
               handleLogin(username, password);
-              navigation.navigate("Home");
+              //navigation.navigate("Home");
             }}>
           <Text style={GlobalStyles.confirmButtonText}>Log In</Text>
         </TouchableOpacity>

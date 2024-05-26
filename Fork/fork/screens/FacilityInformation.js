@@ -3,6 +3,7 @@ import { ScrollView, View, Text, TouchableOpacity, StyleSheet, Image, TextInput,
 import { Border, Color, GlobalStyles } from "../GlobalStyles.js"; 
 import placeholderImage from '../assets/placeholders/long_image.png';
 import * as ImagePicker from 'expo-image-picker';
+import { registerFacility } from './api';
 
 const FacilityInformation = ({navigation}) => {
 
@@ -10,10 +11,6 @@ const FacilityInformation = ({navigation}) => {
     menuItems: [],
     stampPrograms: [] 
   });
-
-  const onRegister = useCallback(() => {
-    navigation.navigate("PushNotification");
-  }, [navigation]);
 
   const [facilityImageUri, setFacilityImageUri] = useState('');
   const [name, setName] = useState('');
@@ -23,6 +20,38 @@ const FacilityInformation = ({navigation}) => {
   const [serviceDescription, setServiceDescription] = useState('');
   const [cuisineType, setCuisineType] = useState('');
   const [openingHours, setOpeningHours] = useState('');
+
+  const handleRegister = async () => {
+    try {
+      const facilityData = {
+        name,
+        businessId: businessRegNo,
+        type: cuisineType,
+        description: serviceDescription,
+        url: "", // Add URL if available
+        phone: phoneNumber,
+        email: "", // Add email if available
+        profileImgUri: facilityImageUri,
+        address: {
+          postNumber: "", // Add post number if available
+          country: "", // Add country if available
+          city: location,
+          roadAddress: "", // Add road address if available
+          jibunAddress: "", // Add jibun address if available
+          englishAddress: "", // Add English address if available
+          lat: 0.0, // Add latitude if available
+          lng: 0.0 // Add longitude if available
+        }
+      };
+
+      const data = await registerFacility(facilityData);
+      console.log("Registration data:", data);
+      // Navigate to the next step or show a success message
+      navigation.navigate("PushNotification");
+    } catch (error) {
+      console.error('Error registering facility:', error);
+    }
+  };
 
   const addMenuItem = () => {
     setFacilityInfo(prevState => ({
@@ -242,7 +271,7 @@ const FacilityInformation = ({navigation}) => {
       ))}
       <Button title="Add Stamp Program" onPress={addStampProgram} color={Color.orange_700} />
       <View style={styles.mainArea}>
-        <TouchableOpacity style={GlobalStyles.confirmButton} onPress={onRegister}>
+        <TouchableOpacity style={GlobalStyles.confirmButton} onPress={handleRegister}>
           <Text style={GlobalStyles.confirmButtonText}>Confirm</Text>
         </TouchableOpacity>
       </View>

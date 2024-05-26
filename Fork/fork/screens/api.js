@@ -1,4 +1,4 @@
-//const BASE_URL = 'http://ec2-52-65-3-109.ap-southeast-2.compute.amazonaws.com:80/api';
+const BASE_URL = 'http://ec2-52-65-3-109.ap-southeast-2.compute.amazonaws.com:80/api';
 
 // This is the base-url that leads to all backend & S3
 const API_ENDPOINT = "https://taqjpw7a54.execute-api.ap-southeast-2.amazonaws.com/stage-dev";
@@ -11,6 +11,8 @@ const FORK_URL = `${API_ENDPOINT}/dev/`
 const S3_ENDPOINT = `${API_ENDPOINT}/s3`
 
 export let USERTOKEN = "";
+export let USERID = "";
+export let USERPREFERENCE = "";
 
 // --------------LOGIN----------------- 
 
@@ -18,8 +20,6 @@ export const handleLogin = async (username, password) => {
     console.log('in handleLogin : username => ' + username + ', password => ' + password);
     try {
         const url = `${FORK_URL}api/auth/login`;
-        //?userId=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}
-        console.log("url : " + url)
         const requestBody = {
             userId: username,
             password: password
@@ -28,17 +28,15 @@ export const handleLogin = async (username, password) => {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': "foodie"
+            'Authorization': 'foodie'
         },
         body: JSON.stringify(requestBody)
         });
-        console.log("response : " + response.status);
         if (response.status === 200) {
         const jsonResponse = await response.json();
-        console.log("response : " + JSON.stringify(jsonResponse, null, 2));
         USERTOKEN = jsonResponse.data.token;
-        console.log("USERTOKEN : " + USERTOKEN);
-        
+        USERID = jsonResponse.data.user.id;
+        USERPREFERENCE = await getUserPreferences(USERID);
         } else {
         console.log('Login Failed', 'Invalid credentials or insufficient permissions.');
         }
@@ -46,6 +44,152 @@ export const handleLogin = async (username, password) => {
         console.log(error);
     }
 };
+
+// --------------REGISTER----------------- 
+
+export const registerUser = async (userId, password, userType, email) => {
+    try {
+        const url = `${FORK_URL}api/auth/register`;
+        const requestBody = {
+            userId,
+            password,
+            userType, 
+            email
+        };
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'foodie' 
+            },
+            body: JSON.stringify(requestBody)
+        });
+        if (!response.ok) {
+            const errorResponse = await response.json();
+            console.error('Error response from server:', errorResponse);
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        console.log("User registered successfully: " + JSON.stringify(data, null, 2));
+        return data;
+    } catch (error) {
+        console.error('Error registering user:', error);
+        throw error;
+    }
+};
+
+export const registerFacility = async (facilityData) => {
+    try {
+        const url = `${FORK_URL}api/facilities/`;
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'foodie' 
+            },
+            body: JSON.stringify(facilityData)
+        });
+        if (!response.ok) {
+            const errorResponse = await response.json();
+            console.error('Error response from server:', errorResponse);
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        console.log("Facility registered successfully: " + JSON.stringify(data, null, 2));
+        return data;
+    } catch (error) {
+        console.error('Error registering facility:', error);
+        throw error;
+    }
+};
+
+// --------------KAIST EMAIL----------------- 
+
+export const verifyEmail = async (userId, code) => {
+    try {
+        const url = `${FORK_URL}api/auth/verify-kaist`;
+        const requestBody = {
+            userId,
+            code
+        };
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'foodie' 
+            },
+            body: JSON.stringify(requestBody)
+        });
+        if (!response.ok) {
+            const errorResponse = await response.json();
+            console.error('Error response from server :', errorResponse);
+            //throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        console.log("Email verified successfully : " + JSON.stringify(data, null, 2));
+        return data;
+    } catch (error) {
+        //console.error('Error verifying email :', error);
+        //throw error;
+    }
+};
+
+export const resendVerifyEmail = async (userId) => {
+    try {
+        const url = `${FORK_URL}api/auth/resend-verification-mail`;
+        const requestBody = {
+            userId
+        };
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'foodie' 
+            },
+            body: JSON.stringify(requestBody)
+        });
+        if (!response.ok) {
+            const errorResponse = await response.json();
+            console.error('Error response from server :', errorResponse);
+            //throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        console.log("Email resent successfully : " + JSON.stringify(data, null, 2));
+        return data;
+    } catch (error) {
+        console.error('Error resending email :', error);
+        //throw error;
+    }
+};
+
+// --------------DEFAULT FILTERS----------------- 
+
+export const addUserPreference = async (userId, preferenceId) => {
+    try {
+      const url = `${FORK_URL}api/users/preference/${userId}`;
+      const requestBody = { preferenceId };
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'foodie'
+        },
+        body: JSON.stringify(requestBody)
+      });
+      if (!response.ok) {
+        const errorResponse = await response.json();
+        console.error('Error response from server in addUserPreference:', errorResponse);
+        throw new Error(errorResponse.message || 'Network response in addUserPreference was not ok');
+      }
+      const data = await response.json();
+      console.log("Preference added successfully:", JSON.stringify(data, null, 2));
+      return data;
+    } catch (error) {
+      console.error('Error adding user preference:', error);
+      throw error;
+    }
+  };
+  
 
 export const fetchImage = async (uri) => {
     const url = new URL(uri);
@@ -184,21 +328,28 @@ export const getUserByID = async (userID) => {
         const data = await response.json();
         return data.data;
     } catch (error) {
-        console.error('Error fetching user:', error);
+        console.error('Error fetching use in getUserById:', error);
         throw error;
     }
 };
 
 export const getUserPreferences = async (userID) => {
     try {
-        const response = await fetch(`${BASE_URL}/users/preference/${encodeURIComponent(userID)}`);
+        const url = `${FORK_URL}api/users/preference/${encodeURIComponent(userID)}`;
+        const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'foodie'
+        }
+        });
         if (!response.ok) {
             throw new Error('Network response was not ok');
         }
         const data = await response.json();
         return data;
     } catch (error) {
-        console.error('Error fetching user:', error);
+        console.error('Error fetching user in getUserPreferences:', error);
         throw error;
     }
 };

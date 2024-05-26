@@ -1,37 +1,38 @@
 import React, { useState, useCallback} from 'react';
-import { ScrollView, View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
+import { ScrollView, View, Text, TouchableOpacity, Image, StyleSheet, Alert } from 'react-native';
 import { Border, Color, GlobalStyles } from "../GlobalStyles.js";
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { addUserPreference } from '../screens/api';
 
 const Survey = ({ navigation }) => {
-  const onConfirm = useCallback(() => {
-    navigation.navigate("AdjustFilter"); 
-  }, [navigation]);
+  const route = useRoute();
+  // const id  = route.params.id;
+  const id = 9;
 
   const [selectedCuisines, setSelectedCuisines] = useState([]);
   const [selectedDietaryPreferences, setSelectedDietaryPreferences] = useState([]);
 
   const cuisines = [
-    { id: 'korean', name: 'Korean', icon: require('../assets/icons/attributes/korean.png') },
-    { id: 'japanese', name: 'Japanese', icon: require('../assets/icons/attributes/japanese.png') },
-    { id: 'chinese', name: 'Chinese', icon: require('../assets/icons/attributes/chinese.png') },
-    { id: 'asian', name: 'Asian', icon: require('../assets/icons/attributes/asian.png') },
-    { id: 'western', name: 'Western', icon: require('../assets/icons/attributes/western.png') },
-    { id: 'pizza', name: 'Pizza', icon: require('../assets/icons/attributes/pizza.png') },
-    { id: 'burger', name: 'Burger', icon: require('../assets/icons/attributes/burger.png') },
-    { id: 'chicken', name: 'Chicken', icon: require('../assets/icons/attributes/chicken.png') },
-    { id: 'salad', name: 'Salad', icon: require('../assets/icons/attributes/salad.png') },
-    { id: 'cafe', name: 'Cafe', icon: require('../assets/icons/attributes/coffee.png') },
-    { id: 'bar', name: 'Bar', icon: require('../assets/icons/attributes/bar.png') },
+    { id: 1, type: 0, name: 'Korean', icon: require('../assets/icons/attributes/korean.png') },
+    { id: 2, type: 0, name: 'Japanese', icon: require('../assets/icons/attributes/japanese.png') },
+    { id: 3, type: 0, name: 'Chinese', icon: require('../assets/icons/attributes/chinese.png') },
+    { id: 4, type: 0, name: 'Asian', icon: require('../assets/icons/attributes/asian.png') },
+    { id: 5, type: 0, name: 'Western', icon: require('../assets/icons/attributes/western.png') },
+    { id: 6, type: 0, name: 'Pizza', icon: require('../assets/icons/attributes/pizza.png') },
+    { id: 7, type: 0, name: 'Burger', icon: require('../assets/icons/attributes/burger.png') },
+    { id: 8, type: 0, name: 'Chicken', icon: require('../assets/icons/attributes/chicken.png') },
+    { id: 9, type: 0, name: 'Salad', icon: require('../assets/icons/attributes/salad.png') },
+    { id: 10, type: 0, name: 'Cafe', icon: require('../assets/icons/attributes/coffee.png') },
+    { id: 11, type: 0, name: 'Bar', icon: require('../assets/icons/attributes/bar.png') },
   ];
 
   const dietaryPreferences = [
-    { id: 'vegetarian', name: 'Vegetarian', icon: require('../assets/icons/attributes/vegetarian.png')  },
-    { id: 'vegan', name: 'Vegan', icon: require('../assets/icons/attributes/salad.png')  },
-    { id: 'pescatarian', name: 'Pescatarian', icon: require('../assets/icons/attributes/pescatarian.png')  },
-    { id: 'halal', name: 'Halal', icon: require('../assets/icons/attributes/halal.png')  },
-    { id: 'lactose-free', name: 'Lactose-Free', icon: require('../assets/icons/attributes/lactosefree.png')  },
-    { id: 'gluten-free', name: 'Gluten-Free', icon: require('../assets/icons/attributes/glutenfree.png')  },
+    { id: 12, type: 1, name: 'Vegetarian', icon: require('../assets/icons/attributes/vegetarian.png')  },
+    { id: 13, type: 1, name: 'Vegan', icon: require('../assets/icons/attributes/salad.png')  },
+    { id: 14, type: 1, name: 'Pescatarian', icon: require('../assets/icons/attributes/pescatarian.png')  },
+    { id: 15, type: 1, name: 'Halal', icon: require('../assets/icons/attributes/halal.png')  },
+    { id: 16, type: 1, name: 'Lactose-Free', icon: require('../assets/icons/attributes/lactosefree.png')  },
+    { id: 17, type: 1, name: 'Gluten-Free', icon: require('../assets/icons/attributes/glutenfree.png')  },
   ];
 
   const handleSelectCuisine = (cuisine) => {
@@ -47,6 +48,20 @@ const Survey = ({ navigation }) => {
       else return [...prev, preference];
     });
   };
+
+  /* const onConfirm = useCallback(() => {
+    navigation.navigate("AdjustFilter"); 
+  }, [navigation]); */
+  const handlePreferences = useCallback(async () => {
+    try {
+      const allPreferences = [...selectedCuisines, ...selectedDietaryPreferences];
+      await Promise.all(allPreferences.map(preferenceId => addUserPreference(id, preferenceId)));
+      navigation.navigate("AdjustFilter");
+    } catch (error) {
+      Alert.alert('Error', 'Failed to save preferences. Please try again.');
+      console.error('Error saving preferences:', error);
+    }
+  }, [selectedCuisines, selectedDietaryPreferences, navigation, id]);
 
   return (
     <ScrollView style={styles.container}>
@@ -86,7 +101,7 @@ const Survey = ({ navigation }) => {
         ))}
       </View>
       <View style={styles.mainArea}>
-        <TouchableOpacity style={GlobalStyles.confirmButton}onPress={onConfirm}>
+        <TouchableOpacity style={GlobalStyles.confirmButton}onPress={handlePreferences}>
           <Text style={GlobalStyles.confirmButtonText}>Confirm</Text>
         </TouchableOpacity>
       </View>

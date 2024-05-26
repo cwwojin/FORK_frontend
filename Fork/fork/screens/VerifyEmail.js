@@ -1,19 +1,42 @@
 import React, { useCallback, useState }  from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Image, TouchableOpacity, SafeAreaView } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet, Image, TouchableOpacity, SafeAreaView, Alert } from 'react-native';
 import {LinearGradient}  from 'expo-linear-gradient';
 import { Border, Color, GlobalStyles } from "../GlobalStyles.js"; 
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { verifyEmail, resendVerifyEmail } from './api.js';
 
 const VerifyEmail = ({navigation}) => {
-  const onResend = useCallback(() => {
-    navigation.navigate("VerifyEmail"); 
-  }, [navigation]);
-
-  const onConfirm = useCallback(() => {
-    navigation.navigate("Survey");
-  }, [navigation]);
-
+  const route = useRoute();
+  const username  = route.params.username;
   const [verificationCode, setVerificationCode] = useState('');
+
+  const resendEmail = async () => {
+    try {
+      setVerificationCode('');
+      const data = await resendVerifyEmail(username);
+      console.log("Email resent data:", data);
+    } catch (error) {
+      navigation.navigate("VerifyEmail", { username: username });
+      setVerificationCode('');
+    }
+  };
+
+  
+  const handleVerification = async () => {
+    try {
+        const data = await verifyEmail(username, verificationCode);
+        if (data && data.status == "success") { 
+          console.log("Email verification data:", data);
+          navigation.navigate("Survey", { id: data.data.id });
+        } else {
+          throw new Error('Verification failed. Please check your code and try again.');
+        }
+    } catch (error) {
+      Alert.alert('Wrong Verification Code', 'Try again with the correct verification code');
+      navigation.navigate("VerifyEmail", { username: username })
+      setVerificationCode('');
+    }
+  };
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -35,10 +58,10 @@ const VerifyEmail = ({navigation}) => {
             />
             <Image source={require("../assets/icons/password.png")} style={GlobalStyles.passwordIcon} />
           </View>
-          <TouchableOpacity onPress={onResend}>
-            <Text style={styles.resendText}>Resend code in 00:30 seconds</Text>
+          <TouchableOpacity onPress={resendEmail}>
+            <Text style={styles.resendText}>Resend code</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={GlobalStyles.confirmButton} onPress={onConfirm}>
+          <TouchableOpacity style={GlobalStyles.confirmButton} onPress={handleVerification}>
           <Text style={GlobalStyles.confirmButtonText}>Confirm</Text>
           </TouchableOpacity>
         </View>
