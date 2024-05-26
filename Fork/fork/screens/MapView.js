@@ -14,8 +14,6 @@ import * as Location from 'expo-location';
 
 const MapView = () => {
   const navigation = useNavigation();
-
-  const isTesting = false;
   const [searchQuery, setSearchQuery] = useState('');
   const webViewRef = useRef(null);
   const [webViewReady, setWebViewReady] = useState(false);
@@ -389,13 +387,13 @@ const MapView = () => {
 
     try {
       if (searchQuery) {
-          const result = isTesting ? await mockFetchFacilityWithName(searchQuery) : await fetchFacilityWithName(searchQuery);
-          facilities = result.data || [];
+          const result = await fetchFacilityWithName(searchQuery, showOnlyOpen);
+          facilities = result || [];
       } else if (neLat && neLng && swLat && swLng) {
-          facilities = isTesting ? await mockFetchFacilitiesInBounds(neLat, neLng, swLat, swLng) : await fetchFacilitiesInBounds(neLat, neLng, swLat, swLng);
-      }
+          facilities = await fetchFacilitiesInBounds(neLat, neLng, swLat, swLng);
+        }
 
-      if (showOnlyOpen) {
+      if (showOnlyOpen & !searchQuery) {
         facilities = facilities.filter(facility => {
           const { status } = isOpenNow(facility.opening_hours);
           return status === "Open";
@@ -452,7 +450,7 @@ const MapView = () => {
       console.error('Failed to fetch facilities:', error);
       setDisplayedFacilities([]);
     }
-  }, [isTesting, showOnlyOpen, selectedCuisines, selectedDietaryPreferences, setDisplayedFacilities, webViewRef]);  // Dependencies necessary for useCallback
+  }, [showOnlyOpen, selectedCuisines, selectedDietaryPreferences, setDisplayedFacilities, webViewRef]);  // Dependencies necessary for useCallback
 
   
   const onWebViewMessage = (event) => {
@@ -486,16 +484,21 @@ const MapView = () => {
   };
 
   const handleShowOnlyOpenToggle = () => {
-    setShowOnlyOpen(!showOnlyOpen);
-    if (!showOnlyOpen) {
-      const openFacilities = displayedFacilities.filter(facility => {
-        const { status } = isOpenNow(facility.opening_hours);
-        return status === "Open";
-      });
-      setDisplayedFacilities(openFacilities);
+    const newShowOnlyOpen = !showOnlyOpen;
+    setShowOnlyOpen(newShowOnlyOpen);
+    console.log("handleShowOnlyOpenToggle triggered:", { searchQuery, newShowOnlyOpen });
+    if (searchQuery) {
+      fetchAndUpdateFacilities(searchQuery, neLat, neLng, swLat, swLng);
     } else {
-      // If showing all facilities, fetch or restore the original list
-      fetchAndUpdateFacilities('', neLat, neLng, swLat, swLng);
+      if (!showOnlyOpen) {
+          const openFacilities = displayedFacilities.filter(facility => {
+              const { status } = isOpenNow(facility.opening_hours);
+              return status === "Open";
+          });
+          setDisplayedFacilities(openFacilities);
+      } else {
+          fetchAndUpdateFacilities('', neLat, neLng, swLat, swLng);
+      }
     }
   };
 
@@ -507,7 +510,6 @@ const MapView = () => {
 
   useEffect(() => {
     if (webViewRef.current && webViewReady && isExpanded) {
-      //console.log("Restoring map state", { lat: mapCenter.lat, lng: mapCenter.lng, zoom: mapZoom });
       webViewRef.current.postMessage(JSON.stringify({
         type: 'restoreMapState',
         lat: mapCenter.lat,
@@ -541,7 +543,7 @@ const MapView = () => {
               <Text style={styles.filterButtonText}>Filter</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={() => setShowOnlyOpen(!showOnlyOpen)}
+              onPress={() => handleShowOnlyOpenToggle()}
               style={styles.toggleButton}
               activeOpacity={0.7}>  
               <Text style={styles.toggleButtonText}>
