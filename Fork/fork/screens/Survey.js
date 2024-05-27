@@ -49,14 +49,11 @@ const Survey = ({ navigation }) => {
     });
   };
 
-  /* const onConfirm = useCallback(() => {
-    navigation.navigate("AdjustFilter"); 
-  }, [navigation]); */
   const handlePreferences = useCallback(async () => {
     try {
       const allPreferences = [...selectedCuisines, ...selectedDietaryPreferences];
       await Promise.all(allPreferences.map(preferenceId => addUserPreference(id, preferenceId)));
-      navigation.navigate("AdjustFilter");
+      navigation.navigate("SuccessfulRegistration");
     } catch (error) {
       Alert.alert('Error', 'Failed to save preferences. Please try again.');
       console.error('Error saving preferences:', error);

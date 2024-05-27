@@ -19,7 +19,7 @@ const SignUpInputFacility = () => {
       try {
           const data = await registerUser(username, password, 2, email);
           console.log("Facility user registration data:", data);
-          navigation.navigate("FacilityInformation"); 
+          navigation.navigate("FacilityInformation", { authorId: data.data.id, email: data.data.email }); 
       } catch (error) {
         console.error('Error in handleRegister for Facility user : ', error);
       }

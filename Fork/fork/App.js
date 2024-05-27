@@ -33,7 +33,6 @@ import MapView from './screens/MapView.js';
 import FacilityDetail from './screens/FacilityDetail.js';
 import Settings from './screens/Settings.js';
 import Testing from './screens/Testing.js';
-{/*import Maps from './screens/Maps';*/ }
 
 
 const requestLocationPermission = async () => {
@@ -77,8 +76,7 @@ const App = () => {
               <Stack.Screen name="Home" component={Home} />
               <Stack.Screen name="Favorites" component={Favorites} />
               <Stack.Screen name="MapView" component={MapView} />
-              {/* <Stack.Screen name="MyReviews" component={MyReviews} />
-              {/* <Stack.Screen name="Maps" component={Maps} /> */}
+              {/* <Stack.Screen name="MyReviews" component={MyReviews} />*/}
               <Stack.Screen name="MyReviews" component={MyReviews} />
               <Stack.Screen name="FacilityDetail" component={FacilityDetail} />
               <Stack.Screen name="MyStamps" component={MyStamps} />

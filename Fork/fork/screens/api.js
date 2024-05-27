@@ -19,32 +19,36 @@ export let USERPREFERENCE = "";
 export const handleLogin = async (username, password) => {
     console.log('in handleLogin : username => ' + username + ', password => ' + password);
     try {
-        const url = `${FORK_URL}api/auth/login`;
-        const requestBody = {
-            userId: username,
-            password: password
-        };
-        const response = await fetch(url, {
+      const url = `${FORK_URL}api/auth/login`;
+      const requestBody = {
+        userId: username,
+        password: password
+      };
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'foodie'
+          'Content-Type': 'application/json',
+          'Authorization': 'foodie'
         },
         body: JSON.stringify(requestBody)
-        });
-        if (response.status === 200) {
+      });
+      if (response.status === 200) {
         const jsonResponse = await response.json();
         USERTOKEN = jsonResponse.data.token;
         USERID = jsonResponse.data.user.id;
         USERPREFERENCE = await getUserPreferences(USERID);
-        } else {
+        console.log("USERID : " + USERID);
+        console.log("USERPREFERENCE : " + JSON.stringify(USERPREFERENCE, null, 2));
+        return true;
+      } else {
         console.log('Login Failed', 'Invalid credentials or insufficient permissions.');
-        }
+        return false;
+      }
     } catch (error) {
-        console.log(error);
+      console.log(error);
+      return false;
     }
-};
-
+  };
 // --------------REGISTER----------------- 
 
 export const registerUser = async (userId, password, userType, email) => {
@@ -80,26 +84,28 @@ export const registerUser = async (userId, password, userType, email) => {
 
 export const registerFacility = async (facilityData) => {
     try {
-        const url = `${FORK_URL}api/facilities/`;
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'foodie' 
-            },
-            body: JSON.stringify(facilityData)
-        });
-        if (!response.ok) {
-            const errorResponse = await response.json();
-            console.error('Error response from server:', errorResponse);
-            throw new Error('Network response was not ok');
-        }
-        const data = await response.json();
-        console.log("Facility registered successfully: " + JSON.stringify(data, null, 2));
-        return data;
+      const url = `${FORK_URL}api/facilities/facility-requests`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'foodie'
+        },
+        body: JSON.stringify(facilityData)
+      });
+  
+      if (!response.ok) {
+        const errorResponse = await response.json();
+        console.error('Error response from server in registerFacility:', errorResponse);
+        throw new Error(errorResponse.message || 'Network response was not ok in registerFacility');
+      }
+  
+      const data = await response.json();
+      console.log("Facility registration request sent successfully:", JSON.stringify(data, null, 2));
+      return data;
     } catch (error) {
-        console.error('Error registering facility:', error);
-        throw error;
+      console.error('Error sending facility registration request:', error);
+      throw error;
     }
 };
 
@@ -272,6 +278,8 @@ export const fetchFacilityWithName = async (facilityName, openNow = false, prefe
 }; 
 
 export const fetchFacilitiesInBounds = async (northEastLat, northEastLng, southWestLat, southWestLng) => {
+    //console.log( "USERID : " + USERID );
+    //console.log( "USERPREFERENCE : " + JSON.stringify(USERPREFERENCE, null, 2));
     try {
         const latMin = Math.min(northEastLat, southWestLat)
         const latMax = Math.max(northEastLat, southWestLat)
@@ -293,7 +301,7 @@ export const fetchFacilitiesInBounds = async (northEastLat, northEastLng, southW
         //console.log("JSON data:", jsonResponse);
 
         const facilitiesData = jsonResponse.data;
-        //console.log("Facilities data:", facilitiesData);
+        console.log("Facilities data:", JSON.stringify(facilitiesData, null, 2));
 
         return facilitiesData; 
         
@@ -301,6 +309,15 @@ export const fetchFacilitiesInBounds = async (northEastLat, northEastLng, southW
         console.error('Error fetching facilities in real fetchMethod:', error);
         throw error;
     }
+};
+
+export const getParsedUserPreferences = () => {
+    console.log("here and USERPREFERENCE:", JSON.stringify(USERPREFERENCE, null, 2));
+    if (USERPREFERENCE && Array.isArray(USERPREFERENCE.data)) {
+      console.log("Parsing preferences by IDs");
+      return USERPREFERENCE.data.map(pref => pref.id);
+    }
+    return [];
 };
 
 // --------------USER-----------------

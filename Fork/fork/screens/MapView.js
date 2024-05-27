@@ -7,7 +7,7 @@ import SquareFacility from '../components/SqureFacility';
 import LongFacility from '../components/LongFacility';
 import NavigationBar from '../components/NavigationBar';
 import { WebView } from 'react-native-webview';
-import { fetchFacilityWithName, mockFetchFacilityWithName, fetchFacilitiesInBounds, mockFetchFacilitiesInBounds } from './api';
+import { fetchFacilityWithName, fetchFacilitiesInBounds, getParsedUserPreferences } from './api';
 import { FacilityDetails } from './MapViewFunctions';
 import { isOpenNow } from './MapViewFunctions';
 import * as Location from 'expo-location';
@@ -23,7 +23,7 @@ const MapView = () => {
   const [mapCenter, setMapCenter] = useState({ lat: 36.3715, lng: 127.3625 }); 
   const [mapZoom, setMapZoom] = useState(3); 
   const [filterExpanded, setFilterExpanded] = useState(false);
-  
+  const [userPreferencesActive, setUserPreferencesActive] = useState(false);
 
   const [neLat, setNeLat] = useState(null);
   const [neLng, setNeLng] = useState(null);
@@ -36,26 +36,26 @@ const MapView = () => {
   var isUserMarkerVisible = false;
   
   const cuisines = [
-    { id: 'korean', name: 'Korean', typeIcon: require('../assets/icons/attributes/korean.png') },
-    { id: 'japanese', name: 'Japanese', typeIcon: require('../assets/icons/attributes/japanese.png') },
-    { id: 'chinese', name: 'Chinese', typeIcon: require('../assets/icons/attributes/chinese.png') },
-    { id: 'asian', name: 'Asian', typeIcon: require('../assets/icons/attributes/asian.png') },
-    { id: 'western', name: 'Western', typeIcon: require('../assets/icons/attributes/western.png') },
-    { id: 'pizza', name: 'Pizza', typeIcon: require('../assets/icons/attributes/pizza.png') },
-    { id: 'burger', name: 'Burger', typeIcon: require('../assets/icons/attributes/burger.png') },
-    { id: 'chicken', name: 'Chicken', typeIcon: require('../assets/icons/attributes/chicken.png') },
-    { id: 'salad', name: 'Salad', typeIcon: require('../assets/icons/attributes/salad.png') },
-    { id: 'cafe', name: 'Cafe', typeIcon: require('../assets/icons/attributes/coffee.png') },
-    { id: 'bar', name: 'Bar', typeIcon: require('../assets/icons/attributes/bar.png') },
+    { id: 1, name: 'Korean', typeIcon: require('../assets/icons/attributes/korean.png') },
+    { id: 2, name: 'Japanese', typeIcon: require('../assets/icons/attributes/japanese.png') },
+    { id: 3, name: 'Chinese', typeIcon: require('../assets/icons/attributes/chinese.png') },
+    { id: 4, name: 'Asian', typeIcon: require('../assets/icons/attributes/asian.png') },
+    { id: 5, name: 'Western', typeIcon: require('../assets/icons/attributes/western.png') },
+    { id: 6, name: 'Pizza', typeIcon: require('../assets/icons/attributes/pizza.png') },
+    { id: 7, name: 'Burger', typeIcon: require('../assets/icons/attributes/burger.png') },
+    { id: 8, name: 'Chicken', typeIcon: require('../assets/icons/attributes/chicken.png') },
+    { id: 9, name: 'Salad', typeIcon: require('../assets/icons/attributes/salad.png') },
+    { id: 10, name: 'Cafe', typeIcon: require('../assets/icons/attributes/coffee.png') },
+    { id: 11, name: 'Bar', typeIcon: require('../assets/icons/attributes/bar.png') },
   ];
 
   const dietaryPreferences = [
-    { id: 'vegetarian', name: 'Vegetarian', typeIcon: require('../assets/icons/attributes/vegetarian.png')  },
-    { id: 'vegan', name: 'Vegan', typeIcon: require('../assets/icons/attributes/salad.png')  },
-    { id: 'pescatarian', name: 'Pescatarian', typeIcon: require('../assets/icons/attributes/pescatarian.png')  },
-    { id: 'halal', name: 'Halal', typeIcon: require('../assets/icons/attributes/halal.png')  },
-    { id: 'lactose-free', name: 'Lactose-Free', typeIcon: require('../assets/icons/attributes/lactosefree.png')  },
-    { id: 'gluten-free', name: 'Gluten-Free', typeIcon: require('../assets/icons/attributes/glutenfree.png')  },
+    { id: 12, name: 'Vegetarian', typeIcon: require('../assets/icons/attributes/vegetarian.png')  },
+    { id: 13, name: 'Vegan', typeIcon: require('../assets/icons/attributes/salad.png')  },
+    { id: 14, name: 'Pescatarian', typeIcon: require('../assets/icons/attributes/pescatarian.png')  },
+    { id: 15, name: 'Halal', typeIcon: require('../assets/icons/attributes/halal.png')  },
+    { id: 16, name: 'Lactose-Free', typeIcon: require('../assets/icons/attributes/lactosefree.png')  },
+    { id: 17, name: 'Gluten-Free', typeIcon: require('../assets/icons/attributes/glutenfree.png')  },
   ];
   
   const handleSelectCuisine = (cuisine) => {
@@ -99,6 +99,41 @@ const MapView = () => {
     }
   };
 
+  const handleTogglePreferences = () => {
+    console.log("In handleTogglePreferences");
+    const newActiveState = !userPreferencesActive;
+    setUserPreferencesActive(newActiveState);
+    if (newActiveState) {
+      console.log("Preferences active");
+      const preferences = getParsedUserPreferences();
+      console.log("Parsed preferences (IDs):", preferences);
+      
+    // Log each step in the filtering process
+    const newSelectedCuisines = preferences.filter(pref => {
+      const matched = cuisines.some(c => c.id === pref);
+      console.log(`Checking cuisine ID ${pref}: ${matched}`);
+      return matched;
+    });
+    
+    const newSelectedDietaryPreferences = preferences.filter(pref => {
+      const matched = dietaryPreferences.some(d => d.id === pref);
+      console.log(`Checking dietary preference ID ${pref}: ${matched}`);
+      return matched;
+    });
+      
+      setSelectedCuisines(newSelectedCuisines);
+      setSelectedDietaryPreferences(newSelectedDietaryPreferences);
+      
+      console.log("New selected cuisines:", newSelectedCuisines);
+      console.log("New selected dietary preferences:", newSelectedDietaryPreferences);
+    } else {
+      console.log("Preferences not active");
+      setSelectedCuisines([]);
+      setSelectedDietaryPreferences([]);
+    }
+  };
+  
+  
   const mapHtml = `
   <!DOCTYPE html>
   <html>
@@ -112,10 +147,10 @@ const MapView = () => {
       }
       #zoomControls {
         position: absolute;
-        right: 35px; /* Right spacing */
+        right: 17px; /* Right spacing */
         top: 50%; /* Vertically middle */
         /*transform: translateY(80%);*/
-        transform: translateY(20%);
+        transform: translateY(-11%);
         z-index: 5;
       }
       .button {
@@ -172,6 +207,7 @@ const MapView = () => {
       <button class="button" onclick="zoomIn()">+</button>
       <button class="button" onclick="zoomOut()">-</button>
       <button class="button" id="locateButton" onclick="toggleLocate()">📍</button>
+      <button class="button" id="preferencesButton" onclick="togglePreferences()">P</button>
     </div>
     <div id="map"></div>
     <script>
@@ -218,6 +254,17 @@ const MapView = () => {
         window.ReactNativeWebView.postMessage(JSON.stringify({
           type: 'markerVisibilityChanged',
           isVisible: userMarkerVisible
+        }));
+      }
+
+      function togglePreferences() {
+        const updateMarker = {
+          type: 'debug', 
+          message:"in togglePreferences()"
+        };
+        window.ReactNativeWebView.postMessage(JSON.stringify(updateMarker));
+        window.ReactNativeWebView.postMessage(JSON.stringify({
+          type: 'togglePreferences'
         }));
       }
       
@@ -479,7 +526,11 @@ const MapView = () => {
       //console.log('Updated Location:', data.lat, data.lon);
     }
     if (data.type === 'debug') {
-      //console.log('DEBUG', data.message);
+      console.log('DEBUG', data.message);
+    }
+    if (data.type === 'togglePreferences') {
+      console.log("received togglePreferences data type");
+      handleTogglePreferences();
     }
   };
 
@@ -503,6 +554,14 @@ const MapView = () => {
   };
 
   useEffect(() => {
+    console.log("selectedCuisines updated:", selectedCuisines);
+  }, [selectedCuisines]);
+  
+  useEffect(() => {
+    console.log("selectedDietaryPreferences updated:", selectedDietaryPreferences);
+  }, [selectedDietaryPreferences]);
+  
+  useEffect(() => {
     if (webViewReady && neLat && neLng && swLat && swLng && searchQuery === '') {
       fetchAndUpdateFacilities('', neLat, neLng, swLat, swLng);
     }
@@ -518,7 +577,7 @@ const MapView = () => {
       }));
     }
   }, [webViewRef, webViewReady, mapCenter, mapZoom, isExpanded]);
-  
+
   return (
     <View style={styles.container}>
       {webViewReady && (
