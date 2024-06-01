@@ -12,11 +12,10 @@ import {
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import ToggleSwitch from 'toggle-switch-react-native';
-import { launchImageLibrary } from 'react-native-image-picker';
+import * as ImagePicker from 'expo-image-picker';
 
 
 import { GlobalStyles, Color, FontFamily, FontSize, Border } from '../GlobalStyles';
-import SquareFacility from '../components/SqureFacility';
 import Hashtag from '../components/Hashtag';
 import Menu from '../components/Menu';
 import Review from '../components/Review';
@@ -29,48 +28,54 @@ import stampImage from '../assets/icons/stamp.png';
 
 //To be deleted
 import longImagePlaceholder from '../assets/placeholders/long_image.png';
-import { fetchImage, getFacilityByID, getFacilityMenu, getFacilityPreferences, getFacilityStamp, getFacilityStampRuleByID, getReviewByQuery, getUserByID, USERID } from './api';
+import { addFavorite, deleteFavorite, fetchImage, getFacilityByID, getFacilityMenu, getFacilityNotices, getFacilityOpeningHour, getFacilityPreferences, getFacilityStamp, getFacilityStampRuleByID, getReviewByQuery, getUserByID, isFacilityBookmarked, USERID } from './api';
 
 const FacilityDetail = () => {
 
   const route = useRoute();
 
-  // const { facilityID } = route.params;
-  const facilityID = 1;
+  const { facilityID } = route.params;
 
   const [facilityInfo, setFacilityInfo] = useState({});
   const [reviewList, setReviewList] = useState('');
-  const [reviewUserInfo, setReviewUserInfo] = useState({});
   const [stampRule, setStampRule] = useState([]);
   const [stampLogo, setStampLogo] = useState(stampImage);
   const [myStamp, setMyStamp] = useState(0);
   const [preferences, setPreferences] = useState('');
-  const [menuList, setMenuList] = useState([]);
+  const [bookmarked, setBookmarked] = useState(false);
+  const [timeData, setTimeData] = useState([]);
+  const [profileImage, setProfileImage] = useState(longImagePlaceholder);
   const [isLoading, setIsLoading] = useState(true);
+  const [notices, setNotices] = useState([]);
 
   useEffect(() => {
     const fetchFacility = async (facilityID) => {
       try {
         const data = await getFacilityByID(facilityID);
         setFacilityInfo(data);
-        const preference = await getFacilityPreferences(facilityID);
-        setPreferences(preference);
-        const stamps = await getFacilityStampRuleByID(facilityID);
-        if (stamps.logo_img_uri) {
-          const stampImage = await fetchImage(stamps.logo_img_uri);
-          setStampLogo(stampImage);
-        }
-        if (stamps.rewards) {
-          const maxCnt = Math.max(...stamps.rewards.map(reward => reward.cnt));
-          const newStampRule = Array(maxCnt).fill('');
-          stamps.rewards.forEach(reward => {
-            newStampRule[reward.cnt - 1] = reward.name;
-          });
-          setStampRule(newStampRule);
-        }
-        const newMyStamp = await getFacilityStamp(facilityID);
-        if (newMyStamp) {
-          setMyStamp(newMyStamp.cnt);
+
+        const newtimeData = [
+          { index: 1, day: 'Monday', openTime: '', closeTime: '' },
+          { index: 2, day: 'Tuesday', openTime: '', closeTime: '' },
+          { index: 3, day: 'Wednesday', openTime: '', closeTime: '' },
+          { index: 4, day: 'Thursday', openTime: '', closeTime: '' },
+          { index: 5, day: 'Friday', openTime: '', closeTime: '' },
+          { index: 6, day: 'Saturday', openTime: '', closeTime: '' },
+          { index: 0, day: 'Sunday', openTime: '', closeTime: '' },
+
+        ];
+        data.opening_hours.forEach(({ day, open_time, close_time }) => {
+          const item = newtimeData.find(entry => entry.index === day);
+          if (item) {
+            item.openTime = open_time.slice(0, 5);  // Remove seconds
+            item.closeTime = close_time.slice(0, 5); // Remove seconds
+          }
+        });
+        setTimeData(newtimeData)
+
+        if (data.profile_img_uri) {
+          const imageUrl = await fetchImage(data.profile_img_uri);
+          setProfileImage(imageUrl);
         }
       } catch (error) {
         console.log(error.message);
@@ -80,28 +85,7 @@ const FacilityDetail = () => {
       try {
         const data = await getReviewByQuery('', facilityID, '', '');
         setReviewList(data);
-        const newImageList = {};
-        const newReviewUserList = {};
-        for (const item of data) {
-          const userInfo = await getUserByID(item.author_id);
-          if (item.img_uri) {
-            const imageUrl = await fetchImage(item.img_uri);
-            console.log("img", imageUrl);
-            newImageList[item.id] = imageUrl;
-          }
-          if (userInfo.profile_img_uri) {
-
-            const profileUrl = await fetchImage(userInfo.profile_img_uri);
-            newReviewUserList[item.id] = { userName: userInfo.account_id, userImage: profileUrl }
-          } else {
-            newReviewUserList[item.id] = { userName: userInfo.account_id, userImage: userImage }
-          }
-        }
-        setReviewImageList(newImageList);
-        setReviewUserInfo(newReviewUserList);
-        console.log(newImageList);
         setIsLoading(false);
-        console.log(data);
       } catch (error) {
         console.log(error.message);
       }
@@ -117,7 +101,7 @@ const FacilityDetail = () => {
           const maxCnt = Math.max(...stamps.rewards.map(reward => reward.cnt));
           const newStampRule = Array(maxCnt).fill('');
           stamps.rewards.forEach(reward => {
-            newStampRule[reward.cnt - 1] = reward.name;
+            newStampRule[reward.cnt - 1] = reward?.name;
           });
           setStampRule(newStampRule);
         }
@@ -136,12 +120,19 @@ const FacilityDetail = () => {
       } catch (error) {
         console.log(error.message);
       }
-    }
-    const fetchMenu = async (facilityID) => {
+    };
+    const isBookmarked = async (facilityID) => {
       try {
-        const newMenu = await getFacilityMenu(facilityID);
-        console.log("newMenu", newMenu);
-        setMenuList(newMenu);
+        const bookmark = await isFacilityBookmarked(facilityID);
+        setBookmarked(bookmark);
+      } catch (error) {
+        console.log(error.message);
+      }
+    };
+    const fetchNotices = async (facilityID) => {
+      try {
+        const newNoticeList = await getFacilityNotices(facilityID);
+        setNotices(newNoticeList);
       } catch (error) {
         console.log(error.message);
       }
@@ -150,16 +141,15 @@ const FacilityDetail = () => {
     fetchReviews(facilityID);
     fetchStamp(facilityID);
     fetchPreferences(facilityID);
-    fetchMenu(facilityID);
+    isBookmarked(facilityID);
+    fetchNotices(facilityID);
   }, []);
 
   const navigation = useNavigation();
 
   reviewHashtags = ['🍣 Japanese Food', '🥬 Vegetarian']
 
-  const [reviewImageList, setReviewImageList] = useState([]);
   const [isTimeVisible, setTimeVisible] = useState(false);
-  const [bookmarked, setBookmarked] = useState(false);
   const [stamp, setStamp] = useState(false);
   const [tabState, setTabState] = useState("Menu");
   const [reviewFilter, setReviewFilter] = useState(false);
@@ -176,6 +166,11 @@ const FacilityDetail = () => {
   };
 
   const toggleBookmarked = () => {
+    if (bookmarked) {
+      deleteFavorite(facilityID);
+    } else {
+      addFavorite(facilityID);
+    }
     setBookmarked(!bookmarked);
   };
 
@@ -217,20 +212,35 @@ const FacilityDetail = () => {
     return stars;
   };
 
-  const saveReviewImage = () => {
-    const options = {
-      mediaType: 'photo',
-      includeBase64: true,
-      includeExtra: true,
-      saveToPhotos: true,
-    };
-    launchImageLibrary(options, (response) => {
-      if (!response.didCancel) {
-        // Handle the response, for example, set the review image state
-        setReviewImage(response.assets[0].uri);
+  const requestMediaLibraryPermissions = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      alert('Sorry, we need camera roll permissions to make this work!');
+      return false;
+    }
+    return true;
+  };
+
+  const saveReviewImage = async (index, type) => {
+    try {
+      const hasPermission = await requestMediaLibraryPermissions();
+      if (!hasPermission) return;
+      let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 4],
+        quality: 1,
+      });
+      console.log("Result object:", result);
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const source = { uri: result.assets[0].uri };
+        console.log("source uri : " + source.uri);
+        setReviewImage(source.uri);
       }
-    });
-  }
+    } catch (error) {
+      console.error('Error selecting image:', error);
+    }
+  };
 
   const getCurrentDayTimeData = () => {
     const currentDay = new Date().toLocaleDateString('en-KR', { weekday: 'long' });
@@ -243,34 +253,9 @@ const FacilityDetail = () => {
     console.log(inputHashtag);
   }
 
-  const timeData = [
-    { day: 'Monday', openTime: '11:00', closeTime: '21:00' },
-    { day: 'Tuesday', openTime: '11:00', closeTime: '21:00' },
-    { day: 'Wednesday', openTime: '11:00', closeTime: '21:00' },
-    { day: 'Thursday', openTime: '11:00', closeTime: '21:00' },
-    { day: 'Friday' },
-    { day: 'Saturday', openTime: '11:00', closeTime: '21:00' },
-    { day: 'Sunday', openTime: '11:00', closeTime: '21:00' },
-  ];
-
-  const menu = [
-    { name: 'rice with chicken', description: 'Rice with soy-sauced chicken', price: 10000, image: require('../assets/placeholders/long_image.png') },
-    { name: 'rice with chicken', description: 'Rice with soy-sauced chicken', price: 10000, image: require('../assets/placeholders/long_image.png') },
-    { name: 'rice with chicken', description: 'Rice with soy-sauced chicken', price: 10000, image: require('../assets/placeholders/long_image.png') },
-  ];
-
   const summaryReview = "Clean, kind and tasty";
   const topHashtags = [
     "🕯️ Good mood", "🍴 Tasty", "😊 Kind", "🍴 Tasty", "😊 Kind"
-  ];
-
-  const notice = [
-    { image: userImage, name: 'Yosida', date: '2024.05.06', noticeImage: longImagePlaceholder, content: 'We are not opening today >< Have a nice holiday!' },
-    { image: userImage, name: 'Yosida', date: '2024.05.06', noticeImage: longImagePlaceholder, content: 'We are not opening today >< Have a nice holiday!' },
-    { image: userImage, name: 'Yosida', date: '2024.05.06', noticeImage: longImagePlaceholder, content: 'We are not opening today >< Have a nice holiday!' },
-    { image: userImage, name: 'Yosida', date: '2024.05.06', noticeImage: longImagePlaceholder, content: 'We are not opening today >< Have a nice holiday!' },
-    { image: userImage, name: 'Yosida', date: '2024.05.06', noticeImage: longImagePlaceholder, content: 'We are not opening today >< Have a nice holiday!' },
-    { image: userImage, name: 'Yosida', date: '2024.05.06', content: 'We are not opening today >< Have a nice holiday!' },
   ];
 
   return (
@@ -296,7 +281,7 @@ const FacilityDetail = () => {
                 paddingBottom: 10,
                 width: '70%'
               }}>
-              <Text style={GlobalStyles.h1} numberOfLines={1}>{facilityInfo.name}</Text>
+              <Text style={GlobalStyles.h1} numberOfLines={1}>{facilityInfo?.name}</Text>
             </View>
           </View>
           <View style={{ flexDirection: 'row' }}>
@@ -320,7 +305,7 @@ const FacilityDetail = () => {
           <View style={{ width: '100%', alignSelf: 'center' }}>
             <Image
               style={{ ...GlobalStyles.longImage, alignSelf: 'center' }}
-              source={require('../assets/placeholders/long_image.png')}
+              source={Number.isInteger(profileImage) ? profileImage : { uri: profileImage }}
             />
             <View style={{ flexDirection: 'row' }}>
               <Image
@@ -417,12 +402,13 @@ const FacilityDetail = () => {
             </TouchableOpacity>
           </View>
           <View>
-            {(tabState == "Menu") && menu.map(item => (
+            {(tabState == "Menu") && facilityInfo.menus?.filter(item => item !== null).map(item => (
               <Menu
+                key={item.id}
                 menuName={item.name}
                 menuDescription={item.description}
                 menuPrice={item.price}
-                menuImage={item.image}
+                menuImage={item.img_uri}
               />
             ))}
             {(tabState == "Review" && isLoading) && (
@@ -477,27 +463,27 @@ const FacilityDetail = () => {
                   .map(item => (
                     <Review
                       key={item.id} // Make sure to provide a unique key prop
-                      userImage={reviewUserInfo[item.id]?.userImage}
-                      userName={reviewUserInfo[item.id]?.userName}
+                      userID={item.author_id}
                       edit={USERID == item.author_id}
                       reviewDate={item.post_date}
                       reviewScore={item.score}
-                      reviewImage={item.img_uri ? reviewImageList[item.id] : item.img_uri}
+                      reviewImage={item.img_uri}
                       reviewContent={item.content}
                       reviewHashtags={item.hashtags}
                       admin={false}
+                      reviewreport={item}
                     />
                   ))
                 }
               </>
             )}
-            {(tabState == "Notice") && notice.map(item => (
+            {(tabState == "Notice") && notices?.map(item => (
               <Notice
-                facilityImage={item.image}
-                facilityName={item.name}
-                noticeDate={item.date}
-                noticeImage={item.noticeImage}
-                noticeContent={item.content}
+                facilityImage={profileImage}
+                facilityName={facilityInfo.name}
+                noticeDate={item.post_date}
+                noticeImage={item.img_uri}
+                noticeContent={item.title + '\n' + item.content}
               />
             ))}
           </View>
@@ -526,7 +512,7 @@ const FacilityDetail = () => {
               <View style={{ width: '100%', alignItems: 'center', paddingVertical: 10 }}>
                 <TouchableOpacity onPress={saveReviewImage}>
                   {reviewImage ? (
-                    <Image source={reviewImage} style={GlobalStyles.squareImage2} />
+                    <Image source={Number.isInteger(reviewImage) ? reviewImage : { uri: reviewImage }} style={GlobalStyles.squareImage2} />
                   ) : (
                     <Image source={require('../assets/placeholders/long_image.png')} style={GlobalStyles.squareImage2} />
                   )}

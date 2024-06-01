@@ -1,7 +1,9 @@
 import { Image, View, Text } from 'react-native';
 import { Color, GlobalStyles } from '../GlobalStyles.js';
+import { fetchImage } from '../screens/api.js';
+import { useEffect, useState } from 'react';
 
-import Hashtag from './Hashtag';
+import longImagePlaceholder from '../assets/placeholders/long_image.png';
 
 const Menu = ({
   menuName,
@@ -9,6 +11,23 @@ const Menu = ({
   menuPrice,
   menuImage,
 }) => {
+  const [menuImages, setMenuImages] = useState();
+
+  useEffect(() => {
+    const fetchMenuImage = async () => {
+      try {
+        const imageUrl = await fetchImage(menuImage);
+        if (imageUrl != undefined) {
+          setMenuImages(imageUrl);
+        }
+      } catch (error) {
+        console.log(error.message);
+      };
+    }
+    if (menuImage != "") {
+      fetchMenuImage();
+    };
+  }, []);
 
   return (
     <View style={{ width: '100%', alignItems: 'center' }}>
@@ -17,16 +36,16 @@ const Menu = ({
           flexDirection: 'row',
           alignItems: 'center',
           width: '100%',
-          justifyContent: 'flex-start',
+          justifyContent: 'space-between',
           paddingVertical: 10
         }}>
         <Image
           style={GlobalStyles.squareImage2}
           contentFit="cover"
-          source={menuImage}
+          source={(menuImages && menuImages != undefined) ? { uri: menuImages } : longImagePlaceholder}
         />
-        <View style={{ width: '65%', paddingVertical: 10 }}>
-          <View style={{paddingBottom: 10}}>
+        <View style={{ width: '60%', paddingVertical: 10 }}>
+          <View style={{ paddingBottom: 10 }}>
             <Text
               style={{
                 ...GlobalStyles.body,
@@ -43,7 +62,7 @@ const Menu = ({
               {menuDescription}
             </Text>
           </View>
-          <Text style={{...GlobalStyles.body4}}>{menuPrice} Won</Text>
+          <Text style={{ ...GlobalStyles.body4 }}>{menuPrice} Won</Text>
         </View>
       </View>
       <View

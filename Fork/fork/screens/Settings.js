@@ -6,6 +6,8 @@ import {
   SafeAreaView,
   TouchableOpacity,
   StyleSheet,
+  Alert,
+  Keyboard,
   TextInput,
   Button
 } from 'react-native';
@@ -14,6 +16,7 @@ import ToggleSwitch from 'toggle-switch-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import translateText from './translate'; // Import the translation utility
 import { GlobalStyles, Color, Border, FontSize } from '../GlobalStyles';
+import { sendBugReport } from './api';
 
 const Settings = () => {
   const navigation = useNavigation();
@@ -96,6 +99,7 @@ const Settings = () => {
 
   const toggleReport = () => {
     setReport(!report);
+    setReportContent('');
   };
 
   const logout = () => {
@@ -104,6 +108,16 @@ const Settings = () => {
 
   const deleteAccount = () => {
     // Logic for delete account
+  };
+
+  const sendReport = () => {
+    Alert.alert(
+      "Report Sent"
+    );
+    console.log(reportContent);
+    sendBugReport(reportContent);
+    toggleReport();
+    setReportContent('');
   };
 
   if (loading) {
@@ -196,7 +210,7 @@ const Settings = () => {
             </View>
           </View>
         </View>
-        
+
         <Button title="Change Language" onPress={toggleLanguage} />
 
         <View style={{ width: '100%', paddingVertical: 5 }}>
@@ -230,83 +244,118 @@ const Settings = () => {
               {/* <Text style={GlobalStyles.body}>{await translateText('Report an Issue', language)}</Text> */}
             </View>
           </TouchableOpacity>
-        </View> 
+        </View>
+
+        {report && (
+          <View style={styles.overlay}>
+            <View style={styles.background}>
+              <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+                <Text style={GlobalStyles.h2}>Issue Report</Text>
+                <TouchableOpacity style={{ ...GlobalStyles.topIcon, marginRight: 0 }} onPress={toggleReport}>
+                  <Image
+                    source={require('../assets/icons/navigate_close.png')}
+                  />
+                </TouchableOpacity>
+              </View>
+              <View style={{ width: '100%', alignItems: 'center' }}>
+                <View style={styles.inputSection}>
+                  <Text style={GlobalStyles.h3}>description</Text>
+                  <View style={GlobalStyles.inputWrapper3}>
+                    <TextInput
+                      style={styles.registrationInput2}
+                      onChangeText={setReportContent}
+                      value={reportContent}
+                      placeholder="Review Content"
+                      multiline={false}
+                      numberOfLines={5}
+                      onSubmitEditing={() => Keyboard.dismiss()}
+                    />
+                  </View>
+                </View>
+                <View style={{ width: '100%', justifyContent: 'flex-end', flexDirection: 'row', paddingTop: 20 }}>
+                  <TouchableOpacity onPress={sendReport}>
+                    <Text style={GlobalStyles.h4}>Send</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+
+          </View>
+        )}
       </View>
     </SafeAreaView>
-  );  
+  );
 };
 
-
 const styles = StyleSheet.create({
-    icon: {
-      width: 30,
-      height: 30,
-      marginRight: 10
-    },
-    container: {
-      width: '100%',
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      padding: 10,
-      alignItems: 'center'
-    },
-    overlay: {
-      ...StyleSheet.absoluteFillObject,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-    overlayTouchable: {
-      width: '80%',
-      height: '80%',
-      backgroundColor: 'white',
-      borderRadius: 10,
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-    background: {
-      height: '70%',
-      width: '90%',
-      justifyContent: 'flex-start',
-      backgroundColor: Color.white,
-      borderRadius: Border.br_lg,
-      padding: 30,
-      paddingTop: 15,
-      alignItems: 'center'
-    },
-    inputSection: {
-      width: '100%',
-      paddingVertical: 10,
-    },
-    registrationInput1: {
-      width: '100%',
-      borderColor: Color.lightGrey,
-      paddingVertical: 20,
-      paddingTop: 20,
-      fontSize: FontSize.size_sm,
-      color: Color.black,
-      paddingHorizontal: 25,
-      borderRadius: Border.br_9xs,
-      borderWidth: 2,
-      height: 60,
-    },
-    registrationInput2: {
-      width: '100%',
-      borderColor: Color.lightGrey,
-      paddingVertical: 20,
-      paddingTop: 20,
-      fontSize: FontSize.size_sm,
-      color: Color.black,
-      paddingHorizontal: 25,
-      borderRadius: Border.br_9xs,
-      borderWidth: 2,
-      height: 180,
-    },
-  });
-  
-  export default Settings;
-  
-  
-  
-  
-  
+  icon: {
+    width: 30,
+    height: 30,
+    marginRight: 10
+  },
+  container: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 10,
+    alignItems: 'center'
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  overlayTouchable: {
+    width: '80%',
+    height: '80%',
+    backgroundColor: 'white',
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  background: {
+    height: '50%',
+    width: '90%',
+    justifyContent: 'flex-start',
+    backgroundColor: Color.white,
+    borderRadius: Border.br_lg,
+    padding: 30,
+    paddingTop: 15,
+    alignItems: 'center'
+  },
+  inputSection: {
+    width: '100%',
+    paddingVertical: 10,
+  },
+  registrationInput1: {
+    width: '100%',
+    borderColor: Color.lightGrey,
+    paddingVertical: 20,
+    paddingTop: 20,
+    fontSize: FontSize.size_sm,
+    color: Color.black,
+    paddingHorizontal: 25,
+    borderRadius: Border.br_9xs,
+    borderWidth: 2,
+    height: 60,
+  },
+  registrationInput2: {
+    width: '100%',
+    borderColor: Color.lightGrey,
+    paddingVertical: 20,
+    paddingTop: 20,
+    fontSize: FontSize.size_sm,
+    color: Color.black,
+    paddingHorizontal: 25,
+    borderRadius: Border.br_9xs,
+    borderWidth: 2,
+    height: 180,
+  },
+});
+
+export default Settings;
+
+
+
+

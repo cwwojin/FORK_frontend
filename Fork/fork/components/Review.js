@@ -1,16 +1,17 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Image, View, Text, TouchableOpacity, Alert } from 'react-native';
 import { Color, GlobalStyles } from '../GlobalStyles.js';
 import Translator, {
-  TranslatorProvider,
   useTranslator,
 } from 'react-native-translator';
+import { fetchImage, getUserByID } from '../screens/api.js';
 
 import Hashtag from './Hashtag';
+import { deleteReport, sendReviewReport } from '../screens/api.js';
+import userProfilePlaceholder from '../assets/placeholders/User.png';
 
 const Review = ({
-  userImage,
-  userName,
+  userID,
   reviewDate,
   reviewScore,
   reviewImage,
@@ -18,9 +19,39 @@ const Review = ({
   reviewHashtags,
   edit,
   admin,
+  reviewreport,
 }) => {
 
-  console.log(reviewImage);
+  const [reviewImages, setReviewImages] = useState();
+  const [userProfile, setUserProfile] = useState()
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+        try {
+            const userInfo = await getUserByID(userID);
+            if (userInfo.profile_img_uri) {
+              const profileUrl = await fetchImage(userInfo.profile_img_uri);
+              setUserProfile({ userName: userInfo.account_id, userImage: profileUrl })
+            } else {
+              setUserProfile({ userName: userInfo.account_id, userImage: "" })
+            }
+        } catch (error) {
+          console.log(error.message);
+        }
+    };
+    const fetchReviewImage = async () => {
+      try {
+        const imageUrl = await fetchImage(reviewImage);
+        if (imageUrl != undefined) {
+          setReviewImages(imageUrl);
+        }
+      } catch (error) {
+        console.log(error.message);
+      };
+    }
+    if (reviewImage != "") { fetchReviewImage();};
+    fetchUserProfile();
+  }, []);
 
   const renderStars = () => {
     const stars = [];
@@ -70,8 +101,53 @@ const Review = ({
   };
 
   const deleteReview = () => { };
-  const keepReview = () => { };
-  const reportReview = () => { };
+  const keepReview = () => {
+    Alert.alert(
+      "Keep the Review",
+      "Do you really want to keep this review?",
+      [
+        {
+          text: "Yes",
+          onPress: () => {
+            deleteReport(reviewreport);
+            Alert.alert(
+              "Review kept"
+            )
+          }
+        },
+        {
+          text: "No",
+          onPress: () => { },
+          style: "cancel"
+        },
+      ],
+      { cancelable: false }
+    );
+  };
+  const reportReview = () => {
+    Alert.alert(
+      "Confirm Report",
+      "Do you really want to report this review?",
+      [
+        {
+          text: "Yes",
+          onPress: () => {
+            console.log("Report Sent");
+            sendReviewReport(reviewreport, reviewreport.id);
+            Alert.alert(
+              "Report Sent"
+            )
+          }
+        },
+        {
+          text: "No",
+          onPress: () => console.log("Report cancelled"),
+          style: "cancel"
+        },
+      ],
+      { cancelable: false }
+    );
+  };
   const editReview = () => { };
 
   return (
@@ -134,7 +210,7 @@ const Review = ({
             marginRight: 15,
           }}
           contentFit="cover"
-          source={userImage}
+          source={(userProfile?.userImage == "") ? userProfilePlaceholder : { uri: userProfile }}
         />
         <View>
           <View
@@ -148,7 +224,7 @@ const Review = ({
               style={{ ...GlobalStyles.body, marginRight: 10 }}
               numberOfLines={1}
               ellipsizeMode="tail">
-              {userName}
+              {userProfile?.userName}
             </Text>
             <Text
               style={{ ...GlobalStyles.body2, marginRight: 10 }}
@@ -179,7 +255,7 @@ const Review = ({
           <Image
             style={GlobalStyles.squareImage2}
             contentFit="cover"
-            source={{ uri: reviewImage }}
+            source={{ uri: reviewImages }}
           />
         )}
         <View style={{ width: '75%', paddingVertical: 20 }}>
