@@ -169,6 +169,7 @@ export const GlobalStyles = StyleSheet.create({
     margin: 20,
     marginTop: 5,
     borderRadius: Border.br_sm,
+    alignSelf: 'center'
   },
   squareImage: {
     width: 145,

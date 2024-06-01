@@ -15,9 +15,9 @@ const S3_ENDPOINT = `${API_ENDPOINT}/s3`
 // export let USERPREFERENCE = "";
 // export let USERBOOKMARKED = "";
 
-export let USERTOKEN = "kaist";
-export let USERID = 1;
-export let USERPREFERENCE = [{"created_at": "2024-05-26T06:30:42.990Z", "id": 1, "name": "Korean", "slug": "korean", "type": 0, "updated_at": "2024-05-26T06:30:42.990Z"}, {"created_at": "2024-05-26T06:30:42.990Z", "id": 2, "name": "Japanese", "slug": "japanese", "type": 0, "updated_at": "2024-05-26T06:30:42.990Z"}, {"created_at": "2024-05-26T06:30:42.990Z", "id": 3, "name": "Chinese", "slug": "chinese", "type": 0, "updated_at": "2024-05-26T06:30:42.990Z"}];
+export let USERTOKEN = "facility";
+export let USERID = 2;
+export let USERPREFERENCE = [];
 
 // --------------LOGIN----------------- 
 
@@ -586,6 +586,25 @@ export const getFavoritesNotices = async () => {
     }
 };
 
+export const getMyFacilities = async () => {
+    try {
+        const response = await fetch(`${BASE_URL}/users/${encodeURIComponent(USERID)}/myfacility`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': USERTOKEN
+            }
+        });
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        return data.data;
+    } catch (error) {
+        console.error('Error fetching user in getUserPreferences:', error);
+        throw error;
+    }
+};
 
 // --------------FACILITY-----------------
 
@@ -805,6 +824,26 @@ export const getReviewByQuery = async (userID, facilityId, hasImage, hashtags) =
     }
 };
 
+export const getTopHashtags = async (facilityID) => {
+    try {
+        const response = await fetch(`${BASE_URL}/hashtags/top/${encodeURIComponent(facilityID)}?limit=${encodeURIComponent(5)}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': USERTOKEN
+            }
+        });
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        return data.data;
+    } catch (error) {
+        console.error('Error fetching facility stamp:', error);
+        throw error;
+    }
+};
+
 // --------------STAMP-----------------
 
 export const getFacilityStamp = async (facilityID) => {
@@ -820,7 +859,7 @@ export const getFacilityStamp = async (facilityID) => {
             throw new Error('Network response was not ok');
         }
         const data = await response.json();
-        return data.dat;
+        return data.data;
     } catch (error) {
         console.error('Error fetching facility stamp:', error);
         throw error;
@@ -847,11 +886,61 @@ export const getStampBook = async () => {
     }
 };
 
+export const sendStampTransaction = async (userID, facilityID, type, amount) => {
+    try {
+        console.log(userID, facilityID, type, amount);
+        const response = await fetch(`${BASE_URL}/stamps/transaction`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': USERTOKEN
+            },
+            body: JSON.stringify({
+                buyerId: userID,
+                facilityId: facilityID,
+                sellerId: USERID,
+                type: type,
+                amount: amount
+            })
+        });
+        if (!response.ok) {
+            // throw new Error('Network response was not ok');
+            const data = await response.json();
+            console.log(data);
+        }
+        const data = await response.json();
+        return data.data;
+    } catch (error) {
+        console.error('Error sending stamp transaction:', error);
+        throw error;
+    }
+};
+
 // --------------ADMIN-----------------
 
 export const getFacilityRegistrations = async () => {
     try {
         const response = await fetch(`${BASE_URL}/admin/facility-requests?status=0`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': USERTOKEN
+            }
+        });
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        return data.data;
+    } catch (error) {
+        console.error('Error fetching facility registrations:', error);
+        throw error;
+    }
+};
+
+export const getMyFacilityRegistrations = async () => {
+    try {
+        const response = await fetch(`${BASE_URL}/admin/facility-requests?status=0&user=${encodeURIComponent(USERID)}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',

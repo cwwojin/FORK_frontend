@@ -74,7 +74,7 @@ const Stamp = ({
       )}
       <View style={{ width: '100%', alignItems: 'center', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', padding: 30 }}>
         {stampRule.map((item, index) => (
-          <View style={{ width: '20%', height: 100, alignItems: 'center' }}>
+          <View key={index} style={{ width: '20%', height: 100, alignItems: 'center' }}>
             <Image
               source={stampLogo}
               style={{

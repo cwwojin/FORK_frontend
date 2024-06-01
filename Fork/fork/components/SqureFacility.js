@@ -50,13 +50,13 @@ const SquareFacility = ({
             ellipsizeMode="tail">
             {facilityName}
           </Text>
-          <View style={{ flexDirection: 'row', justifyContent: 'center', width: 10 }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'center', maxwidth: 20 }}>
             <Image
               style={GlobalStyles.icon}
               contentFit="cover"
               source={require('../assets/icons/star.png')}
             />
-            <Text style={GlobalStyles.body3}>{facilityScore ? facilityScore : '-'}</Text>
+            <Text style={GlobalStyles.body3}>{facilityScore ? Math.round(facilityScore * 10)/10 : '-'}</Text>
           </View>
         </View>
         <Text style={GlobalStyles.body2} numberOfLines={1} ellipsizeMode="tail">
