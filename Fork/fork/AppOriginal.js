@@ -1,10 +1,11 @@
+
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, SafeAreaView, View, Alert } from 'react-native';
+import { StyleSheet, SafeAreaView, View, Alert, Platform, Text } from 'react-native';
 import * as Location from 'expo-location';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { TranslatorProvider } from 'react-native-translator';
+import { TranslatorProvider, useTranslator } from 'react-native-translator';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Border, Color } from './GlobalStyles.js';
 
@@ -78,7 +79,7 @@ const App = () => {
               screenOptions={{
                 headerShown: false,
               }}
-              initialRouteName="FacilityInformation"
+              initialRouteName="Login"
             >
               <Stack.Screen name="SignUpLogIn" component={SignUpLogIn} />
               <Stack.Screen name="UserType" component={UserType} />
@@ -108,7 +109,7 @@ const App = () => {
       </TranslatorProvider>
     </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   safeArea: {

@@ -1,11 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, SafeAreaView, View, Alert } from 'react-native';
+import React, { useEffect, useState  }  from 'react';
+import { StyleSheet, SafeAreaView, View, Alert, Platform, Text  } from 'react-native';
+//import { request, PERMISSIONS, RESULTS } from 'react-native-permissions';
+//import * as Permissions from 'expo-permissions';
 import * as Location from 'expo-location';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { TranslatorProvider } from 'react-native-translator';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFonts } from 'expo-font';
 import { Border, Color } from './GlobalStyles.js';
 
 import SignUpLogIn from './screens/SignUpLogIn.js';
@@ -32,6 +34,7 @@ import FacilityDetail from './screens/FacilityDetail.js';
 import Settings from './screens/Settings.js';
 import Testing from './screens/Testing.js';
 
+
 const requestLocationPermission = async () => {
   let { status } = await Location.requestForegroundPermissionsAsync();
   if (status !== 'granted') {
@@ -44,42 +47,18 @@ const requestLocationPermission = async () => {
 const Stack = createStackNavigator();
 
 const App = () => {
-  const [isReady, setIsReady] = useState(false);
-
-  useEffect(() => {
-    const loadLanguagePreference = async () => {
-      const storedLanguage = await AsyncStorage.getItem('user-language');
-      if (storedLanguage) {
-        setLanguage(storedLanguage);
-      }
-      setIsReady(true);
-    };
-    loadLanguagePreference();
-  }, []);
-
-  const setLanguage = async (lang) => {
-    await AsyncStorage.setItem('user-language', lang);
-  };
-
-  if (!isReady) {
-    return null; // Render a loading component or splash screen here if needed
-  }
+  
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <TranslatorProvider translations={{
-        en: require('./locales/en.json'),
-        ko: require('./locales/ko.json')
-      }}>
+      <TranslatorProvider>
         <NavigationContainer>
           <View style={styles.container}>
             <StatusBar style="auto" />
             <Stack.Navigator
               screenOptions={{
                 headerShown: false,
-              }}
-              initialRouteName="FacilityInformation"
-            >
+              }} initialRouteName="SignUpLogin">
               <Stack.Screen name="SignUpLogIn" component={SignUpLogIn} />
               <Stack.Screen name="UserType" component={UserType} />
               <Stack.Screen name="FacilityInformation" component={FacilityInformation} />
@@ -97,14 +76,19 @@ const App = () => {
               <Stack.Screen name="Home" component={Home} />
               <Stack.Screen name="Favorites" component={Favorites} />
               <Stack.Screen name="MapView" component={MapView} />
+              {/* <Stack.Screen name="MyReviews" component={MyReviews} />*/}
               <Stack.Screen name="MyReviews" component={MyReviews} />
               <Stack.Screen name="FacilityDetail" component={FacilityDetail} />
               <Stack.Screen name="MyStamps" component={MyStamps} />
               <Stack.Screen name="Settings" component={Settings} />
-              <Stack.Screen name="Testing" component={Testing} />
+              <Stack.Screen name='Testing' component={Testing} />
+              {/* Register the FavoritesScreen */}
             </Stack.Navigator>
           </View>
         </NavigationContainer>
+        {/*<NavigationContainer>
+          <NavigationBar />
+        </NavigationContainer>*/}
       </TranslatorProvider>
     </SafeAreaView>
   );

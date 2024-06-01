@@ -48,7 +48,41 @@ export const handleLogin = async (username, password) => {
       console.log(error);
       return false;
     }
-  };
+};
+
+
+export const resetPassword = async (userId) => {
+    const url = `${FORK_URL}api/auth/reset-password`;
+    const payload = { userId };
+    
+    try {
+        console.log("userId : " + userId);
+        console.log("responseBody JSON: " + JSON.stringify(payload));
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'foodie' 
+            },
+            body: JSON.stringify(payload),
+        });
+
+        console.log("response status : " + response.status);
+        console.log("response : " +  JSON.stringify(response, null, 2));
+
+
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error resetting password:', error);
+        throw error;
+    }
+};
+
 // --------------REGISTER----------------- 
 
 export const registerUser = async (userId, password, userType, email) => {
@@ -82,7 +116,7 @@ export const registerUser = async (userId, password, userType, email) => {
     }
 };
 
-export const registerFacility = async (facilityData) => {
+/* export const registerFacility = async (facilityData) => {
     try {
       const url = `${FORK_URL}api/facilities/facility-requests`;
       const response = await fetch(url, {
@@ -106,6 +140,46 @@ export const registerFacility = async (facilityData) => {
     } catch (error) {
       console.error('Error sending facility registration request:', error);
       throw error;
+    }
+}; */
+
+export const registerFacility = async (facilityData, images) => {
+    try {
+        const url = `${FORK_URL}api/facilities/facility-requests`;
+        const formData = new FormData();
+
+        // Create a new array for the image data
+        const imageArray = images.map((image, index) => ({
+            uri: image.uri,
+            name: `image_${index}.jpg`,
+            type: 'image/jpeg'
+        }));
+
+        // Append the array as a JSON string
+        formData.append('images', JSON.stringify(imageArray));
+        formData.append('authorId', facilityData.authorId);
+        formData.append('title', facilityData.title);
+        formData.append('content', JSON.stringify(facilityData.content));
+
+        console.log("formData : "+ JSON.stringify(formData, null, 2));
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Authorization': 'foodie' // Do not set 'Content-Type' header for multipart/form-data
+            },
+            body: formData
+        });
+
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+
+        const responseData = await response.json();
+        //console.log('Facility registration request sent successfully:', responseData);
+        return responseData;
+    } catch (error) {
+        console.error('Error registering facility:', error);
+        throw error;
     }
 };
 

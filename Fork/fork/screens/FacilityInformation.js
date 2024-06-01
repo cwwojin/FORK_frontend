@@ -5,6 +5,7 @@ import placeholderImage from '../assets/placeholders/long_image.png';
 import * as ImagePicker from 'expo-image-picker';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import axios from 'axios';
+import * as ImageManipulator from 'expo-image-manipulator';
 import { registerFacility } from './api';
 const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
@@ -155,7 +156,7 @@ const FacilityInformation = ({navigation}) => {
     }
   };
 
-  const handleRegisterationRequest = async () => {
+  /* const handleRegisterationRequest = async () => {
     const { latitude, longitude } = await getCoordinates("서울특별시 중구 세종대로 110");
     //await getCoordinates("대전 유성구 대학로 291 카이스트 학술문화관 2층");
     console.log("latitude : " + latitude + ", longitude : " + longitude);
@@ -184,8 +185,8 @@ const FacilityInformation = ({navigation}) => {
           city,
           roadAddress,
           englishAddress,
-          lat: latitude, // Change once you find how to convert a Korean address to coordinates
-          lng: longitude // Change once you find how to convert a Korean address to coordinates
+          lat: 1.0, // Change once you find how to convert a Korean address to coordinates
+          lng: 1.0 // Change once you find how to convert a Korean address to coordinates
         },
         openingHours: Object.keys(openingHours).map(day => {
           const hours = openingHours[day];
@@ -220,7 +221,84 @@ const FacilityInformation = ({navigation}) => {
       Alert.alert('Error', 'Failed to send facility registration request. Please try again.');
       console.error('Error sending facility registration request:', error);
     }
+  }; */
+
+  const handleRegisterationRequest = async () => {
+    //const { latitude, longitude } = await getCoordinates("서울특별시 중구 세종대로 110");
+    const rewards = facilityInfo.stampProgram.rewards.map(reward => ({
+      name: reward.name,
+      cnt: parseInt(reward.cnt, 10) || 0
+    }));
+  
+    const totalCnt = rewards.reduce((acc, reward) => acc + reward.cnt, 0);
+  
+    const facilityData = {
+      authorId,
+      title: name,
+      content: {
+        name,
+        type: "",
+        businessId: businessRegNo,
+        phone: phoneNumber,
+        email,
+        url: websiteURL,
+        description: serviceDescription,
+        profileImgFile: facilityImageUri ? facilityImageUri.split('/').pop() : '',
+        address: {
+          postNumber,
+          country,
+          city,
+          roadAddress,
+          englishAddress,
+          lat: 1.0,
+          lng: 1.0
+        },
+        openingHours: Object.keys(openingHours).map(day => {
+          const hours = openingHours[day];
+          if (hours.open !== 'Closed' && hours.close !== 'Closed' && hours.open !== '' && hours.close !== '' ) {
+            return {
+              day: dayToNumber[day],
+              open_time: hours.open,
+              close_time: hours.close
+            };
+          } 
+          return null;
+        }).filter(Boolean),
+        menu: facilityInfo.menuItems.map(item => ({
+          name: item.name,
+          description: item.serviceDescription,
+          price: item.price,
+          quantity: item.quantity,
+          imgFile: item.imageUri ? item.imageUri.split('/').pop() : ''
+        })),
+        preferences: [...cuisineType, ...dietaryPreferences], 
+        stampRuleset: {
+          totalCnt: totalCnt,
+          logoImgFile: facilityInfo.stampProgram.imageUri ? facilityInfo.stampProgram.imageUri.split('/').pop() : '',
+          rewards: rewards
+        }
+      }
+    };
+  
+    const images = [];
+    if (facilityImageUri) images.push({ uri: facilityImageUri });
+    facilityInfo.menuItems.forEach(item => {
+      if (item.imageUri) images.push({ uri: item.imageUri });
+    });
+    if (facilityInfo.stampProgram.imageUri) images.push({ uri: facilityInfo.stampProgram.imageUri });
+  
+    try {
+      console.log('starting');
+      console.log("images : "+JSON.stringify(images, null, 2));
+      const response = await registerFacility(facilityData, images);
+      console.log('Facility registration request sent successfully:', JSON.stringify(response.data, null, 2));
+      //navigation.navigate("PushNotification");  
+    } catch (error) {
+      Alert.alert('Error', 'Failed to send facility registration request. Please try again.');
+      console.error('Error sending facility registration request:', error);
+    }
   };
+  
 
   const addMenuItem = () => {
     setFacilityInfo(prevState => ({
@@ -263,7 +341,7 @@ const FacilityInformation = ({navigation}) => {
     return true;
   };
 
-  const selectImage = async (index, type) => {
+  /* const selectImage = async (index, type) => {
     try {
         const hasPermission = await requestMediaLibraryPermissions();
         if (!hasPermission) return;
@@ -288,8 +366,51 @@ const FacilityInformation = ({navigation}) => {
     } catch (error) {
         console.error('Error selecting image:', error);
     }
-  };
+  }; */
 
+  const selectImage = async (index, type) => {
+    try {
+      const hasPermission = await requestMediaLibraryPermissions();
+      if (!hasPermission) return;
+  
+      let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+      });
+  
+      console.log("Result object:", result);
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const source = { uri: result.assets[0].uri };
+  
+        // Compress the image
+        const compressedImage = await ImageManipulator.manipulateAsync(
+          source.uri,
+          [],
+          { compress: 0.5, format: ImageManipulator.SaveFormat.JPEG }
+        );
+  
+        console.log("Compressed image uri:", compressedImage.uri);
+  
+        if (type === 'facility') {
+          setFacilityImageUri(compressedImage.uri);
+        } else if (type === 'menu') {
+          const newMenuItems = [...facilityInfo.menuItems];
+          newMenuItems[index].imageUri = compressedImage.uri;
+          setFacilityInfo({ ...facilityInfo, menuItems: newMenuItems });
+        } else if (type === 'stamp') {
+          const updatedStampProgram = { ...facilityInfo.stampProgram, imageUri: compressedImage.uri };
+          setFacilityInfo({ ...facilityInfo, stampProgram: updatedStampProgram });
+        }
+      } else {
+        console.log("Image selection was canceled");
+      }
+    } catch (error) {
+      console.error('Error selecting image:', error);
+    }
+  };
+  
   const updateMenuItem = (index, field, value) => {
     const newMenuItems = [...facilityInfo.menuItems];
     if (field === 'price') {
@@ -455,7 +576,7 @@ const FacilityInformation = ({navigation}) => {
       ))}
       <View style={styles.line}></View>
       <Text style={styles.subHeader}>MENU</Text>
-      {facilityInfo.menuItems.map((item, index) => (  
+      {/* {facilityInfo.menuItems.map((item, index) => (  
         <View key={index} style={styles.menuItem}>
           <TouchableOpacity onPress={() => selectImage('stamp')}>
             <Image 
@@ -501,12 +622,60 @@ const FacilityInformation = ({navigation}) => {
             <Image source={require("../assets/icons/number.png")} style={GlobalStyles.inputIcon1} />
           </View>
         </View>
+      ))} */}
+      {facilityInfo.menuItems.map((item, index) => (
+        <View key={index} style={styles.menuItem}>
+          <TouchableOpacity onPress={() => selectImage(index, 'menu')}>
+            <Image 
+              source={item.imageUri ? { uri: item.imageUri } : placeholderImage} 
+              style={styles.image} 
+            />
+          </TouchableOpacity>
+          <View style={GlobalStyles.inputWrapper2}>
+            <TextInput
+              style={GlobalStyles.registrationInput1}
+              onChangeText={(text) => updateMenuItem(index, 'name', text)}
+              value={item.name}
+              placeholder="Menu Item Name"
+            />
+            <Image source={require("../assets/icons/service.png")} style={GlobalStyles.inputIcon} />
+          </View>
+          <View style={GlobalStyles.inputWrapper2}>
+            <TextInput
+              style={GlobalStyles.registrationInput1}
+              onChangeText={(text) => updateMenuItem(index, 'serviceDescription', text)}
+              value={item.serviceDescription}
+              placeholder="Service Description"
+            />
+            <Image source={require("../assets/icons/menuDescription.png")} style={GlobalStyles.inputIcon} />
+          </View>
+          <View style={GlobalStyles.inputWrapper2}>
+            <TextInput
+              style={GlobalStyles.registrationInput1}
+              onChangeText={(text) => updateMenuItem(index, 'price', text)}
+              keyboardType="numeric"
+              value={item.price}
+              placeholder="Price"
+            />
+            <Image source={require("../assets/icons/price.png")} style={GlobalStyles.inputIcon} />
+          </View>
+          <View style={GlobalStyles.inputWrapper2}>
+            <TextInput
+              style={GlobalStyles.registrationInput1}
+              onChangeText={(text) => updateMenuItem(index, 'quantity', text)}
+              value={item.quantity.toString()}
+              placeholder="Quantity"
+            />
+            <Image source={require("../assets/icons/number.png")} style={GlobalStyles.inputIcon1} />
+          </View>
+        </View>
       ))}
+
       <Button title="Add Menu Item" onPress={addMenuItem} color={Color.orange_700} marginBottom={15}/>
       <View style={styles.line}></View>
       <Text style={styles.subHeader1}>STAMPS</Text>
       <View style={styles.menuItem}>
-        <TouchableOpacity onPress={() => selectImage('stamp')}>
+        <TouchableOpacity onPress={() => selectImage(null, 'stamp')}>
           <Image 
             source={facilityInfo.stampProgram.imageUri ? { uri: facilityInfo.stampProgram.imageUri } : placeholderImage} 
             style={styles.image} 
