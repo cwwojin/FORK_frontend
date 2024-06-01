@@ -1,26 +1,24 @@
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Text,
   View,
   Image,
   SafeAreaView,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   Alert,
-  Keyboard
+  Keyboard,
+  TextInput,
+  Button
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import ToggleSwitch from 'toggle-switch-react-native';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import translateText from './translate'; // Import the translation utility
 import { GlobalStyles, Color, Border, FontSize } from '../GlobalStyles';
 import { sendBugReport } from './api';
 
-
 const Settings = () => {
-  //Get Informations of facilities
-  //All the reviews [facility_img, facility_name, score(int), date(string), review_img, review_content, hashtags(Array)]
-
   const navigation = useNavigation();
   const route = useRoute();
 
@@ -28,19 +26,75 @@ const Settings = () => {
 
   const [pushNotification, setPushNotification] = useState(false);
   const [accessLocation, setAccessLocation] = useState(false);
-  const [language, setLanguage] = useState(false);
+  const [language, setLanguage] = useState('en');
+  const [translations, setTranslations] = useState({});
+  const [loading, setLoading] = useState(true);
 
   const [report, setReport] = useState(false);
   const [reportContent, setReportContent] = useState('');
 
+  const fetchTranslations = async (lang) => {
+    try {
+      const settingsTranslation = await translateText('Settings', lang);
+      const generalTranslation = await translateText('General', lang);
+      const allowPushNotificationsTranslation = await translateText('Allow Push Notifications', lang);
+      const shareMyLocationTranslation = await translateText('Share My Location', lang);
+
+      console.log('Translations:', {
+        settings: settingsTranslation,
+        general: generalTranslation,
+        allowPushNotifications: allowPushNotificationsTranslation,
+        shareMyLocation: shareMyLocationTranslation,
+      });
+
+      setTranslations({
+        settings: settingsTranslation,
+        general: generalTranslation,
+        allowPushNotifications: allowPushNotificationsTranslation,
+        shareMyLocation: shareMyLocationTranslation,
+      });
+
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching translations:', error);
+      setTranslations({
+        settings: 'Settings',
+        general: 'General',
+        allowPushNotifications: 'Allow Push Notifications',
+        shareMyLocation: 'Share My Location',
+      });
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTranslations(language);
+  }, [language]);
+
+  useEffect(() => {
+    const loadLanguagePreference = async () => {
+      const storedLanguage = await AsyncStorage.getItem('user-language');
+      console.log('Current stored language:', storedLanguage);
+      if (storedLanguage) {
+        setLanguage(storedLanguage);
+      }
+    };
+    loadLanguagePreference();
+  }, []);
+
   const togglePushNotification = () => {
     setPushNotification(!pushNotification);
   };
+
   const toggleAccessLocation = () => {
     setAccessLocation(!accessLocation);
   };
-  const toggleLaguage = () => {
-    setLanguage(!language);
+
+  const toggleLanguage = async () => {
+    const newLanguage = language === 'en' ? 'ko' : 'en';
+    await AsyncStorage.setItem('user-language', newLanguage);
+    setLanguage(newLanguage);
+    console.log('Language changed to:', newLanguage);
   };
 
   const toggleReport = () => {
@@ -49,47 +103,11 @@ const Settings = () => {
   };
 
   const logout = () => {
-    Alert.alert(
-      "Confirm Logout",
-      "Do you really want to logout?",
-      [
-        {
-          text: "No",
-          onPress: () => console.log("Logout cancelled"),
-          style: "cancel"
-        },
-        {
-          text: "Yes",
-          onPress: () => {
-            console.log("User logged out");
-            // Add your logout logic here
-          }
-        }
-      ],
-      { cancelable: false }
-    );
+    // Logic for logout
   };
 
   const deleteAccount = () => {
-    Alert.alert(
-      "Delete Account",
-      "Do you really want to delete your account?",
-      [
-        {
-          text: "No",
-          onPress: () => console.log("Logout cancelled"),
-          style: "cancel"
-        },
-        {
-          text: "Yes",
-          onPress: () => {
-            console.log("User logged out");
-            // Add your logout logic here
-          }
-        }
-      ],
-      { cancelable: false }
-    );
+    // Logic for delete account
   };
 
   const sendReport = () => {
@@ -102,41 +120,34 @@ const Settings = () => {
     setReportContent('');
   };
 
+  if (loading) {
+    return (
+      <SafeAreaView style={GlobalStyles.background}>
+        <View style={GlobalStyles.content}>
+          <Text>Loading...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={GlobalStyles.background}>
       <View style={GlobalStyles.content}>
         <View style={{ width: '100%', flexDirection: 'row' }}>
-          <TouchableOpacity
-            onPress={() => {
-              navigation.goBack();
-            }}>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
             <Image
               style={GlobalStyles.icon}
               source={require('../assets/icons/navigate_left.png')}
             />
           </TouchableOpacity>
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              marginTop: -27,
-              paddingBottom: 10,
-            }}>
-            <Text style={GlobalStyles.h1}>Settings</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: -27, paddingBottom: 10 }}>
+            <Text style={GlobalStyles.h1}>{translations.settings}</Text>
           </View>
         </View>
 
-        <View
-          style={{
-            alignItems: 'center',
-            width: '100%',
-          }}>
+        <View style={{ alignItems: 'center', width: '100%' }}>
           <Image
-            style={{
-              ...GlobalStyles.profileImage,
-              marginTop: 10,
-              marginBottom: 10
-            }}
+            style={{ ...GlobalStyles.profileImage, marginTop: 10, marginBottom: 10 }}
             contentFit="cover"
             source={userProfile}
           />
@@ -145,14 +156,14 @@ const Settings = () => {
         </View>
 
         <View style={{ width: '100%', paddingVertical: 5 }}>
-          <Text style={GlobalStyles.h2}>General</Text>
+          <Text style={GlobalStyles.h2}>{translations.general}</Text>
           <View style={styles.container} onPress={togglePushNotification}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <Image
                 source={require('../assets/icons/notification.png')}
                 style={styles.icon}
               />
-              <Text style={GlobalStyles.body}>Allow Push Notifications</Text>
+              <Text style={GlobalStyles.body}>{translations.allowPushNotifications}</Text>
             </View>
             <ToggleSwitch
               isOn={pushNotification}
@@ -168,7 +179,7 @@ const Settings = () => {
                 source={require('../assets/icons/location.png')}
                 style={styles.icon}
               />
-              <Text style={GlobalStyles.body}>Share my location</Text>
+              <Text style={GlobalStyles.body}>{translations.shareMyLocation}</Text>
             </View>
             <ToggleSwitch
               isOn={accessLocation}
@@ -178,37 +189,38 @@ const Settings = () => {
               onToggle={toggleAccessLocation}
             />
           </View>
-          <View style={styles.container} onPress={toggleLaguage}>
+          <View style={styles.container} onPress={toggleLanguage}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <Image
                 source={require('../assets/icons/language.png')}
                 style={styles.icon}
               />
-              <Text style={GlobalStyles.body}>language</Text>
+              <Text style={GlobalStyles.body}>{translations.language}</Text>
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <Text style={{ ...GlobalStyles.body2, paddingHorizontal: 5 }}>ENG</Text>
               <ToggleSwitch
-                isOn={language}
+                isOn={language === 'ko'}
                 onColor={Color.orange_700}
                 offColor={Color.lightGrey}
                 size="small"
-                onToggle={toggleLaguage}
+                onToggle={toggleLanguage}
               />
               <Text style={{ ...GlobalStyles.body2, paddingHorizontal: 5 }}>KOR</Text>
             </View>
           </View>
         </View>
 
+        <Button title="Change Language" onPress={toggleLanguage} />
+
         <View style={{ width: '100%', paddingVertical: 5 }}>
-          <Text style={GlobalStyles.h2}>Account</Text>
           <TouchableOpacity style={styles.container} onPress={logout}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <Image
                 source={require('../assets/icons/logout.png')}
                 style={styles.icon}
               />
-              <Text style={GlobalStyles.body}>logout</Text>
+              {/* <Text style={GlobalStyles.body}>{await translateText('Logout', language)}</Text> */}
             </View>
           </TouchableOpacity>
           <TouchableOpacity style={styles.container} onPress={deleteAccount}>
@@ -217,20 +229,19 @@ const Settings = () => {
                 source={require('../assets/icons/delete.png')}
                 style={styles.icon}
               />
-              <Text style={GlobalStyles.body}>Delete account</Text>
+              {/* <Text style={GlobalStyles.body}>{await translateText('Delete Account', language)}</Text> */}
             </View>
           </TouchableOpacity>
         </View>
 
         <View style={{ width: '100%', paddingVertical: 5 }}>
-          <Text style={GlobalStyles.h2}>Support</Text>
           <TouchableOpacity style={styles.container} onPress={toggleReport}>
             <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: Color.yellow_100, width: '100%', paddingVertical: 10, borderRadius: Border.br_2xs }}>
               <Image
                 source={require('../assets/icons/report.png')}
                 style={{ ...styles.icon, tintColor: Color.orange_700 }}
               />
-              <Text style={GlobalStyles.body}>Report an Issue</Text>
+              {/* <Text style={GlobalStyles.body}>{await translateText('Report an Issue', language)}</Text> */}
             </View>
           </TouchableOpacity>
         </View>
@@ -344,3 +355,7 @@ const styles = StyleSheet.create({
 });
 
 export default Settings;
+
+
+
+

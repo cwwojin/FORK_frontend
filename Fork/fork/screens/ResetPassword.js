@@ -1,3 +1,4 @@
+import { resetPassword } from './api.js';
 import React, { useCallback, useState }  from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Image, TouchableOpacity, SafeAreaView } from 'react-native';
 import {LinearGradient}  from 'expo-linear-gradient';
@@ -6,11 +7,21 @@ import { useNavigation } from '@react-navigation/native';
 
 const ResetPassword = ({ navigation }) => {
   
-  const onConfirm = useCallback(() => {
-    navigation.navigate("Login");
-  }, [navigation]);
+  const [userId, setUserId] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
-  const [verificationCode, setVerificationCode] = useState('');
+  const onConfirm = useCallback(async () => {
+      try {
+          const response = await resetPassword(userId);
+          if (response.status === 'success') {
+              navigation.navigate("Login");
+          } else {
+              setErrorMessage(response.message || 'Failed to reset password');
+          }
+      } catch (error) {
+          setErrorMessage('An error occurred while resetting the password');
+      }
+  }, [navigation, userId]);
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -21,13 +32,13 @@ const ResetPassword = ({ navigation }) => {
             style={styles.image}
             source={require('../assets/icons/password.png')}
           />
-          <Text style={styles.text}>Please enter your email below to reset your password.</Text>
+          <Text style={styles.text}>Please enter your username below to reset your password.</Text>
           <View style={GlobalStyles.inputWrapper}>
             <TextInput
                 style={GlobalStyles.registrationInput}
-                onChangeText={setVerificationCode}
-                value={verificationCode}
-                placeholder="Email"
+                onChangeText={setUserId}
+                value={userId}
+                placeholder="Username"
                 autoCapitalize="none"
             />
             <Image source={require("../assets/icons/email.png")} style={GlobalStyles.passwordIcon} />
