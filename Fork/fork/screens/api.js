@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 const BASE_URL = 'https://taqjpw7a54.execute-api.ap-southeast-2.amazonaws.com/stage-dev/dev/api';
+=======
+const BASE_URL = "https://taqjpw7a54.execute-api.ap-southeast-2.amazonaws.com/stage-dev/dev/api";
+>>>>>>> a33c875 (commit for pull)
 
 // This is the base-url that leads to all backend & S3
 const API_ENDPOINT = "https://taqjpw7a54.execute-api.ap-southeast-2.amazonaws.com/stage-dev";
@@ -10,6 +14,7 @@ const FORK_URL = `${API_ENDPOINT}/dev/`
 // S3 endpoint
 const S3_ENDPOINT = `${API_ENDPOINT}/s3`
 
+<<<<<<< HEAD
 // export let USERTOKEN = "";
 // export let USERID = "";
 
@@ -83,6 +88,12 @@ export const registerUser = async (userId, password, userType, email) => {
         throw error;
     }
 };
+=======
+export let USERTOKEN = "";
+const AUTHORIZATION = 'foodie';
+export const USERID = 3;
+
+>>>>>>> a33c875 (commit for pull)
 
 export const registerFacility = async (facilityData) => {
     try {
@@ -229,13 +240,52 @@ export const fetchImage = async (uri) => {
     }
 }
 
+// --------------LOGIN----------------- 
+
+export const handleLogin = async (username, password) => {
+    console.log('in handleLogin : username => ' + username + ', password => ' + password);
+    try {
+        const url = `${FORK_URL}api/auth/login`;
+        //?userId=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}
+        console.log("url : " + url)
+        const requestBody = {
+            userId: username,
+            password: password
+        };
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': "foodie"
+            },
+            body: JSON.stringify(requestBody)
+        });
+        console.log("response : " + response.status);
+        if (response.status === 200) {
+            const jsonResponse = await response.json();
+            console.log("response : " + JSON.stringify(jsonResponse, null, 2));
+            USERTOKEN = jsonResponse.data.token;
+            console.log("USERTOKEN : " + USERTOKEN);
+
+        } else {
+            console.log('Login Failed', 'Invalid credentials or insufficient permissions.');
+        }
+    } catch (error) {
+        console.log(error);
+    }
+};
+
 export const getAllUsders = async () => {
     try {
         const response = await fetch(`${BASE_URL}/users`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+<<<<<<< HEAD
                 'USERTOKEN': USERTOKEN
+=======
+                'Authorization': AUTHORIZATION
+>>>>>>> a33c875 (commit for pull)
             }
         });
         if (!response.ok) {
@@ -314,6 +364,11 @@ export const fetchFacilitiesInBounds = async (northEastLat, northEastLng, southW
 
         return facilitiesData;
 
+<<<<<<< HEAD
+=======
+        return facilitiesData;
+
+>>>>>>> a33c875 (commit for pull)
     } catch (error) {
         console.error('Error fetching facilities in real fetchMethod:', error);
         throw error;
@@ -337,7 +392,11 @@ export const getAllUsers = async () => {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+<<<<<<< HEAD
                 'USERTOKEN': USERTOKEN
+=======
+                'Authorization': AUTHORIZATION
+>>>>>>> a33c875 (commit for pull)
             }
         });
         if (!response.ok) {
@@ -357,7 +416,11 @@ export const getUserByID = async (userID) => {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+<<<<<<< HEAD
                 'USERTOKEN': USERTOKEN
+=======
+                'Authorization': AUTHORIZATION
+>>>>>>> a33c875 (commit for pull)
             }
         });
         if (!response.ok) {
@@ -373,6 +436,7 @@ export const getUserByID = async (userID) => {
 
 export const getUserPreferences = async () => {
     try {
+<<<<<<< HEAD
         const url = `${FORK_URL}api/users/preference/${encodeURIComponent(userID)}`;
         const response = await fetch(url, {
         method: 'GET',
@@ -380,6 +444,14 @@ export const getUserPreferences = async () => {
             'Content-Type': 'application/json',
             'USERTOKEN': 'foodie'
         }
+=======
+        const response = await fetch(`${BASE_URL}/users/preference/${encodeURIComponent(USERID)}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': AUTHORIZATION
+            }
+>>>>>>> a33c875 (commit for pull)
         });
         if (!response.ok) {
             throw new Error('Network response was not ok');
@@ -398,7 +470,11 @@ export const getUserFavorites = async () => {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+<<<<<<< HEAD
                 'USERTOKEN': USERTOKEN
+=======
+                'Authorization': AUTHORIZATION
+>>>>>>> a33c875 (commit for pull)
             }
         });
         if (!response.ok) {
@@ -419,7 +495,11 @@ export const isFacilityBookmarked = async (facilityID) => {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+<<<<<<< HEAD
                 'USERTOKEN': USERTOKEN
+=======
+                'Authorization': AUTHORIZATION
+>>>>>>> a33c875 (commit for pull)
             }
         });
         if (!response.ok) {
@@ -439,7 +519,11 @@ export const addFavorite = async (facilityId) => {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
+<<<<<<< HEAD
                 'USERTOKEN': USERTOKEN
+=======
+                'Authorization': AUTHORIZATION
+>>>>>>> a33c875 (commit for pull)
             },
             body: JSON.stringify({ facilityId: (encodeURIComponent(facilityId)) })
         });
@@ -462,7 +546,11 @@ export const deleteFavorite = async (facilityId) => {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
+<<<<<<< HEAD
                 'USERTOKEN': USERTOKEN
+=======
+                'Authorization': AUTHORIZATION
+>>>>>>> a33c875 (commit for pull)
             },
             body: JSON.stringify({ facilityId: (encodeURIComponent(facilityId)) })
         });
@@ -509,7 +597,11 @@ export const getFacilityByID = async (facilityID) => {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+<<<<<<< HEAD
                 'USERTOKEN': USERTOKEN
+=======
+                'Authorization': AUTHORIZATION
+>>>>>>> a33c875 (commit for pull)
             }
         });
         if (!response.ok) {
@@ -529,7 +621,11 @@ export const getFacilityStampRuleByID = async (facilityID) => {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+<<<<<<< HEAD
                 'USERTOKEN': USERTOKEN
+=======
+                'Authorization': AUTHORIZATION
+>>>>>>> a33c875 (commit for pull)
             }
         });
         if (!response.ok) {
@@ -549,7 +645,11 @@ export const getFacilityPreferences = async (facilityID) => {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+<<<<<<< HEAD
                 'USERTOKEN': USERTOKEN
+=======
+                'Authorization': AUTHORIZATION
+>>>>>>> a33c875 (commit for pull)
             }
         });
         if (!response.ok) {
@@ -569,7 +669,11 @@ export const getFacilityMenu = async (facilityID) => {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+<<<<<<< HEAD
                 'USERTOKEN': USERTOKEN
+=======
+                'Authorization': AUTHORIZATION
+>>>>>>> a33c875 (commit for pull)
             }
         });
         if (!response.ok) {
@@ -589,7 +693,11 @@ export const getFacilityOpeningHour = async (facilityID) => {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+<<<<<<< HEAD
                 'USERTOKEN': USERTOKEN
+=======
+                'Authorization': AUTHORIZATION
+>>>>>>> a33c875 (commit for pull)
             }
         });
         if (!response.ok) {
@@ -610,7 +718,11 @@ export const getTrendingFacilities = async () => {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+<<<<<<< HEAD
                 'USERTOKEN': USERTOKEN
+=======
+                'Authorization': AUTHORIZATION
+>>>>>>> a33c875 (commit for pull)
             }
         });
         if (!response.ok) {
@@ -630,7 +742,11 @@ export const getNewestFacilities = async () => {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+<<<<<<< HEAD
                 'USERTOKEN': USERTOKEN
+=======
+                'Authorization': AUTHORIZATION
+>>>>>>> a33c875 (commit for pull)
             }
         });
         if (!response.ok) {
@@ -650,7 +766,11 @@ export const getFacilityNotices = async (facilityID) => {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+<<<<<<< HEAD
                 'USERTOKEN': USERTOKEN
+=======
+                'Authorization': AUTHORIZATION
+>>>>>>> a33c875 (commit for pull)
             }
         });
         if (!response.ok) {
@@ -664,6 +784,10 @@ export const getFacilityNotices = async (facilityID) => {
     }
 };
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> a33c875 (commit for pull)
 // --------------REVIEW-----------------
 
 export const getReviewByQuery = async (userID, facilityId, hasImage, hashtags) => {
@@ -684,7 +808,11 @@ export const getReviewByQuery = async (userID, facilityId, hasImage, hashtags) =
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+<<<<<<< HEAD
                 'USERTOKEN': USERTOKEN
+=======
+                'Authorization': AUTHORIZATION
+>>>>>>> a33c875 (commit for pull)
             }
         });
 
@@ -707,7 +835,11 @@ export const getFacilityStamp = async (facilityID) => {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+<<<<<<< HEAD
                 'USERTOKEN': USERTOKEN
+=======
+                'Authorization': AUTHORIZATION
+>>>>>>> a33c875 (commit for pull)
             }
         });
         if (!response.ok) {
@@ -727,7 +859,11 @@ export const getStampBook = async () => {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+<<<<<<< HEAD
                 'USERTOKEN': USERTOKEN
+=======
+                'Authorization': AUTHORIZATION
+>>>>>>> a33c875 (commit for pull)
             }
         });
         if (!response.ok) {
@@ -750,7 +886,11 @@ export const getFacilityRegistrations = async () => {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+<<<<<<< HEAD
                 'USERTOKEN': USERTOKEN
+=======
+                'Authorization': AUTHORIZATION
+>>>>>>> a33c875 (commit for pull)
             }
         });
         if (!response.ok) {
@@ -770,7 +910,11 @@ export const acceptFacilityRegistrations = async (requestID) => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+<<<<<<< HEAD
                 'USERTOKEN': USERTOKEN,
+=======
+                'Authorization': AUTHORIZATION,
+>>>>>>> a33c875 (commit for pull)
             },
             body: JSON.stringify({
                 adminId: USERID,
@@ -794,7 +938,11 @@ export const declineFacilityRegistrations = async (requestID) => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+<<<<<<< HEAD
                 'USERTOKEN': USERTOKEN,
+=======
+                'Authorization': AUTHORIZATION,
+>>>>>>> a33c875 (commit for pull)
             },
             body: JSON.stringify({
                 adminId: USERID,
@@ -817,7 +965,11 @@ export const getReports = async (type) => {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+<<<<<<< HEAD
                 'USERTOKEN': USERTOKEN
+=======
+                'Authorization': AUTHORIZATION
+>>>>>>> a33c875 (commit for pull)
             }
         });
         if (!response.ok) {
@@ -837,7 +989,11 @@ export const sendReviewReport = async ({ content, reviewId }) => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+<<<<<<< HEAD
                 'USERTOKEN': USERTOKEN
+=======
+                'Authorization': AUTHORIZATION
+>>>>>>> a33c875 (commit for pull)
             },
             body: JSON.stringify({
                 authorId: USERID,
@@ -865,7 +1021,11 @@ export const sendBugReport = async ({ content }) => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+<<<<<<< HEAD
                 'USERTOKEN': USERTOKEN
+=======
+                'Authorization': AUTHORIZATION
+>>>>>>> a33c875 (commit for pull)
             },
             body: JSON.stringify({
                 authorId: USERID,
@@ -892,7 +1052,11 @@ export const deleteReport = async (reportId) => {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
+<<<<<<< HEAD
                 'USERTOKEN': USERTOKEN
+=======
+                'Authorization': AUTHORIZATION
+>>>>>>> a33c875 (commit for pull)
             }
         });
         if (!response.ok) {
