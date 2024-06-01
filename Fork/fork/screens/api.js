@@ -10,6 +10,7 @@ const FORK_URL = `${API_ENDPOINT}/dev/`
 // S3 endpoint
 const S3_ENDPOINT = `${API_ENDPOINT}/s3`
 
+<<<<<<< HEAD
 // export let USERTOKEN = "";
 // export let USERID = "";
 // export let USERPREFERENCE = "";
@@ -18,8 +19,52 @@ const S3_ENDPOINT = `${API_ENDPOINT}/s3`
 export let USERTOKEN = "kaist";
 export let USERID = 1;
 export let USERPREFERENCE = [];
+=======
+export let USERTOKEN = "";
+export let USERID = "";
+export let USERPREFERENCE = "";
+export let USERBOOKMARKED = "";
 
-// --------------REGISTER-----------------
+// --------------LOGIN----------------- 
+
+export const handleLogin = async (username, password) => {
+    console.log('in handleLogin : username => ' + username + ', password => ' + password);
+    try {
+      const url = `${FORK_URL}api/auth/login`;
+      const requestBody = {
+        userId: username,
+        password: password
+      };
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'foodie'
+        },
+        body: JSON.stringify(requestBody)
+      });
+      if (response.status === 200) {
+        const jsonResponse = await response.json();
+        USERTOKEN = jsonResponse.data.token;
+        USERID = jsonResponse.data.user.id;
+        USERPREFERENCE = await getUserPreferences(USERID);
+        USERBOOKMARKED = await getUserFavorites(USERID);
+        console.log("USERID : " + USERID);
+        console.log("USERTOKEN : " + USERTOKEN);
+        console.log("USERPREFERENCE : " + JSON.stringify(USERPREFERENCE, null, 2));
+        console.log("USERBOOKMARKED : " + JSON.stringify(USERBOOKMARKED, null, 2));
+        return true;
+      } else {
+        console.log('Login Failed', 'Invalid credentials or insufficient permissions.');
+        return false;
+      }
+    } catch (error) {
+      console.log(error);
+      return false;
+    }
+};
+>>>>>>> 03365cdefb63d4d16e4de953312470a039f544e2
+
 
 export const resetPassword = async (userId) => {
     const url = `${FORK_URL}api/auth/reset-password`;
@@ -116,15 +161,12 @@ export const registerFacility = async (facilityData, images) => {
         const url = `${FORK_URL}api/facilities/facility-requests`;
         const formData = new FormData();
 
-        // Create a new array for the image data
         const imageArray = images.map((image, index) => ({
             uri: image.uri,
             name: `image_${index}.jpg`,
             type: 'image/jpeg'
         }));
-
-        // Append the array as a JSON string
-        formData.append('images', JSON.stringify(imageArray));
+        formData.append('images', imageArray);
         formData.append('authorId', facilityData.authorId);
         formData.append('title', facilityData.title);
         formData.append('content', JSON.stringify(facilityData.content));
@@ -268,41 +310,6 @@ export const fetchImage = async (uri) => {
         console.error('Error fetching image:', error);
     }
 }
-// --------------LOGIN----------------- 
-
-export const handleLogin = async (username, password) => {
-    console.log('in handleLogin : username => ' + username + ', password => ' + password);
-    try {
-      const url = `${FORK_URL}api/auth/login`;
-      const requestBody = {
-        userId: username,
-        password: password
-      };
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'foodie'
-        },
-        body: JSON.stringify(requestBody)
-      });
-      if (response.status === 200) {
-        const jsonResponse = await response.json();
-        USERTOKEN = jsonResponse.data.token;
-        USERID = jsonResponse.data.user.id;
-        USERPREFERENCE = await getUserPreferences();
-        console.log("USERID : " + USERID);
-        console.log("USERPREFERENCE : " + JSON.stringify(USERPREFERENCE, null, 2));
-        return true;
-      } else {
-        console.log('Login Failed', 'Invalid credentials or insufficient permissions.');
-        return false;
-      }
-    } catch (error) {
-      console.log(error);
-      return false;
-    }
-};
 
 export const getAllUsders = async () => {
     try {
@@ -361,7 +368,7 @@ export const fetchFacilityWithName = async (facilityName, openNow = false, prefe
     }
 };
 
-export const fetchFacilitiesInBounds = async (northEastLat, northEastLng, southWestLat, southWestLng) => {
+export const fetchFacilitiesInBounds = async (northEastLat, northEastLng, southWestLat, southWestLng, favorite) => {
     //console.log( "USERID : " + USERID );
     //console.log( "USERPREFERENCE : " + JSON.stringify(USERPREFERENCE, null, 2));
     try {
@@ -369,15 +376,23 @@ export const fetchFacilitiesInBounds = async (northEastLat, northEastLng, southW
         const latMax = Math.max(northEastLat, southWestLat)
         const lngMin = Math.min(northEastLng, southWestLng)
         const lngMax = Math.max(northEastLng, southWestLng)
+        const url =  favorite ? `${FORK_URL}api/map/search?latMin=${encodeURIComponent(latMin)}&lngMin=${encodeURIComponent(lngMin)}&latMax=${encodeURIComponent(latMax)}&lngMax=${encodeURIComponent(lngMax)}&favorite=true` : `${FORK_URL}api/map/search?latMin=${encodeURIComponent(latMin)}&lngMin=${encodeURIComponent(lngMin)}&latMax=${encodeURIComponent(latMax)}&lngMax=${encodeURIComponent(lngMax)}`;
+       
+       
+        if (favorite) {
+            console.log("UserBookmarkedActive");
+            console.log("url : " + url);
+        } else {
+            console.log("UserBookmarkedNotActive");
+            console.log("url : " + url);
+        }
 
-        const url = `${FORK_URL}api/map?latMin=${encodeURIComponent(latMin)}&lngMin=${encodeURIComponent(lngMin)}&latMax=${encodeURIComponent(latMax)}&lngMax=${encodeURIComponent(lngMax)}`;
         const response = await fetch(url, {
             method: 'GET',
             headers: {
-                'Authorization': 'foodie',
+                'Authorization': USERTOKEN,
             }
         });
-
         //console.log("Response object:", response);
         //console.log("Status:", response.status);
 
@@ -385,8 +400,12 @@ export const fetchFacilitiesInBounds = async (northEastLat, northEastLng, southW
         //console.log("JSON data:", jsonResponse);
 
         const facilitiesData = jsonResponse.data;
-        console.log("Facilities data:", JSON.stringify(facilitiesData, null, 2));
-
+        if (favorite) {
+          console.log("Facilities data in favorite :", JSON.stringify(facilitiesData, null, 2));
+        } else {
+          console.log("Facilities data in not favorite :");   
+        }
+        
         return facilitiesData;
 
     } catch (error) {
@@ -397,9 +416,9 @@ export const fetchFacilitiesInBounds = async (northEastLat, northEastLng, southW
 
 export const getParsedUserPreferences = () => {
     console.log("here and USERPREFERENCE:", JSON.stringify(USERPREFERENCE, null, 2));
-    if (USERPREFERENCE && Array.isArray(USERPREFERENCE.data)) {
+    if (USERPREFERENCE && Array.isArray(USERPREFERENCE)) {
       console.log("Parsing preferences by IDs");
-      return USERPREFERENCE.data.map(pref => pref.id);
+      return USERPREFERENCE.map(pref => pref.id);
     }
     return [];
 };

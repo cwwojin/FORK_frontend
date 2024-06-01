@@ -24,6 +24,9 @@ const MapView = () => {
   const [mapZoom, setMapZoom] = useState(3); 
   const [filterExpanded, setFilterExpanded] = useState(false);
   const [userPreferencesActive, setUserPreferencesActive] = useState(false);
+  //const [userBookmarkedActive, setUserBookmarkedActive] = useState(false);
+  const userBookmarkedActive = useRef(false);
+
 
   const [neLat, setNeLat] = useState(null);
   const [neLng, setNeLng] = useState(null);
@@ -132,6 +135,14 @@ const MapView = () => {
       setSelectedDietaryPreferences([]);
     }
   };
+
+  const handleToggleBookmarked = () => {
+    console.log("In handleToggleBookmarked");
+    newActiveState = !userBookmarkedActive.current;
+    userBookmarkedActive.current = newActiveState;
+    console.log("new userBookmarkedActive" + userBookmarkedActive.current);
+    fetchAndUpdateFacilities(searchQuery, neLat, neLng, swLat, swLng);
+  };
   
   
   const mapHtml = `
@@ -150,7 +161,7 @@ const MapView = () => {
         right: 17px; /* Right spacing */
         top: 50%; /* Vertically middle */
         /*transform: translateY(80%);*/
-        transform: translateY(-11%);
+        transform: translateY(-30%);
         z-index: 5;
       }
       .button {
@@ -208,6 +219,7 @@ const MapView = () => {
       <button class="button" onclick="zoomOut()">-</button>
       <button class="button" id="locateButton" onclick="toggleLocate()">📍</button>
       <button class="button" id="preferencesButton" onclick="togglePreferences()">P</button>
+      <button class="button" id="bookmarkedButton" onclick="toggleBookmarked()">B</button>
     </div>
     <div id="map"></div>
     <script>
@@ -262,9 +274,38 @@ const MapView = () => {
           type: 'debug', 
           message:"in togglePreferences()"
         };
+
+        if (preferencesButton.classList.contains('buttonOn')) {
+          preferencesButton.classList.remove('buttonOn'); // Remove 'buttonOn' to show default style
+          preferencesButton.classList.add('button'); // Add 'button' to ensure styling consistency
+        } else {
+          preferencesButton.classList.remove('button'); // Remove 'button' if it exists
+          preferencesButton.classList.add('buttonOn'); // Add 'buttonOn' to show active state
+        }
+
         window.ReactNativeWebView.postMessage(JSON.stringify(updateMarker));
         window.ReactNativeWebView.postMessage(JSON.stringify({
           type: 'togglePreferences'
+        }));
+      }
+
+      function toggleBookmarked() {
+        const updateMarker = {
+          type: 'debug', 
+          message:"in toggleBookmarked()"
+        };
+
+        if (bookmarkedButton.classList.contains('buttonOn')) {
+          bookmarkedButton.classList.remove('buttonOn'); // Remove 'buttonOn' to show default style
+          bookmarkedButton.classList.add('button'); // Add 'button' to ensure styling consistency
+        } else {
+          bookmarkedButton.classList.remove('button'); // Remove 'button' if it exists
+          bookmarkedButton.classList.add('buttonOn'); // Add 'buttonOn' to show active state
+        }
+        
+        window.ReactNativeWebView.postMessage(JSON.stringify(updateMarker));
+        window.ReactNativeWebView.postMessage(JSON.stringify({
+          type: 'toggleBookmarked'
         }));
       }
       
@@ -437,7 +478,8 @@ const MapView = () => {
           const result = await fetchFacilityWithName(searchQuery, showOnlyOpen);
           facilities = result || [];
       } else if (neLat && neLng && swLat && swLng) {
-          facilities = await fetchFacilitiesInBounds(neLat, neLng, swLat, swLng);
+          console.log("userBookmarkedActive : "+userBookmarkedActive.current);
+          facilities = await fetchFacilitiesInBounds(neLat, neLng, swLat, swLng, userBookmarkedActive.current);
         }
 
       if (showOnlyOpen & !searchQuery) {
@@ -531,6 +573,10 @@ const MapView = () => {
     if (data.type === 'togglePreferences') {
       console.log("received togglePreferences data type");
       handleTogglePreferences();
+    }
+    if (data.type === 'toggleBookmarked') {
+      console.log("received toggleBookmarked data type");
+      handleToggleBookmarked();
     }
   };
 
