@@ -2,8 +2,8 @@ import * as React from 'react';
 import { useState, useEffect } from 'react';
 import { Text, View, SafeAreaView, ScrollView } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { GlobalStyles } from '../GlobalStyles';
-import { USERID, getUserFavorites } from './api';
+import { GlobalStyles, Color } from '../GlobalStyles';
+import { USERID, getUserFavorites, fetchImage, getFavoritesNotices } from './api';
 
 import UserList from '../components/UserList';
 import Notice from '../components/Notice';
@@ -19,19 +19,42 @@ const Favorites = () => {
   //Get Informations of facilities
   //all the bookmarked facilities information [img_url, name], recent notices of each restaurants [img_url, name, notice_img_url, notice_contents]
 
-  const [myFavorites, setMyFavorites] = useState('');
+  const [myFavorites, setMyFavorites] = useState([]);
+  const [favoritesImageList, setFavoritesImageList] = useState([]);
+  const [notices, setNotices] = useState([]);
 
   useEffect(() => {
-    const fetchFavorites = async (userID) => {
+    const fetchFavorites = async () => {
       try {
-        const data = await getUserFavorites(userID);
-        setMyFavorites(data.data);
+        const data = await getUserFavorites();
+        setMyFavorites(data);
+
+        const newfavoritesImage = {};
+        for (const item of data) {
+          if (item.profile_img_uri) {
+            const imageUrl = await fetchImage(item.profile_img_uri);
+            newfavoritesImage[item.id] = {image: imageUrl, name: item.name};
+          } else {
+            newfavoritesImage[item.id] = {image: userImage, name: item.name};
+          }
+        }
+        setFavoritesImageList(newfavoritesImage);
+      } catch (error) {
+        console.log(error.message);
+      }
+    };
+    const fetchNotices = async () => {
+      try {
+        const data = await getFavoritesNotices();
+        setNotices(data);
+        console.log(data);
       } catch (error) {
         console.log(error.message);
       }
     };
 
-    fetchFavorites(USERID);
+    fetchFavorites();
+    fetchNotices();
   }, []);
 
   const navigation = useNavigation();
@@ -59,9 +82,9 @@ const Favorites = () => {
             showsHorizontalScrollIndicator={false}>
             {myFavorites && myFavorites.map(item => (
               <TouchableOpacity onPress={() => {
-                navigation.navigate("FacilityDetail", {facilityID: item.id});
+                navigation.navigate("FacilityDetail", { facilityID: item.id });
               }}>
-                <UserList UserImage={item.profile_img_uri ? item.profile_img_uri : userImage} UserName={item.name} />
+                <UserList UserImage={favoritesImageList[item.id]?.image} UserName={item.name} />
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -70,29 +93,29 @@ const Favorites = () => {
             style={{
               ...GlobalStyles.scroll,
               overflow: 'hidden',
-              marginBottom: 140,
+              marginBottom: 150,
             }}
             showsVerticalScrollIndicator={false}>
-            <Notice
-              facilityImage={userImage}
-              facilityName={'yosida'}
-              noticeDate={'2024.05.06'}
-              noticeImage={longImagePlaceholder}
-              noticeContent={'We are not opening today >< Have a nice holiday!'}
-            />
-            <Notice
-              facilityImage={userImage}
-              facilityName={'yosida'}
-              noticeDate={'2024.05.06'}
-              noticeContent={'We are not opening today >< Have a nice holiday!'}
-            />
-            <Notice
-              facilityImage={userImage}
-              facilityName={'yosida'}
-              noticeDate={'2024.05.06'}
-              noticeImage={longImagePlaceholder}
-              noticeContent={'We are not opening today >< Have a nice holiday!'}
-            />
+            {notices && notices.length > 0 ? (
+              notices.map(item => (
+                <TouchableOpacity
+                  key={item.id} // Always add a unique key for list items
+                  onPress={() => {
+                    navigation.navigate("FacilityDetail", { facilityID: item.facility_id });
+                  }}
+                >
+                  <Notice
+                    facilityImage={favoritesImageList[item.facility_id]?.image}
+                    facilityName={favoritesImageList[item.facility_id]?.name}
+                    noticeDate={item.post_date}
+                    noticeImage={item.img_uri}
+                    noticeContent={item.title + '\n' + item.content} // Corrected to '\n'
+                  />
+                </TouchableOpacity>
+              ))
+            ) : (
+              <Text>No notices available</Text>
+            )}
           </ScrollView>
         </View>
       </View>

@@ -7,12 +7,14 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Alert
+  Alert,
+  Keyboard
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import ToggleSwitch from 'toggle-switch-react-native';
 
 import { GlobalStyles, Color, Border, FontSize } from '../GlobalStyles';
+import { sendBugReport } from './api';
 
 
 const Settings = () => {
@@ -43,6 +45,7 @@ const Settings = () => {
 
   const toggleReport = () => {
     setReport(!report);
+    setReportContent('');
   };
 
   const logout = () => {
@@ -87,6 +90,16 @@ const Settings = () => {
       ],
       { cancelable: false }
     );
+  };
+
+  const sendReport = () => {
+    Alert.alert(
+      "Report Sent"
+    );
+    console.log(reportContent);
+    sendBugReport(reportContent);
+    toggleReport();
+    setReportContent('');
   };
 
   return (
@@ -235,19 +248,6 @@ const Settings = () => {
               </View>
               <View style={{ width: '100%', alignItems: 'center' }}>
                 <View style={styles.inputSection}>
-                  <Text style={GlobalStyles.h3}>title</Text>
-                  <View style={GlobalStyles.inputWrapper3}>
-                    <TextInput
-                      style={styles.registrationInput1}
-                      onChangeText={setReportContent}
-                      value={reportContent}
-                      placeholder="Review Content"
-                      multiline={true}
-                      numberOfLines={1}
-                    />
-                  </View>
-                </View>
-                <View style={styles.inputSection}>
                   <Text style={GlobalStyles.h3}>description</Text>
                   <View style={GlobalStyles.inputWrapper3}>
                     <TextInput
@@ -255,13 +255,14 @@ const Settings = () => {
                       onChangeText={setReportContent}
                       value={reportContent}
                       placeholder="Review Content"
-                      multiline={true}
+                      multiline={false}
                       numberOfLines={5}
+                      onSubmitEditing={() => Keyboard.dismiss()}
                     />
                   </View>
                 </View>
                 <View style={{ width: '100%', justifyContent: 'flex-end', flexDirection: 'row', paddingTop: 20 }}>
-                  <TouchableOpacity>
+                  <TouchableOpacity onPress={sendReport}>
                     <Text style={GlobalStyles.h4}>Send</Text>
                   </TouchableOpacity>
                 </View>
@@ -303,7 +304,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   background: {
-    height: '70%',
+    height: '50%',
     width: '90%',
     justifyContent: 'flex-start',
     backgroundColor: Color.white,

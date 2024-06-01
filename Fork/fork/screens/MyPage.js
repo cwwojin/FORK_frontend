@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   TextInput,
+  Touchable,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Dropdown } from 'react-native-element-dropdown';
@@ -28,30 +29,89 @@ import userImage from '../assets/placeholders/User.png';
 
 //To be deleted
 import longImagePlaceholder from '../assets/placeholders/long_image.png';
-import { USERID, getUserByID } from './api';
+import { USERID, USERPREFERENCE, fetchImage, getFacilityRegistrations, getReports, getUserByID, getUserPreferences } from './api';
 
 const MyPage = () => {
   //Get Informations of facilities
-  //5 most recent bookmarked facilities [img_url, name, score, address], 5 facilities in order of number of stamps [img_url, name], 5 most recent reviews [img_url, name, score, comment], user [img_url, nickname, email]
+  const [userPreference, setUserPreference] = useState();
+
 
   const [userType, setUserType] = useState(0);
   const [userInfo, setUserInfo] = useState('');
   const [userProfile, setUserProfile] = useState(userImage);
+  const [facilityRegistrations, setFacilityRegistrations] = useState([]);
+  const [reviewReports, setReviewReports] = useState([]);
+  const [bugReports, setBugReports] = useState([]);
+  const [reviewReportsProfiles, setReviewReportsProfiles] = useState([]);
 
   useEffect(() => {
+    const fetchFacilityRegistration = async () => {
+      try {
+        const data = await getFacilityRegistrations();
+        setFacilityRegistrations(data);
+      } catch (error) {
+        console.log(error.message);
+      }
+    };
+    const fetchReviewReports = async () => {
+      try {
+        const data = await getReports(1);
+        setReviewReports(data);
+
+        const newReviewReportsProfile = {};
+        for (const item of data) {
+          const userInfo = await getUserByID(item.author_id);
+          if (userInfo.profile_img_uri) {
+            userInfo.profile_img_uri = await fetchImage(item.profile_img_uri);
+          } else {
+            userInfo.profile_img_uri = userImage;
+          }
+          newReviewReportsProfile[item.id] = userInfo;
+        }
+        setReviewReportsProfiles(newReviewReportsProfile);
+      } catch (error) {
+        console.log(error.message);
+      }
+    };
+    const fetchBugReports = async () => {
+      try {
+        const data = await getReports(0);
+        setBugReports(data);
+        console.log("bug reports:", data);
+      } catch (error) {
+        console.log(error.message);
+      }
+    };
+    const fetchUserPreferences = async() => {
+      try {
+        const data = await getUserPreferences();
+        setUserPreference(data);
+        console.log("preference", data);
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
     const fetchUser = async (userID) => {
       try {
         const data = await getUserByID(userID);
         setUserInfo(data);
         setUserType(data.user_type);
-        if (data.data.profile_img_uri) {
-          setUserProfile(data.profile_img_uri);
+        if (data.profile_img_uri) {
+          const profileImage = await fetchImage(data.profile_img_uri);
+          setUserProfile(profileImage);
         };
+        if (data.user_type == 0) { //Admin
+          fetchFacilityRegistration();
+          fetchReviewReports();
+          fetchBugReports();
+        }
+        if (data.user_type == 1 ) { //KAIST User
+          fetchUserPreferences();
+        }
       } catch (error) {
         console.log(error.message);
       }
     };
-
     fetchUser(USERID);
   }, []);
 
@@ -68,14 +128,14 @@ const MyPage = () => {
     { userImage: userImage, userName: 'foodie', reviewDate: '2024.05.06', reviewScore: 5, reviewContent: 'Loved it', reviewHashtags: ['🥰Lovely', '😋Tasty'], edit: false },
   ];
 
-  const bugReports = [
-    { userImage: userImage, userName: 'foodie', reportDate: '2024.05.16', reportContent: 'Somethings going wrong...' },
-    { userImage: userImage, userName: 'foodie', reportDate: '2024.05.16', reportContent: 'Sooo sleepy...' },
-    { userImage: userImage, userName: 'foodie', reportDate: '2024.05.16', reportContent: 'Somethings going wrong...' },
-    { userImage: userImage, userName: 'foodie', reportDate: '2024.05.16', reportContent: 'Somethings going wrong...' },
-    { userImage: userImage, userName: 'foodie', reportDate: '2024.05.16', reportContent: 'Somethings going wrong...' },
-    { userImage: userImage, userName: 'foodie', reportDate: '2024.05.16', reportContent: 'Somethings going wrong...' },
-  ];
+  // const bugReports = [
+  //   { userImage: userImage, userName: 'foodie', reportDate: '2024.05.16', reportContent: 'Somethings going wrong...' },
+  //   { userImage: userImage, userName: 'foodie', reportDate: '2024.05.16', reportContent: 'Sooo sleepy...' },
+  //   { userImage: userImage, userName: 'foodie', reportDate: '2024.05.16', reportContent: 'Somethings going wrong...' },
+  //   { userImage: userImage, userName: 'foodie', reportDate: '2024.05.16', reportContent: 'Somethings going wrong...' },
+  //   { userImage: userImage, userName: 'foodie', reportDate: '2024.05.16', reportContent: 'Somethings going wrong...' },
+  //   { userImage: userImage, userName: 'foodie', reportDate: '2024.05.16', reportContent: 'Somethings going wrong...' },
+  // ];
 
   const facilityRequest = [
     { facilityName: 'foodie', facilityImage: longImagePlaceholder, facilityAddress: 'daejeon daehackroe 291 kaist campus', state: 'pending' },
@@ -193,6 +253,7 @@ const MyPage = () => {
                   flexWrap: 'wrap',
                   marginTop: 10,
                 }}>
+                
                 <Hashtag tag={'🍚 rice lover'} />
                 <Hashtag tag={'🥬 vegetarian'} />
                 <Hashtag tag={'🍚 rice lover'} />
@@ -490,7 +551,7 @@ const MyPage = () => {
                   </View>
                 </View>
                 <View style={{ width: '100%' }}>
-                  <TouchableOpacity style={{ paddingTop: 15, alignSelf: 'flex-end' }}>
+                  <TouchableOpacity style={{ paddingTop: 15 }}>
                     <Text style={GlobalStyles.body3}>Edit</Text>
                   </TouchableOpacity>
                   <Image
@@ -678,19 +739,20 @@ const MyPage = () => {
                   style={GlobalStyles.h2}>
                   Review Reports
                 </Text>
-                {review
+                {reviewReports
                   .map(item => (
                     <Review
-                      key={item.reviewId} // Make sure to provide a unique key prop
-                      userImage={item.userImage}
-                      userName={item.userName}
-                      reviewDate={item.reviewDate}
-                      reviewScore={item.reviewScore}
-                      reviewImage={item.reviewImage}
-                      reviewContent={item.reviewContent}
-                      reviewHashtags={item.reviewHashtags}
+                      key={item.id} // Make sure to provide a unique key prop
+                      userImage={reviewReportsProfiles[item.id]?.profile_img_uri}
+                      userName={reviewReportsProfiles[item.id]?.account_id}
+                      reviewDate={item.created_at}
+                      reviewScore={0}
+                      reviewImage={''}
+                      reviewContent={item.content}
+                      reviewHashtags={[]}
                       edit={false}
                       admin={true}
+                      reviewreport={item.id}
                     />
                   ))
                 }
@@ -713,11 +775,13 @@ const MyPage = () => {
                     paddingTop: 5,
                   }}
                   showsHorizontalScrollIndicator={false}>
-                  <UserList UserImage={userImage} UserName={'yosida'} />
-                  <UserList UserImage={userImage} UserName={'Motiff'} />
-                  <UserList UserImage={userImage} UserName={'malgm'} />
-                  <UserList UserImage={userImage} UserName={'yosida'} />
-                  <UserList UserImage={userImage} UserName={'yosida'} />
+                  {facilityRegistrations.map(item => (
+                    <TouchableOpacity onPress={() => {
+                      navigation.navigate("FacilityRegistrationRequest", { author_id: item.author_id, facilityInfo: item.content, requestID: item.id });
+                    }}>
+                      <UserList UserImage={userImage} UserName={item.content.name} />
+                    </TouchableOpacity>
+                  ))}
                 </ScrollView>
               </View>
 
@@ -735,7 +799,7 @@ const MyPage = () => {
                     userImage={item.userImage}
                     userName={item.userName}
                     reportDate={item.reportDate}
-                    reportContent={item.reportContent}
+                    reportContent={item.content}
                   />
                 ))}
 

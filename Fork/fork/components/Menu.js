@@ -1,5 +1,9 @@
 import { Image, View, Text } from 'react-native';
 import { Color, GlobalStyles } from '../GlobalStyles.js';
+import { fetchImage } from '../screens/api.js';
+import { useEffect, useState } from 'react';
+
+import longImagePlaceholder from '../assets/placeholders/long_image.png';
 
 const Menu = ({
   menuName,
@@ -7,6 +11,23 @@ const Menu = ({
   menuPrice,
   menuImage,
 }) => {
+  const [menuImages, setMenuImages] = useState();
+
+  useEffect(() => {
+    const fetchMenuImage = async () => {
+      try {
+        const imageUrl = await fetchImage(menuImage);
+        if (imageUrl != undefined) {
+          setMenuImages(imageUrl);
+        }
+      } catch (error) {
+        console.log(error.message);
+      };
+    }
+    if (menuImage != "") {
+      fetchMenuImage();
+    };
+  }, []);
 
   return (
     <View style={{ width: '100%', alignItems: 'center' }}>
@@ -21,7 +42,7 @@ const Menu = ({
         <Image
           style={GlobalStyles.squareImage2}
           contentFit="cover"
-          source={Number.isInteger(menuImage) ? menuImage : { uri: menuImage }}
+          source={(menuImages && menuImages != undefined) ? { uri: menuImages } : longImagePlaceholder}
         />
         <View style={{ width: '60%', paddingVertical: 10 }}>
           <View style={{ paddingBottom: 10 }}>

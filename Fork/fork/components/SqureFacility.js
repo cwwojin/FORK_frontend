@@ -7,19 +7,24 @@ const SquareFacility = ({
   facilityName,
   facilityAddress,
 }) => {
+  if (facilityImage == undefined) {
+    facilityImage = require('../assets/placeholders/long_image.png');
+  };
+
   return (
     <View>
       <Image
         style={GlobalStyles.squareImage}
         contentFit="cover"
-        source={facilityImage}
+        source={Number.isInteger(facilityImage) ? facilityImage : { uri: facilityImage }}
       />
-      <View style={{ marginLeft: 15, marginRight: 15, width: 130 }}>
+      <View style={{ marginLeft: 15, marginRight: 15, width: 110 }}>
         <View
           style={{
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'space-between',
+            width: '100%'
           }}>
           <Text
             style={GlobalStyles.body}
@@ -33,7 +38,7 @@ const SquareFacility = ({
               contentFit="cover"
               source={require('../assets/icons/star.png')}
             />
-            <Text style={GlobalStyles.body3}>{facilityScore}</Text>
+            <Text style={GlobalStyles.body3}>{facilityScore? facilityScore : '-'}</Text>
           </View>
         </View>
         <Text style={GlobalStyles.body2} numberOfLines={1} ellipsizeMode="tail">
