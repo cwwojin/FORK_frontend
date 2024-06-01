@@ -365,11 +365,15 @@ export const fetchFacilitiesInBounds = async (northEastLat, northEastLng, southW
         const latMax = Math.max(northEastLat, southWestLat)
         const lngMin = Math.min(northEastLng, southWestLng)
         const lngMax = Math.max(northEastLng, southWestLng)
-
-        const url = `${FORK_URL}api/map/search?latMin=${encodeURIComponent(latMin)}&lngMin=${encodeURIComponent(lngMin)}&latMax=${encodeURIComponent(latMax)}&lngMax=${encodeURIComponent(lngMax)}`;
-        
+        const url =  favorite ? `${FORK_URL}api/map/search?latMin=${encodeURIComponent(latMin)}&lngMin=${encodeURIComponent(lngMin)}&latMax=${encodeURIComponent(latMax)}&lngMax=${encodeURIComponent(lngMax)}&favorite=true` : `${FORK_URL}api/map/search?latMin=${encodeURIComponent(latMin)}&lngMin=${encodeURIComponent(lngMin)}&latMax=${encodeURIComponent(latMax)}&lngMax=${encodeURIComponent(lngMax)}`;
+       
+       
         if (favorite) {
-            url += `&favorite=true`;
+            console.log("UserBookmarkedActive");
+            console.log("url : " + url);
+        } else {
+            console.log("UserBookmarkedNotActive");
+            console.log("url : " + url);
         }
 
         const response = await fetch(url, {
@@ -385,8 +389,12 @@ export const fetchFacilitiesInBounds = async (northEastLat, northEastLng, southW
         //console.log("JSON data:", jsonResponse);
 
         const facilitiesData = jsonResponse.data;
-        console.log("Facilities data:", JSON.stringify(facilitiesData, null, 2));
-
+        if (favorite) {
+          console.log("Facilities data in favorite :", JSON.stringify(facilitiesData, null, 2));
+        } else {
+          console.log("Facilities data in not favorite :");   
+        }
+        
         return facilitiesData;
 
     } catch (error) {
@@ -397,9 +405,9 @@ export const fetchFacilitiesInBounds = async (northEastLat, northEastLng, southW
 
 export const getParsedUserPreferences = () => {
     console.log("here and USERPREFERENCE:", JSON.stringify(USERPREFERENCE, null, 2));
-    if (USERPREFERENCE && Array.isArray(USERPREFERENCE.data)) {
+    if (USERPREFERENCE && Array.isArray(USERPREFERENCE)) {
       console.log("Parsing preferences by IDs");
-      return USERPREFERENCE.data.map(pref => pref.id);
+      return USERPREFERENCE.map(pref => pref.id);
     }
     return [];
 };
