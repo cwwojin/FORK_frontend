@@ -1,17 +1,16 @@
 import React, { useState, useCallback} from 'react';
-import { View, TextInput, StyleSheet, Text, TouchableOpacity, Image } from 'react-native';
+import { View, TextInput, StyleSheet, Text, TouchableOpacity, Image, Dimensions } from 'react-native';
 import { Border, Color, GlobalStyles } from "../GlobalStyles.js";
 import { useNavigation } from '@react-navigation/native';
+import { handleLogin } from '../screens/api.js';
+
+const screenHeight = Dimensions.get('window').height;
+const screenWidth = Dimensions.get('window').width;
 
 const LoginInput = () => {
     const navigation = useNavigation();
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-
-    const handleLogin = () => {
-      navigation.navigate("Home");       
-    };
-
     const onResetPassword = useCallback(() => {
     navigation.navigate("ResetPassword"); 
     }, [navigation]);
@@ -44,7 +43,11 @@ const LoginInput = () => {
             <Text style={styles.resetPassword}>Forgot password?</Text>
             </TouchableOpacity>
           </View>
-          <TouchableOpacity style={GlobalStyles.confirmButton} onPress={handleLogin}>
+          <TouchableOpacity style={GlobalStyles.confirmButton} onPress={() => 
+            {
+              handleLogin(username, password);
+              navigation.navigate("Home");
+            }}>
           <Text style={GlobalStyles.confirmButtonText}>Log In</Text>
         </TouchableOpacity>
         </View>
@@ -58,8 +61,10 @@ const styles = StyleSheet.create({
       backgroundColor: 'white', 
     },
     mainArea: {
-      height: 150,
-      width: 320,
+      height: screenHeight * 0.2, 
+      width: screenWidth * 0.8,
+      //height: 150,
+      //width: 320,
       justifyContent: 'center',
       alignItems: 'center',
       resizeMode: 'cover',  
