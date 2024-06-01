@@ -1,4 +1,4 @@
-//const BASE_URL = 'http://ec2-52-65-3-109.ap-southeast-2.compute.amazonaws.com:80/api';
+const BASE_URL = "https://taqjpw7a54.execute-api.ap-southeast-2.amazonaws.com/stage-dev/dev/api";
 
 // This is the base-url that leads to all backend & S3
 const API_ENDPOINT = "https://taqjpw7a54.execute-api.ap-southeast-2.amazonaws.com/stage-dev";
@@ -11,41 +11,9 @@ const FORK_URL = `${API_ENDPOINT}/dev/`
 const S3_ENDPOINT = `${API_ENDPOINT}/s3`
 
 export let USERTOKEN = "";
+const AUTHORIZATION = 'foodie';
+export const USERID = 3;
 
-// --------------LOGIN----------------- 
-
-export const handleLogin = async (username, password) => {
-    console.log('in handleLogin : username => ' + username + ', password => ' + password);
-    try {
-        const url = `${FORK_URL}api/auth/login`;
-        //?userId=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}
-        console.log("url : " + url)
-        const requestBody = {
-            userId: username,
-            password: password
-        };
-        const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': "foodie"
-        },
-        body: JSON.stringify(requestBody)
-        });
-        console.log("response : " + response.status);
-        if (response.status === 200) {
-        const jsonResponse = await response.json();
-        console.log("response : " + JSON.stringify(jsonResponse, null, 2));
-        USERTOKEN = jsonResponse.data.token;
-        console.log("USERTOKEN : " + USERTOKEN);
-        
-        } else {
-        console.log('Login Failed', 'Invalid credentials or insufficient permissions.');
-        }
-    } catch (error) {
-        console.log(error);
-    }
-};
 
 export const fetchImage = async (uri) => {
     const url = new URL(uri);
@@ -77,9 +45,50 @@ export const fetchImage = async (uri) => {
     }
 }
 
+// --------------LOGIN----------------- 
+
+export const handleLogin = async (username, password) => {
+    console.log('in handleLogin : username => ' + username + ', password => ' + password);
+    try {
+        const url = `${FORK_URL}api/auth/login`;
+        //?userId=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}
+        console.log("url : " + url)
+        const requestBody = {
+            userId: username,
+            password: password
+        };
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': "foodie"
+            },
+            body: JSON.stringify(requestBody)
+        });
+        console.log("response : " + response.status);
+        if (response.status === 200) {
+            const jsonResponse = await response.json();
+            console.log("response : " + JSON.stringify(jsonResponse, null, 2));
+            USERTOKEN = jsonResponse.data.token;
+            console.log("USERTOKEN : " + USERTOKEN);
+
+        } else {
+            console.log('Login Failed', 'Invalid credentials or insufficient permissions.');
+        }
+    } catch (error) {
+        console.log(error);
+    }
+};
+
 export const getAllUsders = async () => {
     try {
-        const response = await fetch(`${BASE_URL}/users`);
+        const response = await fetch(`${BASE_URL}/users`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': AUTHORIZATION
+            }
+        });
         if (!response.ok) {
             throw new Error('Network response was not ok');
         }
@@ -126,7 +135,7 @@ export const fetchFacilityWithName = async (facilityName, openNow = false, prefe
         console.error('Error fetching facilities in real fetchMethod:', error);
         throw error;
     }
-}; 
+};
 
 export const fetchFacilitiesInBounds = async (northEastLat, northEastLng, southWestLat, southWestLng) => {
     try {
@@ -152,8 +161,8 @@ export const fetchFacilitiesInBounds = async (northEastLat, northEastLng, southW
         const facilitiesData = jsonResponse.data;
         //console.log("Facilities data:", facilitiesData);
 
-        return facilitiesData; 
-        
+        return facilitiesData;
+
     } catch (error) {
         console.error('Error fetching facilities in real fetchMethod:', error);
         throw error;
@@ -164,7 +173,13 @@ export const fetchFacilitiesInBounds = async (northEastLat, northEastLng, southW
 
 export const getAllUsers = async () => {
     try {
-        const response = await fetch(`${BASE_URL}/users`);
+        const response = await fetch(`${BASE_URL}/users`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': AUTHORIZATION
+            }
+        });
         if (!response.ok) {
             throw new Error('Network response was not ok');
         }
@@ -178,7 +193,13 @@ export const getAllUsers = async () => {
 
 export const getUserByID = async (userID) => {
     try {
-        const response = await fetch(`${BASE_URL}/users/${encodeURIComponent(userID)}`);
+        const response = await fetch(`${BASE_URL}/users/${encodeURIComponent(userID)}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': AUTHORIZATION
+            }
+        });
         if (!response.ok) {
             throw new Error('Network response was not ok');
         }
@@ -190,28 +211,40 @@ export const getUserByID = async (userID) => {
     }
 };
 
-export const getUserPreferences = async (userID) => {
+export const getUserPreferences = async () => {
     try {
-        const response = await fetch(`${BASE_URL}/users/preference/${encodeURIComponent(userID)}`);
+        const response = await fetch(`${BASE_URL}/users/preference/${encodeURIComponent(USERID)}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': AUTHORIZATION
+            }
+        });
         if (!response.ok) {
             throw new Error('Network response was not ok');
         }
         const data = await response.json();
-        return data;
+        return data.data;
     } catch (error) {
         console.error('Error fetching user:', error);
         throw error;
     }
 };
 
-export const getUserFavorites = async (userID) => {
+export const getUserFavorites = async () => {
     try {
-        const response = await fetch(`${BASE_URL}/users/favorite/${encodeURIComponent(userID)}`);
+        const response = await fetch(`${BASE_URL}/users/favorite/${encodeURIComponent(USERID)}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': AUTHORIZATION
+            }
+        });
         if (!response.ok) {
             throw new Error('Network response was not ok');
         }
         const data = await response.json();
-        return data;
+        return data.data;
     } catch (error) {
         console.error('Error fetching user:', error);
         throw error;
@@ -224,7 +257,8 @@ export const isFacilityBookmarked = async (facilityID) => {
         const response = await fetch(`${BASE_URL}/users/favorite/${encodeURIComponent(USERID)}/has/${encodeURIComponent(facilityID)}`, {
             method: 'GET',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Authorization': AUTHORIZATION
             }
         });
         if (!response.ok) {
@@ -238,12 +272,13 @@ export const isFacilityBookmarked = async (facilityID) => {
     }
 };
 
-export const addFavorite = async (userID, facilityId) => {
+export const addFavorite = async (facilityId) => {
     try {
-        const response = await fetch(`${BASE_URL}/users/favorite/${encodeURIComponent(userID)}`, {
+        const response = await fetch(`${BASE_URL}/users/favorite/${encodeURIComponent(USERID)}`, {
             method: 'PUT',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Authorization': AUTHORIZATION
             },
             body: JSON.stringify({ facilityId: (encodeURIComponent(facilityId)) })
         });
@@ -260,12 +295,13 @@ export const addFavorite = async (userID, facilityId) => {
     }
 };
 
-export const deleteFavorite = async (userID, facilityId) => {
+export const deleteFavorite = async (facilityId) => {
     try {
-        const response = await fetch(`${BASE_URL}/users/favorite/${encodeURIComponent(userID)}`, {
+        const response = await fetch(`${BASE_URL}/users/favorite/${encodeURIComponent(USERID)}`, {
             method: 'DELETE',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Authorization': AUTHORIZATION
             },
             body: JSON.stringify({ facilityId: (encodeURIComponent(facilityId)) })
         });
@@ -286,7 +322,13 @@ export const deleteFavorite = async (userID, facilityId) => {
 
 export const getFacilityByID = async (facilityID) => {
     try {
-        const response = await fetch(`${BASE_URL}/facilities/${encodeURIComponent(facilityID)}`);
+        const response = await fetch(`${BASE_URL}/facilities/${encodeURIComponent(facilityID)}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': AUTHORIZATION
+            }
+        });
         if (!response.ok) {
             throw new Error('Network response was not ok');
         }
@@ -303,7 +345,8 @@ export const getFacilityStampRuleByID = async (facilityID) => {
         const response = await fetch(`${BASE_URL}/facilities/${encodeURIComponent(facilityID)}/stamp-ruleset`, {
             method: 'GET',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Authorization': AUTHORIZATION
             }
         });
         if (!response.ok) {
@@ -322,7 +365,8 @@ export const getFacilityPreferences = async (facilityID) => {
         const response = await fetch(`${BASE_URL}/facilities/${encodeURIComponent(facilityID)}/preferences`, {
             method: 'GET',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Authorization': AUTHORIZATION
             }
         });
         if (!response.ok) {
@@ -341,7 +385,8 @@ export const getFacilityMenu = async (facilityID) => {
         const response = await fetch(`${BASE_URL}/facilities/${encodeURIComponent(facilityID)}/menu`, {
             method: 'GET',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Authorization': AUTHORIZATION
             }
         });
         if (!response.ok) {
@@ -360,7 +405,8 @@ export const getFacilityOpeningHour = async (facilityID) => {
         const response = await fetch(`${BASE_URL}/facilities/${encodeURIComponent(facilityID)}/opening-hours`, {
             method: 'GET',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Authorization': AUTHORIZATION
             }
         });
         if (!response.ok) {
@@ -373,6 +419,68 @@ export const getFacilityOpeningHour = async (facilityID) => {
         throw error;
     }
 };
+
+
+export const getTrendingFacilities = async () => {
+    try {
+        const response = await fetch(`${BASE_URL}/facilities/leaderboard/trending?limit=${encodeURIComponent(5)}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': AUTHORIZATION
+            }
+        });
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        return data.data;
+    } catch (error) {
+        console.error('Error fetching trending facilities:', error);
+        throw error;
+    }
+};
+
+export const getNewestFacilities = async () => {
+    try {
+        const response = await fetch(`${BASE_URL}/facilities/leaderboard/newest?limit=${encodeURIComponent(5)}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': AUTHORIZATION
+            }
+        });
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        return data.data;
+    } catch (error) {
+        console.error('Error fetching newest facilities:', error);
+        throw error;
+    }
+};
+
+export const getFacilityNotices = async (facilityID) => {
+    try {
+        const response = await fetch(`${BASE_URL}/facilities/${encodeURIComponent(facilityID)}/post`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': AUTHORIZATION
+            }
+        });
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        return data.data;
+    } catch (error) {
+        console.error('Error fetching user:', error);
+        throw error;
+    }
+};
+
 
 // --------------REVIEW-----------------
 
@@ -394,7 +502,8 @@ export const getReviewByQuery = async (userID, facilityId, hasImage, hashtags) =
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-            },
+                'Authorization': AUTHORIZATION
+            }
         });
 
         if (!response.ok) {
@@ -412,7 +521,13 @@ export const getReviewByQuery = async (userID, facilityId, hasImage, hashtags) =
 
 export const getFacilityStamp = async (facilityID) => {
     try {
-        const response = await fetch(`${BASE_URL}/stamps?user=${encodeURIComponent(USERID)}&facility=${encodeURIComponent(facilityID)}`);
+        const response = await fetch(`${BASE_URL}/stamps?user=${encodeURIComponent(USERID)}&facility=${encodeURIComponent(facilityID)}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': AUTHORIZATION
+            }
+        });
         if (!response.ok) {
             throw new Error('Network response was not ok');
         }
@@ -426,7 +541,13 @@ export const getFacilityStamp = async (facilityID) => {
 
 export const getStampBook = async () => {
     try {
-        const response = await fetch(`${BASE_URL}/stamps?user=${encodeURIComponent(USERID)}`);
+        const response = await fetch(`${BASE_URL}/stamps?user=${encodeURIComponent(USERID)}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': AUTHORIZATION
+            }
+        });
         if (!response.ok) {
             throw new Error('Network response was not ok');
         }
@@ -439,4 +560,166 @@ export const getStampBook = async () => {
     }
 };
 
-getStampBook(2);
+// --------------ADMIN-----------------
+
+export const getFacilityRegistrations = async () => {
+    try {
+        const response = await fetch(`${BASE_URL}/admin/facility-requests?status=0`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': AUTHORIZATION
+            }
+        });
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        return data.data;
+    } catch (error) {
+        console.error('Error fetching facility registrations:', error);
+        throw error;
+    }
+};
+
+export const acceptFacilityRegistrations = async (requestID) => {
+    try {
+        const response = await fetch(`${BASE_URL}/admin/facility-requests/${encodeURIComponent(requestID)}/accept`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': AUTHORIZATION,
+            },
+            body: JSON.stringify({
+                adminId: USERID,
+            })
+        });
+        console.log(response); 
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        return data.data;
+    } catch (error) {
+        console.error('Error accepting facility registrations:', error);
+        throw error;
+    }
+};
+
+export const declineFacilityRegistrations = async (requestID) => {
+    try {
+        const response = await fetch(`${BASE_URL}/admin/facility-requests/${encodeURIComponent(requestID)}/decline`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': AUTHORIZATION,
+            },
+            body: JSON.stringify({
+                adminId: USERID,
+            })
+        });
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        return data.data;
+    } catch (error) {
+        console.error('Error declining facility registrations:', error);
+        throw error;
+    }
+};
+
+export const getReports = async (type) => {
+    try {
+        const response = await fetch(`${BASE_URL}/admin/reports?type=${encodeURIComponent(type)}&status=${encodeURIComponent(0)}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': AUTHORIZATION
+            }
+        });
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        return data.data;
+    } catch (error) {
+        console.error('Error fetching facility registrations:', error);
+        throw error;
+    }
+};
+
+export const sendReviewReport = async ({ content, reviewId }) => {
+    try {
+        const response = await fetch(`${BASE_URL}/admin/reports/upload`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': AUTHORIZATION
+            },
+            body: JSON.stringify({
+                authorId: USERID,
+                type: 1,
+                content: content,
+                reviewId: reviewId
+            })
+        });
+        const result = await response.json();
+        console.log(result);
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        return data.data;
+    } catch (error) {
+        console.error('Error sending review report:', error);
+        throw error;
+    }
+};
+
+export const sendBugReport = async ({ content }) => {
+    try {
+        const response = await fetch(`${BASE_URL}/admin/reports/upload`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': AUTHORIZATION
+            },
+            body: JSON.stringify({
+                authorId: USERID,
+                type: 0,
+                content: content,
+            })
+        });
+        const result = await response.json();
+        console.log(content);
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        return data.data;
+    } catch (error) {
+        console.error('Error sending bug report:', error);
+        throw error;
+    }
+};
+
+export const deleteReport = async (reportId) => {
+    try {
+        const response = await fetch(`${BASE_URL}/admin/reports/delete/${encodeURIComponent(reportId)}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': AUTHORIZATION
+            }
+        });
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        return data.data;
+    } catch (error) {
+        console.error('Error fetching facility registrations:', error);
+        throw error;
+    }
+};
