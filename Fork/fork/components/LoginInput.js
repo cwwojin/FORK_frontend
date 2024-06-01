@@ -1,5 +1,5 @@
 import React, { useState, useCallback} from 'react';
-import { View, TextInput, StyleSheet, Text, TouchableOpacity, Image, Dimensions } from 'react-native';
+import { View, TextInput, StyleSheet, Text, TouchableOpacity, Image, Dimensions, Alert } from 'react-native';
 import { Border, Color, GlobalStyles } from "../GlobalStyles.js";
 import { useNavigation } from '@react-navigation/native';
 import { handleLogin } from '../screens/api.js';
@@ -14,6 +14,15 @@ const LoginInput = () => {
     const onResetPassword = useCallback(() => {
     navigation.navigate("ResetPassword"); 
     }, [navigation]);
+
+    const onLoginPress = async () => {
+      const loginSuccessful = await handleLogin(username, password);
+      if (loginSuccessful) {
+        navigation.navigate("Home");
+      } else {
+        Alert.alert('Login failed. Please check your username and password.');
+      }
+    };
 
     return (
         <View style={styles.container}>
@@ -43,11 +52,7 @@ const LoginInput = () => {
             <Text style={styles.resetPassword}>Forgot password?</Text>
             </TouchableOpacity>
           </View>
-          <TouchableOpacity style={GlobalStyles.confirmButton} onPress={() => 
-            {
-              handleLogin(username, password);
-              navigation.navigate("Home");
-            }}>
+          <TouchableOpacity style={GlobalStyles.confirmButton} onPress={onLoginPress}>
           <Text style={GlobalStyles.confirmButtonText}>Log In</Text>
         </TouchableOpacity>
         </View>

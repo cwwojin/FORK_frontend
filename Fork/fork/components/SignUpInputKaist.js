@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { View, TextInput, StyleSheet, Text, TouchableOpacity, Image } from 'react-native';
+import { View, TextInput, StyleSheet, Text, TouchableOpacity, Image, Alert} from 'react-native';
 import { Border, Color, GlobalStyles } from "../GlobalStyles.js";
 import { useNavigation } from '@react-navigation/native';
+import { registerUser } from '../screens/api';
 
 const SignUpInputKaist = () => {
     const navigation = useNavigation();
@@ -10,8 +11,18 @@ const SignUpInputKaist = () => {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
 
-    const handleSignUp = () => {
-      navigation.navigate("VerifyEmail");       
+    const handleRegister = async () => {
+      if (password !== confirmPassword) {
+        Alert.alert('Error', 'Passwords do not match');
+        return;
+      }
+      try {
+          const data = await registerUser(username, password, 1, email);
+          console.log("Kaist user egistration data:", data);
+          navigation.navigate("VerifyEmail", { username: username });
+      } catch (error) {
+        console.error('Error in handleRegister for KAIST user : ', error);
+      }
     };
 
     return (
@@ -61,7 +72,7 @@ const SignUpInputKaist = () => {
                 <Image source={require("../assets/icons/eyeoff.png")} style={GlobalStyles.eyeIcon} />
             </View>
           </View>
-          <TouchableOpacity style={GlobalStyles.confirmButton} onPress={handleSignUp}>
+          <TouchableOpacity style={GlobalStyles.confirmButton} onPress={handleRegister}>
           <Text style={GlobalStyles.confirmButtonText}>Sign Up</Text>
         </TouchableOpacity>
         </View>

@@ -416,10 +416,17 @@ export const GlobalStyles = StyleSheet.create({
     width: 26,
     height: 24,
   },
+  inputIcon7: {
+    position: 'absolute',
+    left: 14,
+    top: 21,
+    width: 17,
+    height: 17,
+  },
   passwordIcon: {
     position: 'absolute',
     left: 13,
-    top: 20,
+    top: 21,
     width: 20,
     height: 20,
   },

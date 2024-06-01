@@ -1,4 +1,4 @@
-const BASE_URL = "https://taqjpw7a54.execute-api.ap-southeast-2.amazonaws.com/stage-dev/dev/api";
+const BASE_URL = 'https://taqjpw7a54.execute-api.ap-southeast-2.amazonaws.com/stage-dev/dev/api';
 
 // This is the base-url that leads to all backend & S3
 const API_ENDPOINT = "https://taqjpw7a54.execute-api.ap-southeast-2.amazonaws.com/stage-dev";
@@ -10,10 +10,194 @@ const FORK_URL = `${API_ENDPOINT}/dev/`
 // S3 endpoint
 const S3_ENDPOINT = `${API_ENDPOINT}/s3`
 
-export let USERTOKEN = "";
-const AUTHORIZATION = 'foodie';
-export const USERID = 3;
+// export let USERTOKEN = "";
+// export let USERID = "";
 
+const USERTOKEN = 'kaist';
+const USERID = 1;
+export let USERPREFERENCE = "";
+
+// --------------LOGIN-----------------
+export const handleLogin = async (username, password) => {
+    console.log('in handleLogin : username => ' + username + ', password => ' + password);
+    try {
+      const url = `${FORK_URL}api/auth/login`;
+      const requestBody = {
+        userId: username,
+        password: password
+      };
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'USERTOKEN': 'foodie'
+        },
+        body: JSON.stringify(requestBody)
+      });
+      if (response.status === 200) {
+        const jsonResponse = await response.json();
+        USERTOKEN = jsonResponse.data.token;
+        USERID = jsonResponse.data.user.id;
+        USERPREFERENCE = await getUserPreferences(USERID);
+        console.log("USERID : " + USERID);
+        console.log("USERPREFERENCE : " + JSON.stringify(USERPREFERENCE, null, 2));
+        return true;
+      } else {
+        console.log('Login Failed', 'Invalid credentials or insufficient permissions.');
+        return false;
+      }
+    } catch (error) {
+      console.log(error);
+      return false;
+    }
+  };
+// --------------REGISTER-----------------
+
+export const registerUser = async (userId, password, userType, email) => {
+    try {
+        const url = `${FORK_URL}api/auth/register`;
+        const requestBody = {
+            userId,
+            password,
+            userType, 
+            email
+        };
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'USERTOKEN': 'foodie' 
+            },
+            body: JSON.stringify(requestBody)
+        });
+        if (!response.ok) {
+            const errorResponse = await response.json();
+            console.error('Error response from server:', errorResponse);
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        console.log("User registered successfully: " + JSON.stringify(data, null, 2));
+        return data;
+    } catch (error) {
+        console.error('Error registering user:', error);
+        throw error;
+    }
+};
+
+export const registerFacility = async (facilityData) => {
+    try {
+      const url = `${FORK_URL}api/facilities/facility-requests`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'USERTOKEN': 'foodie'
+        },
+        body: JSON.stringify(facilityData)
+      });
+  
+      if (!response.ok) {
+        const errorResponse = await response.json();
+        console.error('Error response from server in registerFacility:', errorResponse);
+        throw new Error(errorResponse.message || 'Network response was not ok in registerFacility');
+      }
+  
+      const data = await response.json();
+      console.log("Facility registration request sent successfully:", JSON.stringify(data, null, 2));
+      return data;
+    } catch (error) {
+      console.error('Error sending facility registration request:', error);
+      throw error;
+    }
+};
+
+// --------------KAIST EMAIL----------------- 
+
+export const verifyEmail = async (userId, code) => {
+    try {
+        const url = `${FORK_URL}api/auth/verify-kaist`;
+        const requestBody = {
+            userId,
+            code
+        };
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'USERTOKEN': 'foodie' 
+            },
+            body: JSON.stringify(requestBody)
+        });
+        if (!response.ok) {
+            const errorResponse = await response.json();
+            console.error('Error response from server :', errorResponse);
+            //throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        console.log("Email verified successfully : " + JSON.stringify(data, null, 2));
+        return data;
+    } catch (error) {
+        //console.error('Error verifying email :', error);
+        //throw error;
+    }
+};
+
+export const resendVerifyEmail = async (userId) => {
+    try {
+        const url = `${FORK_URL}api/auth/resend-verification-mail`;
+        const requestBody = {
+            userId
+        };
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'USERTOKEN': 'foodie' 
+            },
+            body: JSON.stringify(requestBody)
+        });
+        if (!response.ok) {
+            const errorResponse = await response.json();
+            console.error('Error response from server :', errorResponse);
+            //throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        console.log("Email resent successfully : " + JSON.stringify(data, null, 2));
+        return data;
+    } catch (error) {
+        console.error('Error resending email :', error);
+        //throw error;
+    }
+};
+
+// --------------DEFAULT FILTERS----------------- 
+
+export const addUserPreference = async (userId, preferenceId) => {
+    try {
+      const url = `${FORK_URL}api/users/preference/${userId}`;
+      const requestBody = { preferenceId };
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'USERTOKEN': 'foodie'
+        },
+        body: JSON.stringify(requestBody)
+      });
+      if (!response.ok) {
+        const errorResponse = await response.json();
+        console.error('Error response from server in addUserPreference:', errorResponse);
+        throw new Error(errorResponse.message || 'Network response in addUserPreference was not ok');
+      }
+      const data = await response.json();
+      console.log("Preference added successfully:", JSON.stringify(data, null, 2));
+      return data;
+    } catch (error) {
+      console.error('Error adding user preference:', error);
+      throw error;
+    }
+  };
+  
 
 export const fetchImage = async (uri) => {
     const url = new URL(uri);
@@ -45,48 +229,13 @@ export const fetchImage = async (uri) => {
     }
 }
 
-// --------------LOGIN----------------- 
-
-export const handleLogin = async (username, password) => {
-    console.log('in handleLogin : username => ' + username + ', password => ' + password);
-    try {
-        const url = `${FORK_URL}api/auth/login`;
-        //?userId=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}
-        console.log("url : " + url)
-        const requestBody = {
-            userId: username,
-            password: password
-        };
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': "foodie"
-            },
-            body: JSON.stringify(requestBody)
-        });
-        console.log("response : " + response.status);
-        if (response.status === 200) {
-            const jsonResponse = await response.json();
-            console.log("response : " + JSON.stringify(jsonResponse, null, 2));
-            USERTOKEN = jsonResponse.data.token;
-            console.log("USERTOKEN : " + USERTOKEN);
-
-        } else {
-            console.log('Login Failed', 'Invalid credentials or insufficient permissions.');
-        }
-    } catch (error) {
-        console.log(error);
-    }
-};
-
 export const getAllUsders = async () => {
     try {
         const response = await fetch(`${BASE_URL}/users`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': AUTHORIZATION
+                'USERTOKEN': USERTOKEN
             }
         });
         if (!response.ok) {
@@ -118,7 +267,7 @@ export const fetchFacilityWithName = async (facilityName, openNow = false, prefe
         const response = await fetch(url, {
             method: 'GET',
             headers: {
-                'Authorization': 'foodie',
+                'USERTOKEN': 'foodie',
             }
         });
 
@@ -138,6 +287,8 @@ export const fetchFacilityWithName = async (facilityName, openNow = false, prefe
 };
 
 export const fetchFacilitiesInBounds = async (northEastLat, northEastLng, southWestLat, southWestLng) => {
+    //console.log( "USERID : " + USERID );
+    //console.log( "USERPREFERENCE : " + JSON.stringify(USERPREFERENCE, null, 2));
     try {
         const latMin = Math.min(northEastLat, southWestLat)
         const latMax = Math.max(northEastLat, southWestLat)
@@ -148,7 +299,7 @@ export const fetchFacilitiesInBounds = async (northEastLat, northEastLng, southW
         const response = await fetch(url, {
             method: 'GET',
             headers: {
-                'Authorization': 'foodie',
+                'USERTOKEN': 'foodie',
             }
         });
 
@@ -159,7 +310,7 @@ export const fetchFacilitiesInBounds = async (northEastLat, northEastLng, southW
         //console.log("JSON data:", jsonResponse);
 
         const facilitiesData = jsonResponse.data;
-        //console.log("Facilities data:", facilitiesData);
+        console.log("Facilities data:", JSON.stringify(facilitiesData, null, 2));
 
         return facilitiesData;
 
@@ -167,6 +318,15 @@ export const fetchFacilitiesInBounds = async (northEastLat, northEastLng, southW
         console.error('Error fetching facilities in real fetchMethod:', error);
         throw error;
     }
+};
+
+export const getParsedUserPreferences = () => {
+    console.log("here and USERPREFERENCE:", JSON.stringify(USERPREFERENCE, null, 2));
+    if (USERPREFERENCE && Array.isArray(USERPREFERENCE.data)) {
+      console.log("Parsing preferences by IDs");
+      return USERPREFERENCE.data.map(pref => pref.id);
+    }
+    return [];
 };
 
 // --------------USER-----------------
@@ -177,7 +337,7 @@ export const getAllUsers = async () => {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': AUTHORIZATION
+                'USERTOKEN': USERTOKEN
             }
         });
         if (!response.ok) {
@@ -197,7 +357,7 @@ export const getUserByID = async (userID) => {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': AUTHORIZATION
+                'USERTOKEN': USERTOKEN
             }
         });
         if (!response.ok) {
@@ -206,19 +366,20 @@ export const getUserByID = async (userID) => {
         const data = await response.json();
         return data.data;
     } catch (error) {
-        console.error('Error fetching user:', error);
+        console.error('Error fetching use in getUserById:', error);
         throw error;
     }
 };
 
 export const getUserPreferences = async () => {
     try {
-        const response = await fetch(`${BASE_URL}/users/preference/${encodeURIComponent(USERID)}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': AUTHORIZATION
-            }
+        const url = `${FORK_URL}api/users/preference/${encodeURIComponent(userID)}`;
+        const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'USERTOKEN': 'foodie'
+        }
         });
         if (!response.ok) {
             throw new Error('Network response was not ok');
@@ -226,7 +387,7 @@ export const getUserPreferences = async () => {
         const data = await response.json();
         return data.data;
     } catch (error) {
-        console.error('Error fetching user:', error);
+        console.error('Error fetching user in getUserPreferences:', error);
         throw error;
     }
 };
@@ -237,7 +398,7 @@ export const getUserFavorites = async () => {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': AUTHORIZATION
+                'USERTOKEN': USERTOKEN
             }
         });
         if (!response.ok) {
@@ -258,7 +419,7 @@ export const isFacilityBookmarked = async (facilityID) => {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': AUTHORIZATION
+                'USERTOKEN': USERTOKEN
             }
         });
         if (!response.ok) {
@@ -278,7 +439,7 @@ export const addFavorite = async (facilityId) => {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': AUTHORIZATION
+                'USERTOKEN': USERTOKEN
             },
             body: JSON.stringify({ facilityId: (encodeURIComponent(facilityId)) })
         });
@@ -301,7 +462,7 @@ export const deleteFavorite = async (facilityId) => {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': AUTHORIZATION
+                'USERTOKEN': USERTOKEN
             },
             body: JSON.stringify({ facilityId: (encodeURIComponent(facilityId)) })
         });
@@ -318,6 +479,28 @@ export const deleteFavorite = async (facilityId) => {
     }
 };
 
+
+export const getFavoritesNotices = async () => {
+    try {
+        const response = await fetch(`${BASE_URL}/users/favorite/${encodeURIComponent(USERID)}/updates`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'USERTOKEN': USERTOKEN
+            }
+        });
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        return data.data;
+    } catch (error) {
+        console.error('Error fetching user:', error);
+        throw error;
+    }
+};
+
+
 // --------------FACILITY-----------------
 
 export const getFacilityByID = async (facilityID) => {
@@ -326,7 +509,7 @@ export const getFacilityByID = async (facilityID) => {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': AUTHORIZATION
+                'USERTOKEN': USERTOKEN
             }
         });
         if (!response.ok) {
@@ -346,7 +529,7 @@ export const getFacilityStampRuleByID = async (facilityID) => {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': AUTHORIZATION
+                'USERTOKEN': USERTOKEN
             }
         });
         if (!response.ok) {
@@ -366,7 +549,7 @@ export const getFacilityPreferences = async (facilityID) => {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': AUTHORIZATION
+                'USERTOKEN': USERTOKEN
             }
         });
         if (!response.ok) {
@@ -386,7 +569,7 @@ export const getFacilityMenu = async (facilityID) => {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': AUTHORIZATION
+                'USERTOKEN': USERTOKEN
             }
         });
         if (!response.ok) {
@@ -406,7 +589,7 @@ export const getFacilityOpeningHour = async (facilityID) => {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': AUTHORIZATION
+                'USERTOKEN': USERTOKEN
             }
         });
         if (!response.ok) {
@@ -427,7 +610,7 @@ export const getTrendingFacilities = async () => {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': AUTHORIZATION
+                'USERTOKEN': USERTOKEN
             }
         });
         if (!response.ok) {
@@ -447,7 +630,7 @@ export const getNewestFacilities = async () => {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': AUTHORIZATION
+                'USERTOKEN': USERTOKEN
             }
         });
         if (!response.ok) {
@@ -467,7 +650,7 @@ export const getFacilityNotices = async (facilityID) => {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': AUTHORIZATION
+                'USERTOKEN': USERTOKEN
             }
         });
         if (!response.ok) {
@@ -480,7 +663,6 @@ export const getFacilityNotices = async (facilityID) => {
         throw error;
     }
 };
-
 
 // --------------REVIEW-----------------
 
@@ -502,7 +684,7 @@ export const getReviewByQuery = async (userID, facilityId, hasImage, hashtags) =
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': AUTHORIZATION
+                'USERTOKEN': USERTOKEN
             }
         });
 
@@ -525,7 +707,7 @@ export const getFacilityStamp = async (facilityID) => {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': AUTHORIZATION
+                'USERTOKEN': USERTOKEN
             }
         });
         if (!response.ok) {
@@ -545,7 +727,7 @@ export const getStampBook = async () => {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': AUTHORIZATION
+                'USERTOKEN': USERTOKEN
             }
         });
         if (!response.ok) {
@@ -568,7 +750,7 @@ export const getFacilityRegistrations = async () => {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': AUTHORIZATION
+                'USERTOKEN': USERTOKEN
             }
         });
         if (!response.ok) {
@@ -588,7 +770,7 @@ export const acceptFacilityRegistrations = async (requestID) => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': AUTHORIZATION,
+                'USERTOKEN': USERTOKEN,
             },
             body: JSON.stringify({
                 adminId: USERID,
@@ -612,7 +794,7 @@ export const declineFacilityRegistrations = async (requestID) => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': AUTHORIZATION,
+                'USERTOKEN': USERTOKEN,
             },
             body: JSON.stringify({
                 adminId: USERID,
@@ -635,7 +817,7 @@ export const getReports = async (type) => {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': AUTHORIZATION
+                'USERTOKEN': USERTOKEN
             }
         });
         if (!response.ok) {
@@ -655,7 +837,7 @@ export const sendReviewReport = async ({ content, reviewId }) => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': AUTHORIZATION
+                'USERTOKEN': USERTOKEN
             },
             body: JSON.stringify({
                 authorId: USERID,
@@ -683,7 +865,7 @@ export const sendBugReport = async ({ content }) => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': AUTHORIZATION
+                'USERTOKEN': USERTOKEN
             },
             body: JSON.stringify({
                 authorId: USERID,
@@ -710,7 +892,7 @@ export const deleteReport = async (reportId) => {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': AUTHORIZATION
+                'USERTOKEN': USERTOKEN
             }
         });
         if (!response.ok) {
