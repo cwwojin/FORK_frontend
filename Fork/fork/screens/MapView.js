@@ -24,6 +24,7 @@ const MapView = () => {
   const [mapZoom, setMapZoom] = useState(3); 
   const [filterExpanded, setFilterExpanded] = useState(false);
   const [userPreferencesActive, setUserPreferencesActive] = useState(false);
+  const [userBookmarkedActive, setUserBookmarkedActive] = useState(false);
 
   const [neLat, setNeLat] = useState(null);
   const [neLng, setNeLng] = useState(null);
@@ -132,6 +133,13 @@ const MapView = () => {
       setSelectedDietaryPreferences([]);
     }
   };
+
+  const handleToggleBookmarked = () => {
+    console.log("In handleToggleBookmarked");
+    const newActiveState = !userBookmarkedActive;
+    setUserBookmarkedActive(newActiveState);
+    fetchAndUpdateFacilities(searchQuery, neLat, neLng, swLat, swLng);
+  };
   
   
   const mapHtml = `
@@ -150,7 +158,7 @@ const MapView = () => {
         right: 17px; /* Right spacing */
         top: 50%; /* Vertically middle */
         /*transform: translateY(80%);*/
-        transform: translateY(-11%);
+        transform: translateY(-30%);
         z-index: 5;
       }
       .button {
@@ -208,6 +216,7 @@ const MapView = () => {
       <button class="button" onclick="zoomOut()">-</button>
       <button class="button" id="locateButton" onclick="toggleLocate()">📍</button>
       <button class="button" id="preferencesButton" onclick="togglePreferences()">P</button>
+      <button class="button" id="bookmarkedButton" onclick="toggleBookmarked()">B</button>
     </div>
     <div id="map"></div>
     <script>
@@ -265,6 +274,17 @@ const MapView = () => {
         window.ReactNativeWebView.postMessage(JSON.stringify(updateMarker));
         window.ReactNativeWebView.postMessage(JSON.stringify({
           type: 'togglePreferences'
+        }));
+      }
+
+      function toggleBookmarked() {
+        const updateMarker = {
+          type: 'debug', 
+          message:"in toggleBookmarked()"
+        };
+        window.ReactNativeWebView.postMessage(JSON.stringify(updateMarker));
+        window.ReactNativeWebView.postMessage(JSON.stringify({
+          type: 'toggleBookmarked'
         }));
       }
       
@@ -437,7 +457,7 @@ const MapView = () => {
           const result = await fetchFacilityWithName(searchQuery, showOnlyOpen);
           facilities = result || [];
       } else if (neLat && neLng && swLat && swLng) {
-          facilities = await fetchFacilitiesInBounds(neLat, neLng, swLat, swLng);
+          facilities = await fetchFacilitiesInBounds(neLat, neLng, swLat, swLng, userBookmarkedActive);
         }
 
       if (showOnlyOpen & !searchQuery) {
@@ -497,7 +517,7 @@ const MapView = () => {
       console.error('Failed to fetch facilities:', error);
       setDisplayedFacilities([]);
     }
-  }, [showOnlyOpen, selectedCuisines, selectedDietaryPreferences, setDisplayedFacilities, webViewRef]);  // Dependencies necessary for useCallback
+  }, [showOnlyOpen, selectedCuisines, selectedDietaryPreferences, setDisplayedFacilities, webViewRef, userBookmarkedActive]);  // Dependencies necessary for useCallback
 
   
   const onWebViewMessage = (event) => {
@@ -532,6 +552,10 @@ const MapView = () => {
       console.log("received togglePreferences data type");
       handleTogglePreferences();
     }
+    if (data.type === 'toggleBookmarked') {
+      console.log("received toggleBookmarked data type");
+      handleToggleBookmarked();
+    }
   };
 
   const handleShowOnlyOpenToggle = () => {
@@ -565,7 +589,7 @@ const MapView = () => {
     if (webViewReady && neLat && neLng && swLat && swLng && searchQuery === '') {
       fetchAndUpdateFacilities('', neLat, neLng, swLat, swLng);
     }
-  }, [showOnlyOpen, selectedCuisines, selectedDietaryPreferences, neLat, neLng, swLat, swLng, webViewReady, searchQuery]);
+  }, [showOnlyOpen, selectedCuisines, selectedDietaryPreferences, neLat, neLng, swLat, swLng, webViewReady, searchQuery, userBookmarkedActive]);
 
   useEffect(() => {
     if (webViewRef.current && webViewReady && isExpanded) {
