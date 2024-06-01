@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useEffect, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -7,6 +8,7 @@ import {
   SafeAreaView,
   ScrollView,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
@@ -14,39 +16,41 @@ import { FontFamily, FontSize, Color, GlobalStyles } from '../GlobalStyles';
 import Stamp from '../components/Stamp';
 
 import userImage from '../assets/placeholders/User.png';
+import { getStampBook } from './api';
 
 //To be deleted
 import longImagePlaceholder from '../assets/placeholders/long_image.png';
 
 const MyStamps = () => {
-  //Get Informations of facilities
-  //all the facilities information with stamps [img_url, name, number_of_stamps, stamp_information(array: ['', '', '', 'free drink', '', '', 'free meal']) ], recent notices of each restaurants [img_url, name, notice_img_url, notice_contents]
-
   const navigation = useNavigation();
 
-  const myStamps = [
-    {
-      facilityName: 'yosida',
-      facilityprofile: require('../assets/placeholders/User.png'),
-      number: 4,
-      stamp: ['', '', 'free drink', '', '', '', 'free meal'],
-      stampImage: require('../assets/icons/stamp.png')
-    },
-    {
-      facilityName: 'Malgm',
-      facilityprofile: require('../assets/placeholders/User.png'),
-      number: 3,
-      stamp: ['', '', 'free drink', '', '', '', 'free meal'],
-      stampImage: require('../assets/icons/stamp.png')
-    },
-    {
-      facilityName: 'Eoeun Sushi',
-      facilityprofile: require('../assets/placeholders/User.png'),
-      number: 6,
-      stamp: ['', '', 'free drink', '', '', '', 'free meal'],
-      stampImage: require('../assets/icons/stamp.png')
-    }
-  ]
+  const [userStamp, setUserStamp] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchMyStamps = async () => {
+      try {
+        const data = await getStampBook();
+        setUserStamp(data);
+      } catch (error) {
+        console.log(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMyStamps();
+  }, []);
+
+  if (loading) {
+    return (
+      <SafeAreaView style={GlobalStyles.background}>
+        <View style={{...GlobalStyles.content, justifyContent:'center'}}>
+          <ActivityIndicator size="large" color={Color.orange_700} />
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={GlobalStyles.background}>
@@ -79,14 +83,16 @@ const MyStamps = () => {
           }}
           showsVerticalScrollIndicator={false}>
           {
-            myStamps.map(item => (
-              <>
+            userStamp.map(item => (
+              <TouchableOpacity
+                key={item.id}
+                onPress={() => {
+                  navigation.navigate("FacilityDetail", { facilityID: item.facility_id });
+                }}
+              >
                 <Stamp
-                  facilityName={item.facilityName}
-                  facilityprofile={item.facilityprofile}
-                  number={item.number}
-                  stamp={item.stamp}
-                  stampImage={item.stampImage}
+                  number={item.cnt}
+                  facilityID={item.facility_id}
                 />
                 <View
                   style={{
@@ -96,7 +102,7 @@ const MyStamps = () => {
                     marginBottom: 15,
                   }}
                 />
-              </>
+              </TouchableOpacity>
             ))
           }
         </ScrollView>

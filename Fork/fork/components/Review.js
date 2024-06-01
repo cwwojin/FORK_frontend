@@ -4,14 +4,15 @@ import { Color, GlobalStyles } from '../GlobalStyles.js';
 import Translator, {
   useTranslator,
 } from 'react-native-translator';
-import { fetchImage, getUserByID } from '../screens/api.js';
 
 import Hashtag from './Hashtag';
-import { deleteReport, sendReviewReport } from '../screens/api.js';
+import { deleteReport, sendReviewReport, fetchImage, getUserByID } from '../screens/api.js';
 import userProfilePlaceholder from '../assets/placeholders/User.png';
 
 const Review = ({
   userID,
+  facilityName,
+  facilityImage,
   reviewDate,
   reviewScore,
   reviewImage,
@@ -23,21 +24,36 @@ const Review = ({
 }) => {
 
   const [reviewImages, setReviewImages] = useState();
-  const [userProfile, setUserProfile] = useState()
+  const [userProfile, setUserProfile] = useState({ userName: facilityName ? facilityName : "", userImage: "" });
 
   useEffect(() => {
     const fetchUserProfile = async () => {
-        try {
-            const userInfo = await getUserByID(userID);
-            if (userInfo.profile_img_uri) {
-              const profileUrl = await fetchImage(userInfo.profile_img_uri);
-              setUserProfile({ userName: userInfo.account_id, userImage: profileUrl })
-            } else {
-              setUserProfile({ userName: userInfo.account_id, userImage: "" })
-            }
-        } catch (error) {
-          console.log(error.message);
+      console.log("fetching user");
+      try {
+        const userInfo = await getUserByID(userID);
+        if (userInfo.profile_img_uri) {
+          const profileUrl = await fetchImage(userInfo.profile_img_uri);
+          setUserProfile({ userName: userInfo.account_id, userImage: (profileUrl != undefined) ? profileUrl : "" })
+        } else {
+          setUserProfile({ userName: userInfo.account_id, userImage: "" })
         }
+      } catch (error) {
+        console.log(error.message);
+      }
+    };
+    const fetchFacilityProfile = async () => {
+      console.log("fetching facility");
+      try {
+        if (facilityImage != "") {
+          console.log("fetching");
+          const profileUrl = await fetchImage(facilityImage);
+          setUserProfile({ userName: facilityName, userImage: (profileUrl != undefined) ? profileUrl : "" })
+        } else {
+          setUserProfile({ userName: facilityName, userImage: "" })
+        }
+      } catch (error) {
+        console.log(error.message);
+      }
     };
     const fetchReviewImage = async () => {
       try {
@@ -49,8 +65,8 @@ const Review = ({
         console.log(error.message);
       };
     }
-    if (reviewImage != "") { fetchReviewImage();};
-    fetchUserProfile();
+    if (reviewImage != "") { fetchReviewImage(); };
+    if (userID) { fetchUserProfile(); } else { fetchFacilityProfile(); };
   }, []);
 
   const renderStars = () => {
@@ -210,7 +226,7 @@ const Review = ({
             marginRight: 15,
           }}
           contentFit="cover"
-          source={(userProfile?.userImage == "") ? userProfilePlaceholder : { uri: userProfile }}
+          source={(userProfile?.userImage == "") ? userProfilePlaceholder : { uri: userProfile?.userImage }}
         />
         <View>
           <View

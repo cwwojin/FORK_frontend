@@ -10,9 +10,14 @@ const FORK_URL = `${API_ENDPOINT}/dev/`
 // S3 endpoint
 const S3_ENDPOINT = `${API_ENDPOINT}/s3`
 
-export let USERTOKEN = "";
-export let USERID = "";
-export let USERPREFERENCE = "";
+// export let USERTOKEN = "";
+// export let USERID = "";
+// export let USERPREFERENCE = "";
+
+
+export let USERTOKEN = "kaist";
+export let USERID = 1;
+export let USERPREFERENCE = [];
 
 // --------------REGISTER-----------------
 
@@ -803,8 +808,7 @@ export const getStampBook = async () => {
             throw new Error('Network response was not ok');
         }
         const data = await response.json();
-        console.log(data);
-        return data;
+        return data.data;
     } catch (error) {
         console.error('Error fetching facility stamp:', error);
         throw error;

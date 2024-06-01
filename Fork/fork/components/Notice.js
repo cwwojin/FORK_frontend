@@ -3,8 +3,6 @@ import { Color, GlobalStyles } from '../GlobalStyles.js';
 import { useState, useEffect } from 'react';
 import { fetchImage } from '../screens/api.js';
 
-import longImageHolder from '../assets/placeholders/long_image.png';
-
 const Notice = ({
   facilityImage,
   facilityName,

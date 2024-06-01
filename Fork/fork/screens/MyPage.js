@@ -29,7 +29,7 @@ import userImage from '../assets/placeholders/User.png';
 
 //To be deleted
 import longImagePlaceholder from '../assets/placeholders/long_image.png';
-import { USERID, USERPREFERENCE, fetchImage, getFacilityRegistrations, getReports, getUserByID, getUserPreferences } from './api';
+import { USERID, USERPREFERENCE, fetchImage, getFacilityByID, getFacilityRegistrations, getReports, getReviewByQuery, getStampBook, getUserByID, getUserFavorites } from './api';
 
 const MyPage = () => {
   //Get Informations of facilities
@@ -39,12 +39,18 @@ const MyPage = () => {
   const [userType, setUserType] = useState(0);
   const [userInfo, setUserInfo] = useState('');
   const [userProfile, setUserProfile] = useState(userImage);
+  const [userFavorite, setUserFavorite] = useState([]);
+  const [userStamp, setUserStamp] = useState([]);
+  const [userStampFacility, setUserStampFacility] = useState([]);
+  const [userReview, setUserReview] = useState([]);
+  const [userReviewFacility, setUserReviewFacility] = useState([]);
   const [facilityRegistrations, setFacilityRegistrations] = useState([]);
   const [reviewReports, setReviewReports] = useState([]);
   const [bugReports, setBugReports] = useState([]);
   const [reviewReportsProfiles, setReviewReportsProfiles] = useState([]);
 
   useEffect(() => {
+    // -------Admin User---------
     const fetchFacilityRegistration = async () => {
       try {
         const data = await getFacilityRegistrations();
@@ -82,15 +88,54 @@ const MyPage = () => {
         console.log(error.message);
       }
     };
-    const fetchUserPreferences = async() => {
+    // -------KAIST User---------
+    const fetchFavorites = async () => {
       try {
-        const data = await getUserPreferences();
-        setUserPreference(data);
-        console.log("preference", data);
+        const data = await getUserFavorites();
+        setUserFavorite(data);
+        console.log("favorites: ", data);
       } catch (error) {
         console.log(error.message);
       }
-    }
+    };
+    const fetchMyStamps = async () => {
+      try {
+        const data = await getStampBook();
+        const topStamps = data.slice(0, 7);
+
+        setUserStamp(topStamps);
+
+        const stampFacility = {};
+        for (const item of topStamps) {
+          const facilityInfo = await getFacilityByID(item.facility_id);
+          if (facilityInfo.profile_img_uri) {
+            const imageUrl = await fetchImage(facilityInfo.profile_img_uri);
+            stampFacility[item.facility_id] = {name: facilityInfo.name, image: imageUrl};
+          } else {
+            stampFacility[item.facility_id] = {name: facilityInfo.name, image: userImage};
+          }
+        }
+        setUserStampFacility(stampFacility);
+      } catch (error) {
+        console.log(error.message);
+      }
+    };
+    const fetchMyReviews = async () => {
+      try {
+        const data = await getReviewByQuery(USERID);
+        const topReviews = data.slice(0, 7);
+        setUserReview(topReviews);
+
+        const reviewfacilityName = {};
+        for (const item of topReviews) {
+          const facilityInfo = await getFacilityByID(item.facility_id);
+          reviewfacilityName[item.id] = facilityInfo.name;
+        }
+        setUserReviewFacility(reviewfacilityName);
+      } catch (error) {
+        console.log(error.message);
+      }
+    };
     const fetchUser = async (userID) => {
       try {
         const data = await getUserByID(userID);
@@ -105,8 +150,13 @@ const MyPage = () => {
           fetchReviewReports();
           fetchBugReports();
         }
-        if (data.user_type == 1 ) { //KAIST User
-          fetchUserPreferences();
+        else if (data.user_type == 1) { //KAIST User
+          fetchFavorites();
+          fetchMyStamps();
+          fetchMyReviews();
+        }
+        else if (data.user_type == 2) { //Facility User
+
         }
       } catch (error) {
         console.log(error.message);
@@ -118,24 +168,6 @@ const MyPage = () => {
   console.log(userInfo);
 
   const navigation = useNavigation();
-
-  const review = [
-    { userImage: userImage, userName: 'foodie', reviewDate: '2024.05.06', reviewScore: 5, reviewImage: longImagePlaceholder, reviewContent: 'Loved it', reviewHashtags: ['🥰Lovely', '😋Tasty'], edit: false },
-    { userImage: userImage, userName: 'foodie', reviewDate: '2024.05.06', reviewScore: 5, reviewImage: longImagePlaceholder, reviewContent: 'Loved it', reviewHashtags: ['🥰Lovely', '😋Tasty'], edit: false },
-    { userImage: userImage, userName: 'foodie', reviewDate: '2024.05.06', reviewScore: 5, reviewImage: longImagePlaceholder, reviewContent: 'Loved it', reviewHashtags: ['🥰Lovely', '😋Tasty'], edit: false },
-    { userImage: userImage, userName: 'foodie', reviewDate: '2024.05.06', reviewScore: 5, reviewContent: 'Loved it', reviewHashtags: ['🥰Lovely', '😋Tasty'], edit: false },
-    { userImage: userImage, userName: 'foodie', reviewDate: '2024.05.06', reviewScore: 5, reviewContent: 'Loved it', reviewHashtags: ['🥰Lovely', '😋Tasty'], edit: false },
-    { userImage: userImage, userName: 'foodie', reviewDate: '2024.05.06', reviewScore: 5, reviewContent: 'Loved it', reviewHashtags: ['🥰Lovely', '😋Tasty'], edit: false },
-  ];
-
-  // const bugReports = [
-  //   { userImage: userImage, userName: 'foodie', reportDate: '2024.05.16', reportContent: 'Somethings going wrong...' },
-  //   { userImage: userImage, userName: 'foodie', reportDate: '2024.05.16', reportContent: 'Sooo sleepy...' },
-  //   { userImage: userImage, userName: 'foodie', reportDate: '2024.05.16', reportContent: 'Somethings going wrong...' },
-  //   { userImage: userImage, userName: 'foodie', reportDate: '2024.05.16', reportContent: 'Somethings going wrong...' },
-  //   { userImage: userImage, userName: 'foodie', reportDate: '2024.05.16', reportContent: 'Somethings going wrong...' },
-  //   { userImage: userImage, userName: 'foodie', reportDate: '2024.05.16', reportContent: 'Somethings going wrong...' },
-  // ];
 
   const facilityRequest = [
     { facilityName: 'foodie', facilityImage: longImagePlaceholder, facilityAddress: 'daejeon daehackroe 291 kaist campus', state: 'pending' },
@@ -212,7 +244,7 @@ const MyPage = () => {
                 <TouchableOpacity onPress={() => {
                   navigation.navigate("Settings", {
                     userName: userInfo.account_id,
-                    userProfile: userImage,
+                    userProfile: userProfile,
                     userEmail: userInfo.email
                   });
                 }}>
@@ -231,7 +263,7 @@ const MyPage = () => {
                 }}>
                 <Image
                   style={{ ...GlobalStyles.profileImage, marginRight: 20 }}
-                  source={require('../assets/placeholders/User.png')}
+                  source={Number.isInteger(userProfile) ? userProfile : { uri: userProfile }}
                 />
                 <View style={{ justifyContent: 'center' }}>
                   <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -253,10 +285,9 @@ const MyPage = () => {
                   flexWrap: 'wrap',
                   marginTop: 10,
                 }}>
-                
-                <Hashtag tag={'🍚 rice lover'} />
-                <Hashtag tag={'🥬 vegetarian'} />
-                <Hashtag tag={'🍚 rice lover'} />
+                {USERPREFERENCE && USERPREFERENCE.map(item => (
+                  <Hashtag tag={item.name} />
+                ))}
               </View>
 
               <View
@@ -290,36 +321,21 @@ const MyPage = () => {
                   horizontal
                   style={GlobalStyles.scroll}
                   showsHorizontalScrollIndicator={false}>
-                  <SquareFacility
-                    facilityImage={longImagePlaceholder}
-                    facilityName={'yosida'}
-                    facilityAddress={'21-12 Eoeun-ro 42 and on and on'}
-                    facilityScore={4.7}
-                  />
-                  <SquareFacility
-                    facilityImage={longImagePlaceholder}
-                    facilityName={'Motiff'}
-                    facilityAddress={'21-12 Eoeun-ro 42 and on and on'}
-                    facilityScore={4.7}
-                  />
-                  <SquareFacility
-                    facilityImage={longImagePlaceholder}
-                    facilityName={'Malgm'}
-                    facilityAddress={'21-12 Eoeun-ro 42 and on and on'}
-                    facilityScore={4.7}
-                  />
-                  <SquareFacility
-                    facilityImage={longImagePlaceholder}
-                    facilityName={'yosida'}
-                    facilityAddress={'21-12 Eoeun-ro 42 and on and on'}
-                    facilityScore={4.7}
-                  />
-                  <SquareFacility
-                    facilityImage={longImagePlaceholder}
-                    facilityName={'yosida'}
-                    facilityAddress={'21-12 Eoeun-ro 42 and on and on'}
-                    facilityScore={4.7}
-                  />
+                  {userFavorite?.map(item => (
+                    <TouchableOpacity
+                      key={item.id}
+                      onPress={() => {
+                        navigation.navigate("FacilityDetail", { facilityID: item.id });
+                      }}
+                    >
+                      <SquareFacility
+                        facilityImage={item.profile_img_uri}
+                        facilityName={item.name}
+                        facilityAddress={item.english_address}
+                        facilityScore={item.avg_score}
+                      />
+                    </TouchableOpacity>
+                  ))}
                 </ScrollView>
               </View>
 
@@ -353,11 +369,15 @@ const MyPage = () => {
                 horizontal
                 style={GlobalStyles.scroll}
                 showsHorizontalScrollIndicator={false}>
-                <UserList UserImage={userImage} UserName={'yosida'} />
-                <UserList UserImage={userImage} UserName={'Motiff'} />
-                <UserList UserImage={userImage} UserName={'malgm'} />
-                <UserList UserImage={userImage} UserName={'yosida'} />
-                <UserList UserImage={userImage} UserName={'yosida'} />
+                {userStamp?.map(item => (
+                  <TouchableOpacity
+                    onPress={() => {
+                      navigation.navigate("FacilityDetail", { facilityID: item.facility_id });
+                    }}
+                  > 
+                    <UserList UserImage={userStampFacility[item.facility_id]?.image} UserName={userStampFacility[item.facility_id]?.name}/>
+                  </TouchableOpacity>
+                ))}
               </ScrollView>
 
               <View
@@ -391,36 +411,18 @@ const MyPage = () => {
                   horizontal
                   style={GlobalStyles.scroll}
                   showsHorizontalScrollIndicator={false}>
-                  <SquareFacility
-                    facilityImage={longImagePlaceholder}
-                    facilityName={'yosida'}
-                    facilityAddress={'Very nice'}
-                    facilityScore={4.7}
-                  />
-                  <SquareFacility
-                    facilityImage={longImagePlaceholder}
-                    facilityName={'Motiff'}
-                    facilityAddress={'want moooore'}
-                    facilityScore={4.7}
-                  />
-                  <SquareFacility
-                    facilityImage={longImagePlaceholder}
-                    facilityName={'Malgm'}
-                    facilityAddress={'21-12 Eoeun-ro 42 and on and on'}
-                    facilityScore={4.7}
-                  />
-                  <SquareFacility
-                    facilityImage={longImagePlaceholder}
-                    facilityName={'yosida'}
-                    facilityAddress={'21-12 Eoeun-ro 42 and on and on'}
-                    facilityScore={4.7}
-                  />
-                  <SquareFacility
-                    facilityImage={longImagePlaceholder}
-                    facilityName={'yosida'}
-                    facilityAddress={'21-12 Eoeun-ro 42 and on and on'}
-                    facilityScore={4.7}
-                  />
+                  {userReview?.map(item => (
+                    <TouchableOpacity onPress={() => {
+                      navigation.navigate("FacilityDetail", { facilityID: item.facility_id });
+                    }}>
+                      <SquareFacility
+                        facilityImage={item.img_uri}
+                        facilityAddress={item.content}
+                        facilityScore={item.score}
+                        facilityName={userReviewFacility[item.id]}
+                      />
+                    </TouchableOpacity>
+                  ))}
                 </ScrollView>
               </View>
             </View>
@@ -444,7 +446,7 @@ const MyPage = () => {
                   <TouchableOpacity onPress={() => {
                     navigation.navigate("Settings", {
                       userName: userInfo.account_id,
-                      userProfile: userImage,
+                      userProfile: userProfile,
                       userEmail: userInfo.email
                     });
                   }}>
@@ -463,7 +465,7 @@ const MyPage = () => {
                   }}>
                   <Image
                     style={{ ...GlobalStyles.profileImage, marginRight: 20 }}
-                    source={require('../assets/placeholders/User.png')}
+                    source={Number.isInteger(userProfile) ? userProfile : { uri: userProfile }}
                   />
                   <View style={{ justifyContent: 'center' }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -696,7 +698,7 @@ const MyPage = () => {
                 <TouchableOpacity onPress={() => {
                   navigation.navigate("Settings", {
                     userName: userInfo.account_id,
-                    userProfile: userImage,
+                    userProfile: userProfile,
                     userEmail: userInfo.email
                   });
                 }}>
@@ -715,7 +717,7 @@ const MyPage = () => {
                 }}>
                 <Image
                   style={{ ...GlobalStyles.profileImage, marginRight: 20 }}
-                  source={require('../assets/placeholders/User.png')}
+                  source={Number.isInteger(userProfile) ? userProfile : { uri: userProfile }}
                 />
                 <View style={{ justifyContent: 'center' }}>
                   <View style={{ flexDirection: 'row', alignItems: 'center' }}>

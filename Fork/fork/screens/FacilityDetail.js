@@ -93,10 +93,12 @@ const FacilityDetail = () => {
     const fetchStamp = async (facilityID) => {
       try {
         const stamps = await getFacilityStampRuleByID(facilityID);
+        
         if (stamps.logo_img_uri) {
           const stampImage = await fetchImage(stamps.logo_img_uri);
           setStampLogo(stampImage);
         }
+
         if (stamps.rewards) {
           const maxCnt = Math.max(...stamps.rewards.map(reward => reward.cnt));
           const newStampRule = Array(maxCnt).fill('');

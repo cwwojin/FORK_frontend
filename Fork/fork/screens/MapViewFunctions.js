@@ -1,12 +1,12 @@
-import React, { useEffect, useState, useRef }  from 'react';
-import { StyleSheet, Text, View, Image, SafeAreaView, ScrollView, TextInput, Button, TouchableOpacity  } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { StyleSheet, Text, View, Image, SafeAreaView, ScrollView, TextInput, Button, TouchableOpacity } from 'react-native';
 import { Color, GlobalStyles } from '../GlobalStyles';
 import LongImage from '../assets/placeholders/long_image.png';
 
 
 export const isOpenNow = (openingHours) => {
     if (!openingHours || openingHours.length === 0) {
-       return { status: "Closed", color: 'red' };
+        return { status: "Closed", color: 'red' };
     }
     const now = new Date();
     const dayOfWeek = now.getDay(); // JavaScript's Date.getDay() gives Sunday - Saturday : 0 - 6
@@ -60,10 +60,9 @@ export const FacilityDetails = ({ facility }) => {
             color = 'grey';
         }
     }
-    const scoreDisplay = facility.avg_score !== null ? facility.avg_score.toFixed(1) : "N/A";
-    const image = facility.profile_img_uri ? {uri: s3UriToRequestUrl(baseUrl, facility.profile_img_uri)} : LongImage;
-    
-    let cuisineTypes = []; 
+    const image = facility.profile_img_uri ? { uri: s3UriToRequestUrl(baseUrl, facility.profile_img_uri) } : LongImage;
+
+    let cuisineTypes = [];
     let dietTypes = [];
 
     if (facility.preferences != null) {
@@ -71,27 +70,53 @@ export const FacilityDetails = ({ facility }) => {
         cuisineTypes = categorizedPreferences.cuisineTypes;
         dietTypes = categorizedPreferences.dietTypes;
         if (cuisineTypes.length > 0 || dietTypes.length > 0) {
-          //console.log("Cuisine types : " + cuisineTypes + ", Diet types : " + dietTypes);
+            //console.log("Cuisine types : " + cuisineTypes + ", Diet types : " + dietTypes);
         }
     }
 
     return (
-      <View style={styles.facilityContainer}>
-        <Image 
-          source={image} 
-          style={styles.facilityImage}
-          resizeMode="cover"
-        />
-        <View style={styles.titleContainer}>
-            <View style={styles.nameStatusContainer}>
-                <Text style={styles.facilityName}>{facility.name}</Text>
-                <Text style={[styles.openClosedText, { color: color }]}>{status}</Text>
+
+        <View style={styles.facilityContainer}>
+            <View style={{ width: '100%', alignItems: 'center' }}>
+                <Image
+                    style={{ ...GlobalStyles.longImage, marginTop: 5 }}
+                    contentFit="cover"
+                    source={image}
+                />
+                <View style={{ marginLeft: 20, marginRight: 20, width: '95%' }}>
+                    <View
+                        style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                        }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
+                            <Text
+                                style={{ ...GlobalStyles.body, marginRight: 10 }}
+                                numberOfLines={1}
+                                ellipsizeMode="tail">
+                                {facility.name}
+                            </Text>
+                            <Text style={{...GlobalStyles.body2, color: color}}>{status}</Text>
+                        </View>
+                        <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
+                            <Image
+                                style={GlobalStyles.icon}
+                                contentFit="cover"
+                                source={require('../assets/icons/star.png')}
+                            />
+                            <Text style={GlobalStyles.body3}>{facility.avg_score ? facility.avg_score : '-'}</Text>
+                        </View>
+                    </View>
+                    <Text style={{ ...GlobalStyles.body2, marginBottom: 18 }} numberOfLines={1} ellipsizeMode="tail">
+                        {facility.english_address}
+                    </Text>
+                    <Text style={{ ...GlobalStyles.body4, marginBottom: 18 }} numberOfLines={1} ellipsizeMode="tail">
+                        {facility.description}
+                    </Text>
+                </View>
             </View>
-          <Text style={styles.facilityScore}>{scoreDisplay}</Text>
         </View>
-        <Text style={styles.facilityLocation}>{facility.english_address}</Text>
-        <Text style={styles.facilityDescription}>{facility.description}</Text>
-      </View>
     );
 };
 
@@ -134,7 +159,7 @@ const styles = StyleSheet.create({
     },
     facilityScore: {
         fontSize: 18,
-        color: Color.orange_700, 
+        color: Color.orange_700,
         fontWeight: 'bold',
         marginTop: 5,
         marginRight: 5,
@@ -148,4 +173,4 @@ const styles = StyleSheet.create({
         marginTop: 5,
     },
 });
-  
+
