@@ -752,14 +752,12 @@ const styles = StyleSheet.create({
   image: {
     width: 335,
     height: 130,
-    alignSelf: 'center',
     borderRadius: Border.br_2xs,
     marginBottom: 17,
   },
   icon: {
     width: 50,
     height: 50,
-    alignSelf: 'center',
     marginVertical: 20,
   },
   button: {

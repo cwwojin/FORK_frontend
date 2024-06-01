@@ -93,7 +93,7 @@ const FacilityDetail = () => {
     const fetchStamp = async (facilityID) => {
       try {
         const stamps = await getFacilityStampRuleByID(facilityID);
-        
+
         if (stamps.logo_img_uri) {
           const stampImage = await fetchImage(stamps.logo_img_uri);
           setStampLogo(stampImage);
@@ -304,9 +304,9 @@ const FacilityDetail = () => {
 
         <ScrollView vertical style={{ width: '100%' }} showsVerticalScrollIndicator={false}>
 
-          <View style={{ width: '100%', alignSelf: 'center' }}>
+          <View style={{ width: '100%'}}>
             <Image
-              style={{ ...GlobalStyles.longImage, alignSelf: 'center' }}
+              style={GlobalStyles.longImage}
               source={Number.isInteger(profileImage) ? profileImage : { uri: profileImage }}
             />
             <View style={{ flexDirection: 'row' }}>

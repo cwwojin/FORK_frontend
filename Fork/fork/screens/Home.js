@@ -17,7 +17,7 @@ import { FacilityDetails } from './MapViewFunctions';
 
 //To be deleted
 import longImagePlaceholder from '../assets/placeholders/long_image.png';
-import { getNewestFacilities, getTrendingFacilities, fetchImage, USERPREFERENCE } from './api';
+import { getNewestFacilities, getTrendingFacilities, fetchImage, USERPREFERENCE, getUserPreferences, getTrendingPreferenceFacilities } from './api';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 
 const Home = () => {
@@ -25,7 +25,8 @@ const Home = () => {
   //img url for ad, Top 5 trending facilities [img_url, name, score, address], Top 5 new failities, Recommendation of 2 restaurants
   const [trending, setTrending] = useState([]);
   const [newest, setNewest] = useState([]);
-  const [preference, setPreference] = useState();
+  const [preference, setPreference] = useState([]);
+  const [suggestions, setSuggestions] = useState([]);
 
   const getRandomItems = (array, n) => {
     const result = [];
@@ -63,7 +64,16 @@ const Home = () => {
     const fetchPreferences = async () => {
       try {
         const indices = getRandomItems(USERPREFERENCE, 2);
+
+        const suggestedFacilities = {};
+        for (const item of indices) {
+          const facilityInfo = await getTrendingPreferenceFacilities(item.id);
+          suggestedFacilities[item.id] = facilityInfo.length > 0 ? facilityInfo[0] : null;
+        }
+        setSuggestions(suggestedFacilities);
         setPreference(indices);
+
+        console.log("suggesting", suggestedFacilities);
       } catch (error) {
         console.log(error.message);
       }
@@ -134,26 +144,16 @@ const Home = () => {
             <>
               <Text style={{ ...GlobalStyles.h3, flexDirection: 'row' }}>
                 <Text>For our </Text>
-                <Text style={{ color: Color.orange_700 }}>{item.name} lovers</Text>
+                <Text style={{ color: Color.orange_700 }}>{item.name} Dish lovers</Text>
                 <Text>, we suggest ...</Text>
-                
               </Text>
+              <View style={{ width: '105%', paddingBottom: 15 }}>
+                {suggestions[item.id] && (
+                  <FacilityDetails key={item.id} facility={suggestions[item.id]} />
+                )}
+              </View>
             </>
           ))}
-
-          {/* <FacilityDetails key={facility.id} facility={facility} /> */}
-          <Text style={{ ...GlobalStyles.h3, flexDirection: 'row' }}>
-            <Text>For our </Text>
-            <Text style={{ color: Color.orange_700 }}>sushi lovers</Text>
-            <Text>, we suggest ...</Text>
-          </Text>
-          <LongFacility
-            facilityImage={longImagePlaceholder}
-            facilityName={'eoeun sushi'}
-            facilityAddress={'21-12 Eoeun-ro 42 and on and on'}
-            facilityScore={'-'}
-            facilityState={'Open'}
-          />
         </View>
       </ScrollView>
 

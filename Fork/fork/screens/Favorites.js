@@ -27,7 +27,6 @@ const Favorites = () => {
     const fetchFavorites = async () => {
       try {
         const data = await getUserFavorites();
-        setMyFavorites(data);
 
         const newfavoritesImage = {};
         for (const item of data) {
@@ -39,6 +38,8 @@ const Favorites = () => {
           }
         }
         setFavoritesImageList(newfavoritesImage);
+        setMyFavorites(data);
+
       } catch (error) {
         console.log(error.message);
       }

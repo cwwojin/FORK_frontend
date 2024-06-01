@@ -63,7 +63,6 @@ const Request = ({
         style={{
           borderBottomColor: Color.lightGrey,
           borderBottomWidth: 1,
-          alignSelf: 'stretch',
           marginVertical: 10,
         }}
       />

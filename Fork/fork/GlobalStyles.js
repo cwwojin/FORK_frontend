@@ -61,7 +61,6 @@ export const GlobalStyles = StyleSheet.create({
     position: 'absolute',
   },
   h1: {
-    alignSelf: 'left',
     textAlign: 'left',
     fontFamily: FontFamily.robotoBold,
     fontWeight: '700',
@@ -74,7 +73,6 @@ export const GlobalStyles = StyleSheet.create({
     width: '100%',
   },
   h2: {
-    alignSelf: 'left',
     textAlign: 'left',
     fontFamily: FontFamily.robotoBold,
     fontWeight: '700',
@@ -87,7 +85,6 @@ export const GlobalStyles = StyleSheet.create({
     width: '100%',
   },
   h3: {
-    alignSelf: 'left',
     textAlign: 'left',
     fontFamily: FontFamily.robotoBold,
     fontWeight: '700',
@@ -100,7 +97,6 @@ export const GlobalStyles = StyleSheet.create({
     width: '100%',
   },
   h4: {
-    alignSelf: 'left',
     textAlign: 'left',
     fontFamily: FontFamily.robotoBold,
     fontWeight: '700',
@@ -171,7 +167,7 @@ export const GlobalStyles = StyleSheet.create({
     width: '100%',
     height: 160,
     margin: 20,
-    maginTop: 5,
+    marginTop: 5,
     borderRadius: Border.br_sm,
   },
   squareImage: {

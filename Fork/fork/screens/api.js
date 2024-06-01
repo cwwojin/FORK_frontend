@@ -10,20 +10,14 @@ const FORK_URL = `${API_ENDPOINT}/dev/`
 // S3 endpoint
 const S3_ENDPOINT = `${API_ENDPOINT}/s3`
 
-<<<<<<< HEAD
 // export let USERTOKEN = "";
 // export let USERID = "";
 // export let USERPREFERENCE = "";
-
+// export let USERBOOKMARKED = "";
 
 export let USERTOKEN = "kaist";
 export let USERID = 1;
-export let USERPREFERENCE = [];
-=======
-export let USERTOKEN = "";
-export let USERID = "";
-export let USERPREFERENCE = "";
-export let USERBOOKMARKED = "";
+export let USERPREFERENCE = [{"created_at": "2024-05-26T06:30:42.990Z", "id": 1, "name": "Korean", "slug": "korean", "type": 0, "updated_at": "2024-05-26T06:30:42.990Z"}, {"created_at": "2024-05-26T06:30:42.990Z", "id": 2, "name": "Japanese", "slug": "japanese", "type": 0, "updated_at": "2024-05-26T06:30:42.990Z"}, {"created_at": "2024-05-26T06:30:42.990Z", "id": 3, "name": "Chinese", "slug": "chinese", "type": 0, "updated_at": "2024-05-26T06:30:42.990Z"}];
 
 // --------------LOGIN----------------- 
 
@@ -63,7 +57,6 @@ export const handleLogin = async (username, password) => {
       return false;
     }
 };
->>>>>>> 03365cdefb63d4d16e4de953312470a039f544e2
 
 
 export const resetPassword = async (userId) => {
@@ -733,6 +726,26 @@ export const getNewestFacilities = async () => {
         return data.data;
     } catch (error) {
         console.error('Error fetching newest facilities:', error);
+        throw error;
+    }
+};
+
+export const getTrendingPreferenceFacilities = async (preference) => {
+    try {
+        const response = await fetch(`${BASE_URL}/facilities/leaderboard/trending?limit=${encodeURIComponent(1)}&preferences=${encodeURIComponent(preference)}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': USERTOKEN
+            }
+        });
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        return data.data;
+    } catch (error) {
+        console.error('Error fetching trending facilities:', error);
         throw error;
     }
 };

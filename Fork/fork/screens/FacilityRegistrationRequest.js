@@ -120,7 +120,7 @@ const FacilityRegistrationRequest = () => {
             </View>
           </View>
           <View style={{ width: '100%' }}>
-            <TouchableOpacity style={{ paddingTop: 15, alignSelf: 'flex-end' }}>
+            <TouchableOpacity style={{ paddingTop: 15}}>
             </TouchableOpacity>
             <Image
               source={longImagePlaceholder}
@@ -163,7 +163,6 @@ const FacilityRegistrationRequest = () => {
             style={{
               borderBottomColor: Color.lightGrey,
               borderBottomWidth: 1,
-              alignSelf: 'stretch',
               marginBottom: 10,
             }}
           />

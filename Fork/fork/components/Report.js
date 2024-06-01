@@ -66,7 +66,7 @@ const Report = ({
           </Text>
       </View>
 
-      <TouchableOpacity onPress={reportHandled} style={{alignSelf: 'flex-end'}}>
+      <TouchableOpacity onPress={reportHandled}>
         <Text style={GlobalStyles.h4}>Fixed</Text>
       </TouchableOpacity>
 
@@ -74,7 +74,6 @@ const Report = ({
         style={{
           borderBottomColor: Color.lightGrey,
           borderBottomWidth: 1,
-          alignSelf: 'stretch',
           marginBottom: 10,
         }}
       />

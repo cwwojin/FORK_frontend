@@ -597,7 +597,6 @@ const MyPage = () => {
                   style={{
                     borderBottomColor: Color.lightGrey,
                     borderBottomWidth: 1,
-                    alignSelf: 'stretch',
                     marginBottom: 10,
                   }}
                 />
