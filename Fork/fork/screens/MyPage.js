@@ -29,22 +29,94 @@ import userImage from '../assets/placeholders/User.png';
 
 //To be deleted
 import longImagePlaceholder from '../assets/placeholders/long_image.png';
-import { USERID, USERPREFERENCE, fetchImage, getFacilityRegistrations, getReports, getUserByID, getUserPreferences } from './api';
+import {
+  USERID, USERPREFERENCE, fetchImage, getFacilityByID, getFacilityRegistrations, getMyFacilities, getMyFacilityRegistrations, getReports, getReviewByQuery,
+  getStampBook, getUserByID, getUserFavorites, getFacilityStampRuleByID
+} from './api';
 
 const MyPage = () => {
   //Get Informations of facilities
-  const [userPreference, setUserPreference] = useState();
-
 
   const [userType, setUserType] = useState(0);
   const [userInfo, setUserInfo] = useState('');
   const [userProfile, setUserProfile] = useState(userImage);
+  const [userFavorite, setUserFavorite] = useState([]);
+  const [userStamp, setUserStamp] = useState([]);
+  const [userStampFacility, setUserStampFacility] = useState([]);
+  const [userReview, setUserReview] = useState([]);
+  const [userReviewFacility, setUserReviewFacility] = useState([]);
+
   const [facilityRegistrations, setFacilityRegistrations] = useState([]);
   const [reviewReports, setReviewReports] = useState([]);
   const [bugReports, setBugReports] = useState([]);
   const [reviewReportsProfiles, setReviewReportsProfiles] = useState([]);
 
+  const [myFacilityRegistrations, setMyFacilityRegistrations] = useState([]);
+  const [myFacilities, setMyFacilities] = useState([]);
+  const [facilityInfo, setFacilityInfo] = useState();
+  const [facilityInfoSub, setFacilityInfoSub] = useState();
+  const fetchFacilityInfoSub = async (data) => {
+    try {
+      const newtimeData = [
+        { index: 1, day: 'Monday', openTime: '', closeTime: '' },
+        { index: 2, day: 'Tuesday', openTime: '', closeTime: '' },
+        { index: 3, day: 'Wednesday', openTime: '', closeTime: '' },
+        { index: 4, day: 'Thursday', openTime: '', closeTime: '' },
+        { index: 5, day: 'Friday', openTime: '', closeTime: '' },
+        { index: 6, day: 'Saturday', openTime: '', closeTime: '' },
+        { index: 0, day: 'Sunday', openTime: '', closeTime: '' },
+
+      ];
+      data.opening_hours.forEach(({ day, open_time, close_time }) => {
+        const item = newtimeData.find(entry => entry.index === day);
+        if (item) {
+          item.openTime = open_time.slice(0, 5);  // Remove seconds
+          item.closeTime = close_time.slice(0, 5); // Remove seconds
+        }
+      });
+
+      const stamps = await fetchFacilityInfoSubStamp(data.id);
+
+      if (data.profile_img_uri) {
+        const imageUrl = await fetchImage(data.profile_img_uri);
+        return { timeData: newtimeData, stamp: stamps.stamp, stampImage: stamps.stampImage, profileImage: (imageUrl != undefined) ? { uri: imageUrl } : longImagePlaceholder };
+      } else {
+        return { timeData: newtimeData, stamp: stamps.stamp, stampImage: stamps.stampImage, profileImage: longImagePlaceholder };
+      }
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+  const fetchFacilityInfoSubStamp = async (id) => {
+    try {
+      const stamps = await getFacilityStampRuleByID(id);
+      let stampImage = require('../assets/icons/stamp.png');
+      let stampRule = [];
+      console.log("stamps: ", stamps);
+      if (stamps.logo_img_uri) {
+        const stampImages = await fetchImage(stamps.logo_img_uri);
+        if (stampImages != undefined) { stampImage = { uri: stampImages } };
+      }
+
+      if (stamps.rewards) {
+        const maxCnt = Math.max(...stamps.rewards.map(reward => reward.cnt));
+        const newStampRule = Array(maxCnt).fill('');
+        stamps.rewards.forEach(reward => {
+          newStampRule[reward.cnt - 1] = reward?.name;
+        });
+        stampRule = newStampRule;
+      }
+
+      return {stampImage: stampImage, stamp: stampRule};
+    } catch (error) {
+      console.log(error.message);
+      return {stampImage: require('../assets/icons/stamp.png'), stamp: []};
+    }
+  };
+
+
   useEffect(() => {
+    // -------Admin User---------
     const fetchFacilityRegistration = async () => {
       try {
         const data = await getFacilityRegistrations();
@@ -58,14 +130,11 @@ const MyPage = () => {
         const data = await getReports(1);
         setReviewReports(data);
 
+        console.log("review reports: ", data);
+
         const newReviewReportsProfile = {};
         for (const item of data) {
           const userInfo = await getUserByID(item.author_id);
-          if (userInfo.profile_img_uri) {
-            userInfo.profile_img_uri = await fetchImage(item.profile_img_uri);
-          } else {
-            userInfo.profile_img_uri = userImage;
-          }
           newReviewReportsProfile[item.id] = userInfo;
         }
         setReviewReportsProfiles(newReviewReportsProfile);
@@ -82,15 +151,74 @@ const MyPage = () => {
         console.log(error.message);
       }
     };
-    const fetchUserPreferences = async() => {
+    // -------KAIST User---------
+    const fetchFavorites = async () => {
       try {
-        const data = await getUserPreferences();
-        setUserPreference(data);
-        console.log("preference", data);
+        const data = await getUserFavorites();
+        setUserFavorite(data);
+        console.log("favorites: ", data);
+      } catch (error) {
+        console.log(error.message);
+      }
+    };
+    const fetchMyStamps = async () => {
+      try {
+        const data = await getStampBook();
+        const topStamps = data.slice(0, 7);
+
+        setUserStamp(topStamps);
+
+        const stampFacility = {};
+        for (const item of topStamps) {
+          const facilityInfo = await getFacilityByID(item.facility_id);
+          if (facilityInfo.profile_img_uri) {
+            const imageUrl = await fetchImage(facilityInfo.profile_img_uri);
+            stampFacility[item.facility_id] = { name: facilityInfo.name, image: imageUrl };
+          } else {
+            stampFacility[item.facility_id] = { name: facilityInfo.name, image: userImage };
+          }
+        }
+        setUserStampFacility(stampFacility);
+      } catch (error) {
+        console.log(error.message);
+      }
+    };
+    const fetchMyReviews = async () => {
+      try {
+        const data = await getReviewByQuery(USERID);
+        const topReviews = data.slice(0, 7);
+        setUserReview(topReviews);
+
+        const reviewfacilityName = {};
+        for (const item of topReviews) {
+          const facilityInfo = await getFacilityByID(item.facility_id);
+          reviewfacilityName[item.id] = facilityInfo.name;
+        }
+        setUserReviewFacility(reviewfacilityName);
+      } catch (error) {
+        console.log(error.message);
+      }
+    };
+    //------Facility User-------
+    const fetchMyFacilityRegistrations = async () => {
+      try {
+        const data = await getMyFacilityRegistrations();
+        setMyFacilityRegistrations(data);
+      } catch (error) {
+        console.log(error.message);
+      }
+    };
+    const fetchMyFacilities = async () => {
+      try {
+        const data = await getMyFacilities();
+        setMyFacilities(data);
+        console.log("??????", data);
       } catch (error) {
         console.log(error.message);
       }
     }
+
+
     const fetchUser = async (userID) => {
       try {
         const data = await getUserByID(userID);
@@ -105,8 +233,14 @@ const MyPage = () => {
           fetchReviewReports();
           fetchBugReports();
         }
-        if (data.user_type == 1 ) { //KAIST User
-          fetchUserPreferences();
+        else if (data.user_type == 1) { //KAIST User
+          fetchFavorites();
+          fetchMyStamps();
+          fetchMyReviews();
+        }
+        else if (data.user_type == 2) { //Facility User
+          fetchMyFacilityRegistrations();
+          fetchMyFacilities();
         }
       } catch (error) {
         console.log(error.message);
@@ -118,61 +252,6 @@ const MyPage = () => {
   console.log(userInfo);
 
   const navigation = useNavigation();
-
-  const review = [
-    { userImage: userImage, userName: 'foodie', reviewDate: '2024.05.06', reviewScore: 5, reviewImage: longImagePlaceholder, reviewContent: 'Loved it', reviewHashtags: ['🥰Lovely', '😋Tasty'], edit: false },
-    { userImage: userImage, userName: 'foodie', reviewDate: '2024.05.06', reviewScore: 5, reviewImage: longImagePlaceholder, reviewContent: 'Loved it', reviewHashtags: ['🥰Lovely', '😋Tasty'], edit: false },
-    { userImage: userImage, userName: 'foodie', reviewDate: '2024.05.06', reviewScore: 5, reviewImage: longImagePlaceholder, reviewContent: 'Loved it', reviewHashtags: ['🥰Lovely', '😋Tasty'], edit: false },
-    { userImage: userImage, userName: 'foodie', reviewDate: '2024.05.06', reviewScore: 5, reviewContent: 'Loved it', reviewHashtags: ['🥰Lovely', '😋Tasty'], edit: false },
-    { userImage: userImage, userName: 'foodie', reviewDate: '2024.05.06', reviewScore: 5, reviewContent: 'Loved it', reviewHashtags: ['🥰Lovely', '😋Tasty'], edit: false },
-    { userImage: userImage, userName: 'foodie', reviewDate: '2024.05.06', reviewScore: 5, reviewContent: 'Loved it', reviewHashtags: ['🥰Lovely', '😋Tasty'], edit: false },
-  ];
-
-  // const bugReports = [
-  //   { userImage: userImage, userName: 'foodie', reportDate: '2024.05.16', reportContent: 'Somethings going wrong...' },
-  //   { userImage: userImage, userName: 'foodie', reportDate: '2024.05.16', reportContent: 'Sooo sleepy...' },
-  //   { userImage: userImage, userName: 'foodie', reportDate: '2024.05.16', reportContent: 'Somethings going wrong...' },
-  //   { userImage: userImage, userName: 'foodie', reportDate: '2024.05.16', reportContent: 'Somethings going wrong...' },
-  //   { userImage: userImage, userName: 'foodie', reportDate: '2024.05.16', reportContent: 'Somethings going wrong...' },
-  //   { userImage: userImage, userName: 'foodie', reportDate: '2024.05.16', reportContent: 'Somethings going wrong...' },
-  // ];
-
-  const facilityRequest = [
-    { facilityName: 'foodie', facilityImage: longImagePlaceholder, facilityAddress: 'daejeon daehackroe 291 kaist campus', state: 'pending' },
-    { facilityName: 'Yosida', facilityImage: longImagePlaceholder, facilityAddress: 'daejeon daehackroe 291 kaist campus', state: 'pending' },
-    { facilityName: 'Malgm', facilityImage: longImagePlaceholder, facilityAddress: 'daejeon daehackroe 291 kaist campus', state: 'rejected' },
-  ];
-
-  const myFacility = [
-    { label: 'yosida', value: '1' },
-    { label: 'malgm', value: '2' },
-    { label: 'eoeun sushi', value: '3' },
-  ];
-
-  const facilityInfo = {
-    facilityName: 'yosida',
-    facilityImage: longImagePlaceholder,
-    facilityAddress: '21-12 Eoeun-ro 42beon-gil, Yuseong-gu, Daejeon',
-    facilityScore: 4.7,
-    facilityContact: '02-0101-3434',
-    hashtag: ['🍣 Japanese food', '🥬 Vegetarian'],
-    time: [
-      { day: 'Monday', openTime: '11:00', closeTime: '21:00' },
-      { day: 'Tuesday', openTime: '11:00', closeTime: '21:00' },
-      { day: 'Wednesday', openTime: '11:00', closeTime: '21:00' },
-      { day: 'Thursday', openTime: '11:00', closeTime: '21:00' },
-      { day: 'Friday' },
-      { day: 'Saturday', openTime: '11:00', closeTime: '21:00' },
-      { day: 'Sunday', openTime: '11:00', closeTime: '21:00' },
-    ],
-    menu: [
-      { name: 'rice with chicken', description: 'Rice with soy-sauced chicken', price: 10000, image: require('../assets/placeholders/long_image.png') },
-      { name: 'rice with chicken', description: 'Rice with soy-sauced chicken', price: 10000, image: require('../assets/placeholders/long_image.png') },
-      { name: 'rice with chicken', description: 'Rice with soy-sauced chicken', price: 10000, image: require('../assets/placeholders/long_image.png') },
-    ],
-    stamp: ['', '', 'free drink', '', '', '', 'free meal'],
-    stampImage: require('../assets/icons/stamp.png')
-  }
 
   const [value, setValue] = useState('');
   const [isFocus, setIsFocus] = useState(false);
@@ -197,6 +276,7 @@ const MyPage = () => {
 
   return (
     <>
+      {/* -----------------KAIST User---------------------- */}
       {(userType == 1) && (
         <SafeAreaView style={GlobalStyles.background}>
           <ScrollView showsVerticalScrollIndicator={false}>
@@ -212,7 +292,7 @@ const MyPage = () => {
                 <TouchableOpacity onPress={() => {
                   navigation.navigate("Settings", {
                     userName: userInfo.account_id,
-                    userProfile: userImage,
+                    userProfile: userProfile,
                     userEmail: userInfo.email
                   });
                 }}>
@@ -231,7 +311,7 @@ const MyPage = () => {
                 }}>
                 <Image
                   style={{ ...GlobalStyles.profileImage, marginRight: 20 }}
-                  source={require('../assets/placeholders/User.png')}
+                  source={Number.isInteger(userProfile) ? userProfile : { uri: userProfile }}
                 />
                 <View style={{ justifyContent: 'center' }}>
                   <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -253,10 +333,9 @@ const MyPage = () => {
                   flexWrap: 'wrap',
                   marginTop: 10,
                 }}>
-                
-                <Hashtag tag={'🍚 rice lover'} />
-                <Hashtag tag={'🥬 vegetarian'} />
-                <Hashtag tag={'🍚 rice lover'} />
+                {USERPREFERENCE && USERPREFERENCE.map(item => (
+                  <Hashtag tag={item.name} />
+                ))}
               </View>
 
               <View
@@ -290,36 +369,21 @@ const MyPage = () => {
                   horizontal
                   style={GlobalStyles.scroll}
                   showsHorizontalScrollIndicator={false}>
-                  <SquareFacility
-                    facilityImage={longImagePlaceholder}
-                    facilityName={'yosida'}
-                    facilityAddress={'21-12 Eoeun-ro 42 and on and on'}
-                    facilityScore={4.7}
-                  />
-                  <SquareFacility
-                    facilityImage={longImagePlaceholder}
-                    facilityName={'Motiff'}
-                    facilityAddress={'21-12 Eoeun-ro 42 and on and on'}
-                    facilityScore={4.7}
-                  />
-                  <SquareFacility
-                    facilityImage={longImagePlaceholder}
-                    facilityName={'Malgm'}
-                    facilityAddress={'21-12 Eoeun-ro 42 and on and on'}
-                    facilityScore={4.7}
-                  />
-                  <SquareFacility
-                    facilityImage={longImagePlaceholder}
-                    facilityName={'yosida'}
-                    facilityAddress={'21-12 Eoeun-ro 42 and on and on'}
-                    facilityScore={4.7}
-                  />
-                  <SquareFacility
-                    facilityImage={longImagePlaceholder}
-                    facilityName={'yosida'}
-                    facilityAddress={'21-12 Eoeun-ro 42 and on and on'}
-                    facilityScore={4.7}
-                  />
+                  {userFavorite?.map(item => (
+                    <TouchableOpacity
+                      key={item.id}
+                      onPress={() => {
+                        navigation.navigate("FacilityDetail", { facilityID: item.id });
+                      }}
+                    >
+                      <SquareFacility
+                        facilityImage={item.profile_img_uri}
+                        facilityName={item.name}
+                        facilityAddress={item.english_address}
+                        facilityScore={item.avg_score}
+                      />
+                    </TouchableOpacity>
+                  ))}
                 </ScrollView>
               </View>
 
@@ -353,11 +417,15 @@ const MyPage = () => {
                 horizontal
                 style={GlobalStyles.scroll}
                 showsHorizontalScrollIndicator={false}>
-                <UserList UserImage={userImage} UserName={'yosida'} />
-                <UserList UserImage={userImage} UserName={'Motiff'} />
-                <UserList UserImage={userImage} UserName={'malgm'} />
-                <UserList UserImage={userImage} UserName={'yosida'} />
-                <UserList UserImage={userImage} UserName={'yosida'} />
+                {userStamp?.map(item => (
+                  <TouchableOpacity
+                    onPress={() => {
+                      navigation.navigate("FacilityDetail", { facilityID: item.facility_id });
+                    }}
+                  >
+                    <UserList UserImage={userStampFacility[item.facility_id]?.image} UserName={userStampFacility[item.facility_id]?.name} />
+                  </TouchableOpacity>
+                ))}
               </ScrollView>
 
               <View
@@ -391,36 +459,18 @@ const MyPage = () => {
                   horizontal
                   style={GlobalStyles.scroll}
                   showsHorizontalScrollIndicator={false}>
-                  <SquareFacility
-                    facilityImage={longImagePlaceholder}
-                    facilityName={'yosida'}
-                    facilityAddress={'Very nice'}
-                    facilityScore={4.7}
-                  />
-                  <SquareFacility
-                    facilityImage={longImagePlaceholder}
-                    facilityName={'Motiff'}
-                    facilityAddress={'want moooore'}
-                    facilityScore={4.7}
-                  />
-                  <SquareFacility
-                    facilityImage={longImagePlaceholder}
-                    facilityName={'Malgm'}
-                    facilityAddress={'21-12 Eoeun-ro 42 and on and on'}
-                    facilityScore={4.7}
-                  />
-                  <SquareFacility
-                    facilityImage={longImagePlaceholder}
-                    facilityName={'yosida'}
-                    facilityAddress={'21-12 Eoeun-ro 42 and on and on'}
-                    facilityScore={4.7}
-                  />
-                  <SquareFacility
-                    facilityImage={longImagePlaceholder}
-                    facilityName={'yosida'}
-                    facilityAddress={'21-12 Eoeun-ro 42 and on and on'}
-                    facilityScore={4.7}
-                  />
+                  {userReview?.map(item => (
+                    <TouchableOpacity onPress={() => {
+                      navigation.navigate("FacilityDetail", { facilityID: item.facility_id });
+                    }}>
+                      <SquareFacility
+                        facilityImage={item.img_uri}
+                        facilityAddress={item.content}
+                        facilityScore={item.score}
+                        facilityName={userReviewFacility[item.id]}
+                      />
+                    </TouchableOpacity>
+                  ))}
                 </ScrollView>
               </View>
             </View>
@@ -428,6 +478,7 @@ const MyPage = () => {
         </SafeAreaView>
       )}
 
+      {/* -----------------Facility User---------------------- */}
       {(userType == 2) && (
         <>
           <SafeAreaView style={GlobalStyles.background}>
@@ -444,7 +495,7 @@ const MyPage = () => {
                   <TouchableOpacity onPress={() => {
                     navigation.navigate("Settings", {
                       userName: userInfo.account_id,
-                      userProfile: userImage,
+                      userProfile: userProfile,
                       userEmail: userInfo.email
                     });
                   }}>
@@ -463,7 +514,7 @@ const MyPage = () => {
                   }}>
                   <Image
                     style={{ ...GlobalStyles.profileImage, marginRight: 20 }}
-                    source={require('../assets/placeholders/User.png')}
+                    source={Number.isInteger(userProfile) ? userProfile : { uri: userProfile }}
                   />
                   <View style={{ justifyContent: 'center' }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -488,12 +539,12 @@ const MyPage = () => {
                     }}>
                     Registration Request
                   </Text>
-                  {facilityRequest.map(item => (
+                  {myFacilityRegistrations?.map(item => (
                     <Request
-                      facilityName={item.facilityName}
-                      facilityImage={item.facilityImage}
-                      facilityAddress={item.facilityAddress}
-                      state={item.state}
+                      facilityName={item.content.name}
+                      facilityImage={item.content.profileImgUri}
+                      facilityAddress={item.content.address.englishAddress}
+                      state={'Pending'}
                     />
                   ))}
                 </View>
@@ -507,131 +558,146 @@ const MyPage = () => {
                       selectedTextStyle={styles.selectedTextStyle}
                       inputSearchStyle={styles.inputSearchStyle}
                       iconStyle={styles.iconStyle}
-                      data={myFacility}
+                      data={myFacilities}
                       search
                       maxHeight={300}
-                      labelField="label"
-                      valueField="value"
+                      labelField="name"
+                      valueField="id"
                       placeholder={!isFocus ? 'Select facility' : '...'}
                       searchPlaceholder="Search..."
                       value={value}
                       onFocus={() => setIsFocus(true)}
                       onBlur={() => setIsFocus(false)}
-                      onChange={item => {
-                        setValue(item.value);
-                        setIsFocus(false);
+                      onChange={async (item) => {
+                        try {
+                          setValue(item.id);
+                          setFacilityInfo(item);
+                          const facilityInfoSubData = await fetchFacilityInfoSub(item);
+                          setFacilityInfoSub(facilityInfoSubData);
+                          setIsFocus(false);
+                        } catch (error) {
+                          console.error('Error fetching facility info:', error);
+                        }
                       }}
                     />
                   </View>
-                  <View style={{ width: '100%', flexDirection: 'row', justifyContent: 'space-between', paddingTop: 15 }}>
-                    <TouchableOpacity style={styles.facilityButton} onPress={toggleUpload}>
-                      <Image
-                        source={require('../assets/icons/upload.png')}
-                        style={styles.buttonIcon}
+                  {facilityInfo && (
+                    <>
+                      <View style={{ width: '100%', flexDirection: 'row', justifyContent: 'space-between', paddingTop: 15 }}>
+                        <TouchableOpacity style={styles.facilityButton} onPress={toggleUpload}>
+                          <Image
+                            source={require('../assets/icons/upload.png')}
+                            style={styles.buttonIcon}
+                          />
+                          <Text style={styles.buttonText}>Notice</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.facilityButton} onPress={() => navigation.navigate('QRScanner', { facilityID: facilityInfo?.id })}>
+                          <Image
+                            source={require('../assets/icons/giveStamp.png')}
+                            style={styles.buttonIcon}
+                          />
+                          <Text style={styles.buttonText}>Stamp</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.facilityButton}
+                          onPress={() => {
+                            navigation.navigate('FacilityDetail', { facilityID: facilityInfo?.id });
+                          }}>
+                          <Image
+                            source={require('../assets/icons/toFacility.png')}
+                            style={styles.buttonIcon}
+                          />
+                          <Text style={styles.buttonText}>Facility</Text>
+                        </TouchableOpacity>
+                      </View>
+                      <View style={{ width: '100%' }}>
+                        <TouchableOpacity style={{ paddingTop: 15, alignSelf: 'flex-end' }}>
+                          <Text style={GlobalStyles.body3}>Edit</Text>
+                        </TouchableOpacity>
+                        <Image
+                          source={facilityInfoSub?.profileImage ? facilityInfoSub?.profileImage : longImagePlaceholder}
+                          style={{ ...GlobalStyles.longImage, margin: 0, marginTop: 15 }}
+                        />
+                        <View style={{ width: '100%', flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 15, paddingHorizontal: 5 }}>
+                          <Text style={GlobalStyles.body}>{facilityInfo?.name}</Text>
+                          <View style={{ flexDirection: 'row' }}>
+                            <Image
+                              source={require('../assets/icons/star.png')}
+                              style={GlobalStyles.icon}
+                            />
+                            <Text style={GlobalStyles.body2}>{Math.round(facilityInfo?.avg_score * 10) / 10}</Text>
+                          </View>
+                        </View>
+                        <View style={{ flexDirection: 'row', paddingVertical: 5 }}>
+                          <Image
+                            source={require('../assets/icons/location.png')}
+                            style={GlobalStyles.icon}
+                          />
+                          <Text style={{ ...GlobalStyles.body2, paddingHorizontal: 5 }}>{facilityInfo?.english_address}</Text>
+                        </View>
+                        <View style={{ flexDirection: 'row', paddingVertical: 5 }}>
+                          <Image
+                            source={require('../assets/icons/phone.png')}
+                            style={GlobalStyles.icon}
+                          />
+                          <Text style={{ ...GlobalStyles.body2, paddingHorizontal: 5 }}>{facilityInfo?.phone}</Text>
+                        </View>
+                      </View>
+                      <View style={{ flexDirection: 'row', paddingTop: 5, width: '100%', paddingBottom: 20 }}>
+                        {facilityInfo?.preferences?.map(item => (
+                          <Hashtag
+                            tag={item}
+                          />
+                        ))}
+                      </View>
+
+                      <View
+                        style={{
+                          borderBottomColor: Color.lightGrey,
+                          borderBottomWidth: 1,
+                          marginBottom: 10,
+                        }}
                       />
-                      <Text style={styles.buttonText}>Notice</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.facilityButton}>
-                      <Image
-                        source={require('../assets/icons/giveStamp.png')}
-                        style={styles.buttonIcon}
-                      />
-                      <Text style={styles.buttonText}>Stamp</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.facilityButton}
-                      onPress={() => {
-                        navigation.navigate('FacilityDetail');
-                      }}>
-                      <Image
-                        source={require('../assets/icons/toFacility.png')}
-                        style={styles.buttonIcon}
-                      />
-                      <Text style={styles.buttonText}>Facility</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-                <View style={{ width: '100%' }}>
-                  <TouchableOpacity style={{ paddingTop: 15 }}>
-                    <Text style={GlobalStyles.body3}>Edit</Text>
-                  </TouchableOpacity>
-                  <Image
-                    source={facilityInfo.facilityImage}
-                    style={{ ...GlobalStyles.longImage, margin: 0, marginTop: 15 }}
-                  />
-                  <View style={{ width: '100%', flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 15, paddingHorizontal: 5 }}>
-                    <Text style={GlobalStyles.body}>{facilityInfo.facilityName}</Text>
-                    <View style={{ flexDirection: 'row' }}>
-                      <Image
-                        source={require('../assets/icons/star.png')}
-                        style={GlobalStyles.icon}
-                      />
-                      <Text style={GlobalStyles.body2}>{facilityInfo.facilityScore}</Text>
-                    </View>
-                  </View>
-                  <View style={{ flexDirection: 'row', paddingVertical: 5 }}>
-                    <Image
-                      source={require('../assets/icons/location.png')}
-                      style={GlobalStyles.icon}
-                    />
-                    <Text style={{ ...GlobalStyles.body2, paddingHorizontal: 5 }}>{facilityInfo.facilityAddress}</Text>
-                  </View>
-                  <View style={{ flexDirection: 'row', paddingVertical: 5 }}>
-                    <Image
-                      source={require('../assets/icons/phone.png')}
-                      style={GlobalStyles.icon}
-                    />
-                    <Text style={{ ...GlobalStyles.body2, paddingHorizontal: 5 }}>{facilityInfo.facilityContact}</Text>
-                  </View>
-                </View>
-                <View style={{ flexDirection: 'row', paddingTop: 5, width: '100%', paddingBottom: 20 }}>
-                  {facilityInfo.hashtag.map(item => (
-                    <Hashtag
-                      tag={item}
-                    />
-                  ))}
+
+                      <View style={{ flexDirection: 'row', width: '100%' }}>
+                        <Image
+                          style={styles.timeIcon}
+                          source={require('../assets/icons/hour.png')}
+                        />
+                        <View>
+                          {facilityInfoSub?.timeData?.map(item => (
+                            <Text key={item.day} style={{ ...GlobalStyles.body2, color: Color.darkgray, paddingVertical: 2 }}>{item.day.substring(0, 3)} : {item.openTime} - {item.closeTime}</Text>
+                          ))}
+                        </View>
+                      </View>
+
+                      <View style={{ width: '100%' }}>
+                        <Text style={GlobalStyles.h2}>Menu</Text>
+                        {facilityInfo?.menus?.map(item => (
+                          <>
+                            {item && (
+                              <Menu
+                                menuName={item.name}
+                                menuDescription={item.description}
+                                menuPrice={item.price}
+                                menuImage={item.img_uri}
+                              />
+                            )}
+                          </>
+                        ))}
+                      </View>
+
+                      <View style={{ width: '100%' }}>
+                        <Text style={GlobalStyles.h2}>Stamps</Text>
+                        <Stamp
+                          stamp={facilityInfoSub?.stamp}
+                          stampImage={facilityInfoSub?.stampImage}
+                          number={facilityInfoSub?.stamp?.length}
+                        />
+                      </View>
+                    </>
+                  )}
                 </View>
 
-                <View
-                  style={{
-                    borderBottomColor: Color.lightGrey,
-                    borderBottomWidth: 1,
-                    alignSelf: 'stretch',
-                    marginBottom: 10,
-                  }}
-                />
-
-                <View style={{ flexDirection: 'row', width: '100%' }}>
-                  <Image
-                    style={styles.timeIcon}
-                    source={require('../assets/icons/hour.png')}
-                  />
-                  <View>
-                    {facilityInfo.time.map(item => (
-                      <Text key={item.day} style={{ ...GlobalStyles.body2, color: Color.darkgray, paddingVertical: 2 }}>{item.day.substring(0, 3)} : {item.openTime} - {item.closeTime}</Text>
-                    ))}
-                  </View>
-                </View>
-
-                <View style={{ width: '100%' }}>
-                  <Text style={GlobalStyles.h2}>Menu</Text>
-                  {facilityInfo.menu.map(item => (
-                    <Menu
-                      menuName={item.name}
-                      menuDescription={item.description}
-                      menuPrice={item.price}
-                      menuImage={item.image}
-                    />
-                  ))}
-                </View>
-
-                <View style={{ width: '100%' }}>
-                  <Text style={GlobalStyles.h2}>Stamps</Text>
-                  <Stamp
-                    stamp={facilityInfo.stamp}
-                    stampImage={facilityInfo.stampImage}
-                    number={facilityInfo.stamp.length}
-                  />
-                </View>
               </View>
             </ScrollView>
           </SafeAreaView>
@@ -679,135 +745,141 @@ const MyPage = () => {
             </View>
           )}
         </>
-      )}
+      )
+      }
 
-      {(userType == 0) && (
-        <SafeAreaView style={GlobalStyles.background}>
-          <ScrollView showsVerticalScrollIndicator={false}>
-            <View style={GlobalStyles.content}>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  marginTop: -27,
-                  paddingBottom: 10,
-                }}>
-                <Text style={GlobalStyles.h1}>My Page</Text>
-                <TouchableOpacity onPress={() => {
-                  navigation.navigate("Settings", {
-                    userName: userInfo.account_id,
-                    userProfile: userImage,
-                    userEmail: userInfo.email
-                  });
-                }}>
+      {/* -----------------Admin User---------------------- */}
+      {
+        (userType == 0) && (
+          <SafeAreaView style={GlobalStyles.background}>
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <View style={GlobalStyles.content}>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    marginTop: -27,
+                    paddingBottom: 10,
+                  }}>
+                  <Text style={GlobalStyles.h1}>My Page</Text>
+                  <TouchableOpacity onPress={() => {
+                    navigation.navigate("Settings", {
+                      userName: userInfo.account_id,
+                      userProfile: userProfile,
+                      userEmail: userInfo.email
+                    });
+                  }}>
+                    <Image
+                      style={GlobalStyles.topIcon}
+                      source={require('../assets/icons/setting.png')}
+                    />
+                  </TouchableOpacity>
+                </View>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    width: '100%',
+                    justifyContent: 'flex-start',
+                    marginTop: 10,
+                  }}>
                   <Image
-                    style={GlobalStyles.topIcon}
-                    source={require('../assets/icons/setting.png')}
+                    style={{ ...GlobalStyles.profileImage, marginRight: 20 }}
+                    source={Number.isInteger(userProfile) ? userProfile : { uri: userProfile }}
                   />
-                </TouchableOpacity>
-              </View>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  width: '100%',
-                  justifyContent: 'flex-start',
-                  marginTop: 10,
-                }}>
-                <Image
-                  style={{ ...GlobalStyles.profileImage, marginRight: 20 }}
-                  source={require('../assets/placeholders/User.png')}
-                />
-                <View style={{ justifyContent: 'center' }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Text style={{ ...GlobalStyles.body, marginRight: 15 }}>
-                      {userInfo.account_id}
+                  <View style={{ justifyContent: 'center' }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <Text style={{ ...GlobalStyles.body, marginRight: 15 }}>
+                        {userInfo.account_id}
+                      </Text>
+                      <Text style={GlobalStyles.body2}>Edit</Text>
+                    </View>
+                    <Text style={{ ...GlobalStyles.body2, textTransform: 'none' }}>
+                      {userInfo.email}
                     </Text>
-                    <Text style={GlobalStyles.body2}>Edit</Text>
                   </View>
-                  <Text style={{ ...GlobalStyles.body2, textTransform: 'none' }}>
-                    {userInfo.email}
+                </View>
+
+                <View
+                  style={{
+                    width: '100%',
+                    paddingVertical: 5,
+                  }}>
+                  <Text
+                    style={GlobalStyles.h2}>
+                    Review Reports
                   </Text>
+                  {reviewReports
+                    .map(item => (
+                      <Review
+                        key={item.id} // Make sure to provide a unique key prop
+                        reviewId = {item.review_id}
+                        userID = {item.review.author_id}
+                        reviewDate={item.created_at}
+                        reviewScore={0}
+                        reviewImage={item.review.img_uri}
+                        reviewContent={item.content}
+                        reviewHashtags={[]}
+                        edit={false}
+                        admin={true}
+                        reviewreport={item.id}
+                        navigation={navigation}
+                      />
+                    ))
+                  }
+                </View>
+
+                <View
+                  style={{
+                    width: '100%',
+                    paddingVertical: 10,
+                  }}>
+                  <Text
+                    style={GlobalStyles.h2}>
+                    Facility Registration
+                  </Text>
+                  <ScrollView
+                    horizontal
+                    style={{
+                      ...GlobalStyles.scroll,
+                      paddingBottom: 20,
+                      paddingTop: 5,
+                    }}
+                    showsHorizontalScrollIndicator={false}>
+                    {facilityRegistrations.map(item => (
+                      <TouchableOpacity onPress={() => {
+                        navigation.navigate("FacilityRegistrationRequest", { author_id: item.author_id, facilityInfo: item.content, requestID: item.id });
+                      }}>
+                        <UserList UserImage={userImage} UserName={item.content.name} />
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </View>
+
+                <View
+                  style={{
+                    width: '100%',
+                    paddingVertical: 5,
+                  }}>
+                  <Text
+                    style={GlobalStyles.h2}>
+                    Bug Reports
+                  </Text>
+                  {bugReports.map(item => (
+                    <Report
+                      userID={item.author_id}
+                      reportDate={item.created_at}
+                      reportContent={item.content}
+                      reportID={item.id}
+                      navigation={navigation}
+                    />
+                  ))}
+
                 </View>
               </View>
-
-              <View
-                style={{
-                  width: '100%',
-                  paddingVertical: 5,
-                }}>
-                <Text
-                  style={GlobalStyles.h2}>
-                  Review Reports
-                </Text>
-                {reviewReports
-                  .map(item => (
-                    <Review
-                      key={item.id} // Make sure to provide a unique key prop
-                      userImage={reviewReportsProfiles[item.id]?.profile_img_uri}
-                      userName={reviewReportsProfiles[item.id]?.account_id}
-                      reviewDate={item.created_at}
-                      reviewScore={0}
-                      reviewImage={''}
-                      reviewContent={item.content}
-                      reviewHashtags={[]}
-                      edit={false}
-                      admin={true}
-                      reviewreport={item.id}
-                    />
-                  ))
-                }
-              </View>
-
-              <View
-                style={{
-                  width: '100%',
-                  paddingVertical: 10,
-                }}>
-                <Text
-                  style={GlobalStyles.h2}>
-                  Facility Registration
-                </Text>
-                <ScrollView
-                  horizontal
-                  style={{
-                    ...GlobalStyles.scroll,
-                    paddingBottom: 20,
-                    paddingTop: 5,
-                  }}
-                  showsHorizontalScrollIndicator={false}>
-                  {facilityRegistrations.map(item => (
-                    <TouchableOpacity onPress={() => {
-                      navigation.navigate("FacilityRegistrationRequest", { author_id: item.author_id, facilityInfo: item.content, requestID: item.id });
-                    }}>
-                      <UserList UserImage={userImage} UserName={item.content.name} />
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              </View>
-
-              <View
-                style={{
-                  width: '100%',
-                  paddingVertical: 5,
-                }}>
-                <Text
-                  style={GlobalStyles.h2}>
-                  Bug Reports
-                </Text>
-                {bugReports.map(item => (
-                  <Report
-                    userImage={item.userImage}
-                    userName={item.userName}
-                    reportDate={item.reportDate}
-                    reportContent={item.content}
-                  />
-                ))}
-
-              </View>
-            </View>
-          </ScrollView>
-        </SafeAreaView>
-      )}
+            </ScrollView>
+          </SafeAreaView>
+        )
+      }
       <NavigationBar
         homeb={false}
         mapb={false}

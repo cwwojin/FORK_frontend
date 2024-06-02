@@ -13,7 +13,7 @@ import {
 import { useNavigation, useRoute } from '@react-navigation/native';
 import ToggleSwitch from 'toggle-switch-react-native';
 import * as ImagePicker from 'expo-image-picker';
-
+import QRCode from "react-qr-code";
 
 import { GlobalStyles, Color, FontFamily, FontSize, Border } from '../GlobalStyles';
 import Hashtag from '../components/Hashtag';
@@ -23,12 +23,14 @@ import Notice from '../components/Notice';
 import Stamp from '../components/Stamp';
 
 
-import userImage from '../assets/placeholders/User.png';
 import stampImage from '../assets/icons/stamp.png';
 
 //To be deleted
 import longImagePlaceholder from '../assets/placeholders/long_image.png';
-import { addFavorite, deleteFavorite, fetchImage, getFacilityByID, getFacilityMenu, getFacilityNotices, getFacilityOpeningHour, getFacilityPreferences, getFacilityStamp, getFacilityStampRuleByID, getReviewByQuery, getUserByID, isFacilityBookmarked, USERID } from './api';
+import {
+  addFavorite, deleteFavorite, fetchImage, getFacilityByID, getTopHashtags, getFacilityNotices, getFacilityPreferences, getFacilityStamp,
+  getFacilityStampRuleByID, getReviewByQuery, isFacilityBookmarked, USERID, createReview
+} from './api';
 
 const FacilityDetail = () => {
 
@@ -47,6 +49,7 @@ const FacilityDetail = () => {
   const [profileImage, setProfileImage] = useState(longImagePlaceholder);
   const [isLoading, setIsLoading] = useState(true);
   const [notices, setNotices] = useState([]);
+  const [topHashtags, setTopHashtags] = useState([]);
 
   useEffect(() => {
     const fetchFacility = async (facilityID) => {
@@ -93,10 +96,12 @@ const FacilityDetail = () => {
     const fetchStamp = async (facilityID) => {
       try {
         const stamps = await getFacilityStampRuleByID(facilityID);
+
         if (stamps.logo_img_uri) {
           const stampImage = await fetchImage(stamps.logo_img_uri);
           setStampLogo(stampImage);
         }
+
         if (stamps.rewards) {
           const maxCnt = Math.max(...stamps.rewards.map(reward => reward.cnt));
           const newStampRule = Array(maxCnt).fill('');
@@ -106,8 +111,11 @@ const FacilityDetail = () => {
           setStampRule(newStampRule);
         }
         const newMyStamp = await getFacilityStamp(facilityID);
-        if (newMyStamp) {
+
+        if (newMyStamp != '') {
           setMyStamp(newMyStamp.cnt);
+        } else {
+          setMyStamp(0);
         }
       } catch (error) {
         console.log(error.message);
@@ -136,13 +144,23 @@ const FacilityDetail = () => {
       } catch (error) {
         console.log(error.message);
       }
-    }
+    };
+    const fetchTopHashtags = async (facilityID) => {
+      try {
+        const hashtags = await getTopHashtags(facilityID);
+        setTopHashtags(hashtags);
+        console.log(hashtags);
+      } catch (error) {
+        console.log(error.message);
+      }
+    };
     fetchFacility(facilityID);
     fetchReviews(facilityID);
     fetchStamp(facilityID);
     fetchPreferences(facilityID);
     isBookmarked(facilityID);
     fetchNotices(facilityID);
+    fetchTopHashtags(facilityID);
   }, []);
 
   const navigation = useNavigation();
@@ -194,6 +212,24 @@ const FacilityDetail = () => {
 
   const toggleWriteReview = () => {
     setWriteReview(!writeReview);
+  }
+
+  const handleCreateReview = async () => {
+    console.log(facilityID, reviewScore, reviewContent, inputHashtag, reviewImage);
+    try {
+      if (reviewImage == '') {
+        const response = await createReview({ facilityId: facilityID, score: reviewScore, content: reviewContent, hashtags: inputHashtag });
+        console.log('Review uploaded successfully:', response);
+      }
+      else {
+        const response = await createReview({ facilityId: facilityID, score: reviewScore, content: reviewContent, hashtags: inputHashtag, imageUri: reviewImage });
+        console.log('Review uploaded successfully:', response);
+      }
+      toggleWriteReview();
+      navigation.replace("FacilityDetail", {facilityID});
+    } catch (error) {
+      console.log(error.message);
+    }
   }
 
   const renderStars = () => {
@@ -254,9 +290,6 @@ const FacilityDetail = () => {
   }
 
   const summaryReview = "Clean, kind and tasty";
-  const topHashtags = [
-    "🕯️ Good mood", "🍴 Tasty", "😊 Kind", "🍴 Tasty", "😊 Kind"
-  ];
 
   return (
     <SafeAreaView style={GlobalStyles.background}>
@@ -302,9 +335,9 @@ const FacilityDetail = () => {
 
         <ScrollView vertical style={{ width: '100%' }} showsVerticalScrollIndicator={false}>
 
-          <View style={{ width: '100%', alignSelf: 'center' }}>
+          <View style={{ width: '100%' }}>
             <Image
-              style={{ ...GlobalStyles.longImage, alignSelf: 'center' }}
+              style={GlobalStyles.longImage}
               source={Number.isInteger(profileImage) ? profileImage : { uri: profileImage }}
             />
             <View style={{ flexDirection: 'row' }}>
@@ -326,7 +359,7 @@ const FacilityDetail = () => {
                 style={{ ...GlobalStyles.icon, marginRight: 5 }}
                 source={require('../assets/icons/star.png')}
               />
-              <Text style={GlobalStyles.body2}>{facilityInfo.avg_score}</Text>
+              <Text style={GlobalStyles.body2}>{Math.round(facilityInfo.avg_score * 10) / 10}</Text>
             </View>
             <View
               style={{
@@ -433,7 +466,7 @@ const FacilityDetail = () => {
                   />
                 </View>
                 <View style={{ alignItems: 'center', paddingVertical: 20 }}>
-                  <Text style={GlobalStyles.body}>{summaryReview}</Text>
+                  {/* <Text style={GlobalStyles.body}>{summaryReview}</Text> */}
                   <View
                     style={{
                       flexDirection: 'row',
@@ -458,11 +491,12 @@ const FacilityDetail = () => {
                   }}
                 />
 
-                {reviewList
+                {reviewList && reviewList
                   .filter(item => !reviewFilter || (reviewFilter && item.img_uri)) // Apply filter conditionally based on reviewFilter state
                   .map(item => (
                     <Review
                       key={item.id} // Make sure to provide a unique key prop
+                      reviewId={item.id}
                       userID={item.author_id}
                       edit={USERID == item.author_id}
                       reviewDate={item.post_date}
@@ -472,6 +506,8 @@ const FacilityDetail = () => {
                       reviewHashtags={item.hashtags}
                       admin={false}
                       reviewreport={item}
+                      facilityID = {item.facility_id}
+                      navigation={navigation}
                     />
                   ))
                 }
@@ -569,7 +605,7 @@ const FacilityDetail = () => {
                   )}
                 </View>
                 <View style={{ width: '100%', justifyContent: 'flex-end', flexDirection: 'row', paddingTop: 20 }}>
-                  <TouchableOpacity>
+                  <TouchableOpacity onPress={handleCreateReview}>
                     <Text style={GlobalStyles.h4}>Send</Text>
                   </TouchableOpacity>
                 </View>
@@ -581,7 +617,7 @@ const FacilityDetail = () => {
       )}
       {stamp && (
         <View style={styles.overlay}>
-          <View style={{ ...styles.background, justifyContent: 'center', height: '50%' }}>
+          <View style={{ ...styles.background, justifyContent: 'center', height: '80%' }}>
             <View style={{ width: '100%' }}>
               <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
                 <TouchableOpacity style={{ marginRight: -10 }} onPress={toggleStamp}>
@@ -594,15 +630,21 @@ const FacilityDetail = () => {
             <View style={{ width: '100%', alignItems: 'center', paddingVertical: 10 }}>
               {!(stampRule == []) &&
                 <>
+                  <View style={{ width: '80%', aspectRatio: 1, padding: 30 }}>
+                    <QRCode
+                      size={'100%'}
+                      style={{ maxWidth: "100%", width: "100%" }}
+                      value={USERID}
+                    />
+                  </View>
                   <Stamp
                     number={myStamp}
                     stamp={stampRule}
                     stampImage={stampLogo}
                   />
-                  <Text style={GlobalStyles.body}>Buyer ID: {USERID}</Text>
                 </>
               }
-              {(stampRule == []) && <Text style={GlobalStyles.body}>Stamps not created</Text>}
+              {(stampRule == '') && <Text style={GlobalStyles.body}>Stamps not created</Text>}
             </View>
           </View>
 

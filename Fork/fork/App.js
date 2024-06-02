@@ -31,6 +31,8 @@ import MapView from './screens/MapView.js';
 import FacilityDetail from './screens/FacilityDetail.js';
 import Settings from './screens/Settings.js';
 import FacilityRegistrationRequest from './screens/FacilityRegistrationRequest.js';
+import QRScanner from './screens/QRScanner.js';
+import GiveStamp from './screens/GiveStamp.js';
 {/*import Maps from './screens/Maps';*/ }
 
 const requestLocationPermission = async () => {
@@ -103,6 +105,8 @@ const App = () => {
               <Stack.Screen name="MyStamps" component={MyStamps} />
               <Stack.Screen name="Settings" component={Settings} />
               <Stack.Screen name="FacilityRegistrationRequest" component={FacilityRegistrationRequest} />
+              <Stack.Screen name="QRScanner" component={QRScanner} />
+              <Stack.Screen name="GiveStamp" component={GiveStamp} />
               {/* Register the FavoritesScreen */}
             </Stack.Navigator>
           </View>

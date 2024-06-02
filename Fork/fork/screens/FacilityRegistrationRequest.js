@@ -1,8 +1,8 @@
 import React, { useCallback, useState, useEffect } from 'react';
-import { ScrollView, View, Text, TouchableOpacity, StyleSheet, Image, Button, SafeAreaView } from 'react-native';
+import { ScrollView, View, Text, TouchableOpacity, StyleSheet, Image, Alert, SafeAreaView, ActivityIndicator } from 'react-native';
 import { Border, Color, GlobalStyles } from "../GlobalStyles.js";
 import { useRoute, useNavigation } from '@react-navigation/native';
-import { acceptFacilityRegistrations, getUserByID } from './api.js';
+import { acceptFacilityRegistrations, fetchImage, getUserByID, declineFacilityRegistrations } from './api.js';
 
 import Menu from '../components/Menu.js';
 import Stamp from '../components/Stamp.js';
@@ -20,56 +20,157 @@ const FacilityRegistrationRequest = () => {
 
   const [userInfo, setUserInfo] = useState('');
   const [timeData, setTimeData] = useState([]);
+  const [facilityImage, setFacilityImage] = useState(longImagePlaceholder);
   const [stampRule, setStampRule] = useState([]);
+  const [stampLogo, setStampLogo] = useState(require('../assets/icons/stamp.png'));
+  const [loading, setLoading] = useState(true);
 
-  const stampLogo = require('../assets/icons/stamp.png');
 
   useEffect(() => {
     const fetchUser = async (userID) => {
       try {
         const data = await getUserByID(userID);
+
+        if (data.profile_img_uri && !Number.isNaN(data.profile_img_uri)) {
+          const profileimage = await fetchImage(data.profile_img_uri);
+          data.profile_img_uri = profileimage ? { uri: profileimage } : userImage;
+        } else {
+          data.profile_img_uri = userImage;
+        }
+
         setUserInfo(data);
       } catch (error) {
         console.log(error.message);
       }
     };
-    const newtimeData = [
-      { index: 1, day: 'Monday', openTime: '', closeTime: '' },
-      { index: 2, day: 'Tuesday', openTime: '', closeTime: '' },
-      { index: 3, day: 'Wednesday', openTime: '', closeTime: '' },
-      { index: 4, day: 'Thursday', openTime: '', closeTime: '' },
-      { index: 5, day: 'Friday', openTime: '', closeTime: '' },
-      { index: 6, day: 'Saturday', openTime: '', closeTime: '' },
-      { index: 0, day: 'Sunday', openTime: '', closeTime: '' },
 
-    ];
-    facilityInfo.openingHours.forEach(({ day, open_time, close_time }) => {
-      const item = newtimeData.find(entry => entry.index === day);
-      if (item) {
-        item.openTime = open_time?.slice(0, 5);  // Remove seconds
-        item.closeTime = close_time?.slice(0, 5); // Remove seconds
+    const fetchFacilityImage = async () => {
+      try {
+        const data = await fetchImage(facilityInfo.profileImgUri);
+        if (data) {
+          setFacilityImage({ uri: data });
+        }
+      } catch (error) {
+        console.log(error.message);
       }
-    });
-    setTimeData(newtimeData);
-    const stamps = facilityInfo.stampRuleset;
-    if (stamps.rewards) {
-      const maxCnt = Math.max(...stamps.rewards.map(reward => reward.cnt));
-      const newStampRule = Array(maxCnt).fill('');
-      stamps.rewards.forEach(reward => {
-        newStampRule[reward.cnt - 1] = reward?.name;
-      });
-      setStampRule(newStampRule);
     };
-    fetchUser(author_id);
+
+    const fetchStampImage = async (stamps) => {
+      try {
+        const data = await fetchImage(stamps.logoImgUri);
+        if (data) {
+          setStampLogo({ uri: data });
+        }
+      } catch (error) {
+        console.log(error.message);
+      }
+    };
+
+    const initializeData = async () => {
+      const newtimeData = [
+        { index: 1, day: 'Monday', openTime: '', closeTime: '' },
+        { index: 2, day: 'Tuesday', openTime: '', closeTime: '' },
+        { index: 3, day: 'Wednesday', openTime: '', closeTime: '' },
+        { index: 4, day: 'Thursday', openTime: '', closeTime: '' },
+        { index: 5, day: 'Friday', openTime: '', closeTime: '' },
+        { index: 6, day: 'Saturday', openTime: '', closeTime: '' },
+        { index: 0, day: 'Sunday', openTime: '', closeTime: '' },
+      ];
+
+      facilityInfo.openingHours.forEach(({ day, open_time, close_time }) => {
+        const item = newtimeData.find((entry) => entry.index === day);
+        if (item) {
+          item.openTime = open_time?.slice(0, 5);
+          item.closeTime = close_time?.slice(0, 5);
+        }
+      });
+
+      setTimeData(newtimeData);
+
+      const stamps = facilityInfo.stampRuleset;
+
+      if (stamps.rewards) {
+        const maxCnt = Math.max(...stamps.rewards.map((reward) => reward.cnt));
+        const newStampRule = Array(maxCnt).fill('');
+        stamps.rewards.forEach((reward) => {
+          newStampRule[reward.cnt - 1] = reward?.name;
+        });
+        setStampRule(newStampRule);
+      }
+
+      if (stamps.logoImgUri) {
+        await fetchStampImage(stamps);
+      }
+
+      await fetchUser(author_id);
+
+      if (facilityInfo.profileImgUri) {
+        await fetchFacilityImage();
+      }
+
+      setLoading(false);
+    };
+
+    initializeData();
   }, []);
 
   const acceptRegistration = () => {
-    console.log(requestID);
-    acceptFacilityRegistrations(requestID);
+    Alert.alert(
+      "Accept Registration",
+      "Do you really want to accept this registration?",
+      [
+        {
+          text: "Yes",
+          onPress: () => {
+            acceptFacilityRegistrations(requestID);
+            Alert.alert(
+              "Registration accepted"
+            );
+            navigation.replace("MyPage");
+          }
+        },
+        {
+          text: "No",
+          onPress: () => { },
+          style: "cancel"
+        },
+      ],
+      { cancelable: false }
+    );
   };
   const declineRegistration = () => {
-    acceptFacilityRegistrations(requestID);
+    Alert.alert(
+      "Decline Registration",
+      "Do you really want to decline this registration?",
+      [
+        {
+          text: "Yes",
+          onPress: () => {
+            declineFacilityRegistrations(requestID);
+            Alert.alert(
+              "Registration declined"
+            );
+            navigation.replace("MyPage");
+          }
+        },
+        {
+          text: "No",
+          onPress: () => { },
+          style: "cancel"
+        },
+      ],
+      { cancelable: false }
+    );
   };
+
+  if (loading) {
+    return (
+      <View style={{flex: 1, justifyContent: 'center'}}>
+        <ActivityIndicator size="large" color={Color.orange_700} />
+      </View>
+    );
+  }
+
 
   return (
     <SafeAreaView style={GlobalStyles.background}>
@@ -108,7 +209,7 @@ const FacilityRegistrationRequest = () => {
             }}>
             <Image
               style={{ ...GlobalStyles.profileImage, marginRight: 20 }}
-              source={require('../assets/placeholders/User.png')}
+              source={userInfo.profile_img_uri}
             />
             <View style={{ justifyContent: 'center' }}>
               <Text style={{ ...GlobalStyles.body, marginRight: 15 }}>
@@ -120,10 +221,10 @@ const FacilityRegistrationRequest = () => {
             </View>
           </View>
           <View style={{ width: '100%' }}>
-            <TouchableOpacity style={{ paddingTop: 15, alignSelf: 'flex-end' }}>
+            <TouchableOpacity style={{ paddingTop: 15 }}>
             </TouchableOpacity>
             <Image
-              source={longImagePlaceholder}
+              source={facilityImage}
               style={{ ...GlobalStyles.longImage, margin: 0, marginTop: 15 }}
             />
             <View style={{ width: '100%', flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 15, paddingHorizontal: 5 }}>
@@ -152,7 +253,7 @@ const FacilityRegistrationRequest = () => {
             </View>
           </View>
           <View style={{ flexDirection: 'row', paddingTop: 5, width: '100%', paddingBottom: 20 }}>
-            {facilityInfo.preferences.map(item => (
+            {facilityInfo?.preferences?.map(item => (
               <Hashtag
                 tag={item}
               />
@@ -163,7 +264,6 @@ const FacilityRegistrationRequest = () => {
             style={{
               borderBottomColor: Color.lightGrey,
               borderBottomWidth: 1,
-              alignSelf: 'stretch',
               marginBottom: 10,
             }}
           />
@@ -174,7 +274,7 @@ const FacilityRegistrationRequest = () => {
               source={require('../assets/icons/hour.png')}
             />
             <View>
-              {timeData.map(item => (
+              {timeData?.map(item => (
                 <Text key={item.day} style={{ ...GlobalStyles.body2, color: new Date().toLocaleDateString('en-KR', { weekday: 'long' }) === item.day ? Color.black : Color.darkgray, paddingVertical: 2 }}>{item.day.substring(0, 3)} : {item.openTime} - {item.closeTime}</Text>
               ))}
             </View>
@@ -182,23 +282,25 @@ const FacilityRegistrationRequest = () => {
 
           <View style={{ width: '100%' }}>
             <Text style={GlobalStyles.h2}>Menu</Text>
-            {facilityInfo.menu.map(item => (
+            {facilityInfo?.menu?.map(item => (
               <Menu
                 menuName={item.name}
                 menuDescription={item.description}
                 menuPrice={item.price}
-                menuImage={item.image ? item.image : longImagePlaceholder}
+                menuImage={item.image}
               />
             ))}
           </View>
+          {stampRule && (
+            <View style={{ width: '100%' }}>
+              <Text style={GlobalStyles.h2}>Stamps</Text>
+              <Stamp
+                stamp={stampRule}
+                stampImage={require('../assets/icons/stamp.png')}
+              />
+            </View>
+          )}
 
-          <View style={{ width: '100%' }}>
-            <Text style={GlobalStyles.h2}>Stamps</Text>
-            <Stamp
-              stamp={stampRule}
-              stampImage={stampLogo}
-            />
-          </View>
           <View style={{ flexDirection: 'row', justifyContent: 'flex-end', width: '100%', paddingBottom: 15 }}>
             <TouchableOpacity onPress={acceptRegistration}>
               <Text style={GlobalStyles.h4}>Accept</Text>

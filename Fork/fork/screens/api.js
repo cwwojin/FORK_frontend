@@ -10,47 +10,51 @@ const FORK_URL = `${API_ENDPOINT}/dev/`
 // S3 endpoint
 const S3_ENDPOINT = `${API_ENDPOINT}/s3`
 
-export let USERTOKEN = "";
-export let USERID = "";
-export let USERPREFERENCE = "";
-export let USERBOOKMARKED = "";
+// export let USERTOKEN = "";
+// export let USERID = "";
+// export let USERPREFERENCE = "";
+// export let USERBOOKMARKED = "";
+
+export let USERTOKEN = "foodie";
+export let USERID = 3;
+export let USERPREFERENCE = [];
 
 // --------------LOGIN----------------- 
 
 export const handleLogin = async (username, password) => {
     console.log('in handleLogin : username => ' + username + ', password => ' + password);
     try {
-      const url = `${FORK_URL}api/auth/login`;
-      const requestBody = {
-        userId: username,
-        password: password
-      };
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'foodie'
-        },
-        body: JSON.stringify(requestBody)
-      });
-      if (response.status === 200) {
-        const jsonResponse = await response.json();
-        USERTOKEN = jsonResponse.data.token;
-        USERID = jsonResponse.data.user.id;
-        USERPREFERENCE = await getUserPreferences(USERID);
-        USERBOOKMARKED = await getUserFavorites(USERID);
-        console.log("USERID : " + USERID);
-        console.log("USERTOKEN : " + USERTOKEN);
-        console.log("USERPREFERENCE : " + JSON.stringify(USERPREFERENCE, null, 2));
-        console.log("USERBOOKMARKED : " + JSON.stringify(USERBOOKMARKED, null, 2));
-        return true;
-      } else {
-        console.log('Login Failed', 'Invalid credentials or insufficient permissions.');
-        return false;
-      }
+        const url = `${FORK_URL}api/auth/login`;
+        const requestBody = {
+            userId: username,
+            password: password
+        };
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'foodie'
+            },
+            body: JSON.stringify(requestBody)
+        });
+        if (response.status === 200) {
+            const jsonResponse = await response.json();
+            USERTOKEN = jsonResponse.data.token;
+            USERID = jsonResponse.data.user.id;
+            USERPREFERENCE = await getUserPreferences(USERID);
+            USERBOOKMARKED = await getUserFavorites(USERID);
+            console.log("USERID : " + USERID);
+            console.log("USERTOKEN : " + USERTOKEN);
+            console.log("USERPREFERENCE : " + JSON.stringify(USERPREFERENCE, null, 2));
+            console.log("USERBOOKMARKED : " + JSON.stringify(USERBOOKMARKED, null, 2));
+            return true;
+        } else {
+            console.log('Login Failed', 'Invalid credentials or insufficient permissions.');
+            return false;
+        }
     } catch (error) {
-      console.log(error);
-      return false;
+        console.log(error);
+        return false;
     }
 };
 
@@ -58,7 +62,7 @@ export const handleLogin = async (username, password) => {
 export const resetPassword = async (userId) => {
     const url = `${FORK_URL}api/auth/reset-password`;
     const payload = { userId };
-    
+
     try {
         console.log("userId : " + userId);
         console.log("responseBody JSON: " + JSON.stringify(payload));
@@ -66,13 +70,13 @@ export const resetPassword = async (userId) => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'foodie' 
+                'Authorization': 'foodie'
             },
             body: JSON.stringify(payload),
         });
 
         console.log("response status : " + response.status);
-        console.log("response : " +  JSON.stringify(response, null, 2));
+        console.log("response : " + JSON.stringify(response, null, 2));
 
 
         if (!response.ok) {
@@ -93,14 +97,14 @@ export const registerUser = async (userId, password, userType, email) => {
         const requestBody = {
             userId,
             password,
-            userType, 
+            userType,
             email
         };
         const response = await fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'foodie' 
+                'Authorization': 'foodie'
             },
             body: JSON.stringify(requestBody)
         });
@@ -129,13 +133,13 @@ export const registerUser = async (userId, password, userType, email) => {
 //         },
 //         body: JSON.stringify(facilityData)
 //       });
-  
+
 //       if (!response.ok) {
 //         const errorResponse = await response.json();
 //         console.error('Error response from server in registerFacility:', errorResponse);
 //         throw new Error(errorResponse.message || 'Network response was not ok in registerFacility');
 //       }
-  
+
 //       const data = await response.json();
 //       console.log("Facility registration request sent successfully:", JSON.stringify(data, null, 2));
 //       return data;
@@ -204,7 +208,7 @@ export const verifyEmail = async (userId, code) => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'foodie' 
+                'Authorization': 'foodie'
             },
             body: JSON.stringify(requestBody)
         });
@@ -232,7 +236,7 @@ export const resendVerifyEmail = async (userId) => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'foodie' 
+                'Authorization': 'foodie'
             },
             body: JSON.stringify(requestBody)
         });
@@ -254,30 +258,30 @@ export const resendVerifyEmail = async (userId) => {
 
 export const addUserPreference = async (userId, preferenceId) => {
     try {
-      const url = `${FORK_URL}api/users/preference/${userId}`;
-      const requestBody = { preferenceId };
-      const response = await fetch(url, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'foodie'
-        },
-        body: JSON.stringify(requestBody)
-      });
-      if (!response.ok) {
-        const errorResponse = await response.json();
-        console.error('Error response from server in addUserPreference:', errorResponse);
-        throw new Error(errorResponse.message || 'Network response in addUserPreference was not ok');
-      }
-      const data = await response.json();
-      console.log("Preference added successfully:", JSON.stringify(data, null, 2));
-      return data;
+        const url = `${FORK_URL}api/users/preference/${userId}`;
+        const requestBody = { preferenceId };
+        const response = await fetch(url, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'foodie'
+            },
+            body: JSON.stringify(requestBody)
+        });
+        if (!response.ok) {
+            const errorResponse = await response.json();
+            console.error('Error response from server in addUserPreference:', errorResponse);
+            throw new Error(errorResponse.message || 'Network response in addUserPreference was not ok');
+        }
+        const data = await response.json();
+        console.log("Preference added successfully:", JSON.stringify(data, null, 2));
+        return data;
     } catch (error) {
-      console.error('Error adding user preference:', error);
-      throw error;
+        console.error('Error adding user preference:', error);
+        throw error;
     }
-  };
-  
+};
+
 
 export const fetchImage = async (uri) => {
     const url = new URL(uri);
@@ -297,6 +301,8 @@ export const fetchImage = async (uri) => {
         });
 
         if (!response.ok) {
+            const result = await response.json();
+            console.log(result);
             throw new Error('Network response was not ok');
         }
 
@@ -374,9 +380,9 @@ export const fetchFacilitiesInBounds = async (northEastLat, northEastLng, southW
         const latMax = Math.max(northEastLat, southWestLat)
         const lngMin = Math.min(northEastLng, southWestLng)
         const lngMax = Math.max(northEastLng, southWestLng)
-        const url =  favorite ? `${FORK_URL}api/map/search?latMin=${encodeURIComponent(latMin)}&lngMin=${encodeURIComponent(lngMin)}&latMax=${encodeURIComponent(latMax)}&lngMax=${encodeURIComponent(lngMax)}&favorite=true` : `${FORK_URL}api/map/search?latMin=${encodeURIComponent(latMin)}&lngMin=${encodeURIComponent(lngMin)}&latMax=${encodeURIComponent(latMax)}&lngMax=${encodeURIComponent(lngMax)}`;
-       
-       
+        const url = favorite ? `${FORK_URL}api/map/search?latMin=${encodeURIComponent(latMin)}&lngMin=${encodeURIComponent(lngMin)}&latMax=${encodeURIComponent(latMax)}&lngMax=${encodeURIComponent(lngMax)}&favorite=true` : `${FORK_URL}api/map/search?latMin=${encodeURIComponent(latMin)}&lngMin=${encodeURIComponent(lngMin)}&latMax=${encodeURIComponent(latMax)}&lngMax=${encodeURIComponent(lngMax)}`;
+
+
         if (favorite) {
             console.log("UserBookmarkedActive");
             console.log("url : " + url);
@@ -399,11 +405,11 @@ export const fetchFacilitiesInBounds = async (northEastLat, northEastLng, southW
 
         const facilitiesData = jsonResponse.data;
         if (favorite) {
-          console.log("Facilities data in favorite :", JSON.stringify(facilitiesData, null, 2));
+            console.log("Facilities data in favorite :", JSON.stringify(facilitiesData, null, 2));
         } else {
-          console.log("Facilities data in not favorite :");   
+            console.log("Facilities data in not favorite :");
         }
-        
+
         return facilitiesData;
 
     } catch (error) {
@@ -415,8 +421,8 @@ export const fetchFacilitiesInBounds = async (northEastLat, northEastLng, southW
 export const getParsedUserPreferences = () => {
     console.log("here and USERPREFERENCE:", JSON.stringify(USERPREFERENCE, null, 2));
     if (USERPREFERENCE && Array.isArray(USERPREFERENCE)) {
-      console.log("Parsing preferences by IDs");
-      return USERPREFERENCE.map(pref => pref.id);
+        console.log("Parsing preferences by IDs");
+        return USERPREFERENCE.map(pref => pref.id);
     }
     return [];
 };
@@ -591,6 +597,25 @@ export const getFavoritesNotices = async () => {
     }
 };
 
+export const getMyFacilities = async () => {
+    try {
+        const response = await fetch(`${BASE_URL}/users/${encodeURIComponent(USERID)}/myfacility`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': USERTOKEN
+            }
+        });
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        return data.data;
+    } catch (error) {
+        console.error('Error fetching user in getUserPreferences:', error);
+        throw error;
+    }
+};
 
 // --------------FACILITY-----------------
 
@@ -735,6 +760,26 @@ export const getNewestFacilities = async () => {
     }
 };
 
+export const getTrendingPreferenceFacilities = async (preference) => {
+    try {
+        const response = await fetch(`${BASE_URL}/facilities/leaderboard/trending?limit=${encodeURIComponent(1)}&preferences=${encodeURIComponent(preference)}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': USERTOKEN
+            }
+        });
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        return data.data;
+    } catch (error) {
+        console.error('Error fetching trending facilities:', error);
+        throw error;
+    }
+};
+
 export const getFacilityNotices = async (facilityID) => {
     try {
         const response = await fetch(`${BASE_URL}/facilities/${encodeURIComponent(facilityID)}/post`, {
@@ -790,6 +835,93 @@ export const getReviewByQuery = async (userID, facilityId, hasImage, hashtags) =
     }
 };
 
+export const getTopHashtags = async (facilityID) => {
+    try {
+        const response = await fetch(`${BASE_URL}/hashtags/top/${encodeURIComponent(facilityID)}?limit=${encodeURIComponent(5)}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': USERTOKEN
+            }
+        });
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        return data.data;
+    } catch (error) {
+        console.error('Error fetching facility stamp:', error);
+        throw error;
+    }
+};
+
+export const deleteReview = async (reviewId) => {
+    try {
+        const response = await fetch(`${BASE_URL}/reviews/${encodeURIComponent(reviewId)}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': USERTOKEN
+            }
+        });
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        return data.data;
+    } catch (error) {
+        console.error('Error fetching facility stamp:', error);
+        throw error;
+    }
+};
+
+export const createReview = async ({facilityId, score, content, hashtags, imageUri}) => {
+    console.log("?????", facilityId, score, content, hashtags, imageUri);
+    try {
+        const formData = new FormData();
+
+        formData.append('authorId', USERID);
+        formData.append('facilityId', facilityId);
+        formData.append('score', score);
+        formData.append('content', content);
+        formData.append('hashtags', JSON.stringify(hashtags));
+
+        if (imageUri) {
+            const uriParts = imageUri.split('.');
+            const fileType = uriParts[uriParts.length - 1];
+            formData.append('image', {
+                uri: imageUri,
+                name: `photo.${fileType}`,
+                type: `image/${fileType}`,
+            });
+        }
+
+        const response = await fetch(`${BASE_URL}/reviews/upload`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'multipart/form-data',
+                'Authorization': USERTOKEN,
+            },
+            body: formData,
+        });
+
+        if (!response.ok) {
+            // Log the full response for debugging
+            const errorText = await response.text();
+            console.error('Error response from server:', errorText);
+            throw new Error(`Server responded with ${response.status}: ${errorText}`);
+        }
+
+        const data = await response.json();
+        console.log(data);
+        return data;
+    } catch (error) {
+        console.error('Error uploading review:', error);
+        throw error;
+    }
+};
+
+
 // --------------STAMP-----------------
 
 export const getFacilityStamp = async (facilityID) => {
@@ -805,7 +937,7 @@ export const getFacilityStamp = async (facilityID) => {
             throw new Error('Network response was not ok');
         }
         const data = await response.json();
-        return data.dat;
+        return data.data;
     } catch (error) {
         console.error('Error fetching facility stamp:', error);
         throw error;
@@ -825,10 +957,39 @@ export const getStampBook = async () => {
             throw new Error('Network response was not ok');
         }
         const data = await response.json();
-        console.log(data);
-        return data;
+        return data.data;
     } catch (error) {
         console.error('Error fetching facility stamp:', error);
+        throw error;
+    }
+};
+
+export const sendStampTransaction = async (userID, facilityID, type, amount) => {
+    try {
+        console.log(userID, facilityID, type, amount);
+        const response = await fetch(`${BASE_URL}/stamps/transaction`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': USERTOKEN
+            },
+            body: JSON.stringify({
+                buyerId: userID,
+                facilityId: facilityID,
+                sellerId: USERID,
+                type: type,
+                amount: amount
+            })
+        });
+        if (!response.ok) {
+            // throw new Error('Network response was not ok');
+            const data = await response.json();
+            console.log(data);
+        }
+        const data = await response.json();
+        return data.data;
+    } catch (error) {
+        console.error('Error sending stamp transaction:', error);
         throw error;
     }
 };
@@ -838,6 +999,26 @@ export const getStampBook = async () => {
 export const getFacilityRegistrations = async () => {
     try {
         const response = await fetch(`${BASE_URL}/admin/facility-requests?status=0`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': USERTOKEN
+            }
+        });
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        return data.data;
+    } catch (error) {
+        console.error('Error fetching facility registrations:', error);
+        throw error;
+    }
+};
+
+export const getMyFacilityRegistrations = async () => {
+    try {
+        const response = await fetch(`${BASE_URL}/admin/facility-requests?status=0&user=${encodeURIComponent(USERID)}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -867,8 +1048,9 @@ export const acceptFacilityRegistrations = async (requestID) => {
                 adminId: USERID,
             })
         });
-        console.log(response); 
         if (!response.ok) {
+            const data = await response.json();
+            console.log(data);
             throw new Error('Network response was not ok');
         }
         const data = await response.json();
@@ -992,7 +1174,7 @@ export const deleteReport = async (reportId) => {
         const data = await response.json();
         return data.data;
     } catch (error) {
-        console.error('Error fetching facility registrations:', error);
+        console.error('Error deleting review:', error);
         throw error;
     }
 };

@@ -6,23 +6,55 @@ import {
   SafeAreaView,
   ScrollView,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useEffect, useState } from 'react';
 
-import { GlobalStyles } from '../GlobalStyles';
+import { GlobalStyles, Color } from '../GlobalStyles';
 import Review from '../components/Review';
+import { getReviewByQuery, getFacilityByID, USERID } from './api';
 
-import userImage from '../assets/placeholders/User.png';
-
-//To be deleted
-import longImagePlaceholder from '../assets/placeholders/long_image.png';
-const hashtags = ['🥰Lovely', '😋Tasty'];
 
 const MyReviews = () => {
   //Get Informations of facilities
   //All the reviews [facility_img, facility_name, score(int), date(string), review_img, review_content, hashtags(Array)]
 
   const navigation = useNavigation();
+
+  const [userReview, setUserReview] = useState([]);
+  const [userReviewFacility, setUserReviewFacility] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchMyReviews = async () => {
+      try {
+        const data = await getReviewByQuery(USERID);
+        const reviewfacilityName = {};
+        for (const item of data) {
+          const facilityInfo = await getFacilityByID(item.facility_id);
+          reviewfacilityName[item.facility_id] = { name: facilityInfo.name, image: facilityInfo.profile_img_uri };
+        }
+        setUserReviewFacility(reviewfacilityName);
+        setUserReview(data);
+      } catch (error) {
+        console.log(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchMyReviews();
+  }, []);
+
+  if (loading) {
+    return (
+      <SafeAreaView style={GlobalStyles.background}>
+        <View style={{ ...GlobalStyles.content, justifyContent: 'center' }}>
+          <ActivityIndicator size="large" color={Color.orange_700} />
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={GlobalStyles.background}>
@@ -55,35 +87,26 @@ const MyReviews = () => {
             marginBottom: -27,
           }}
           showsVerticalScrollIndicator={false}>
-          <Review
-            userImage={userImage}
-            userName={'yosida'}
-            reviewDate={'2024.05.06'}
-            reviewScore={5}
-            reviewImage={longImagePlaceholder}
-            reviewContent={'Loved it'}
-            reviewHashtags={['🥰Lovely', '😋Tasty']}
-            edit={true}
-          /> 
-          <Review
-            userImage={userImage}
-            userName={'motiff'}
-            reviewDate={'2024.05.06'}
-            reviewScore={3}
-            reviewContent={'왕맛있당'}
-            reviewHashtags={['🥰Lovely', '😋Tasty', '😋Tasty', '😋Tasty']}
-            edit={false}
-          />
-          <Review
-            userImage={userImage}
-            userName={'malgm'}
-            reviewDate={'2024.05.06'}
-            reviewScore={5}
-            reviewImage={longImagePlaceholder}
-            reviewContent={'Loved it'}
-            reviewHashtags={['🥰Lovely', '😋Tasty']}
-            edit={true}
-          />
+          {userReview?.map(item => (
+            <TouchableOpacity
+              key={item.id}
+              onPress={() => {
+                navigation.navigate("FacilityDetail", { facilityID: item.facility_id });
+              }}
+            >
+              <Review
+                reviewId={item.id}
+                facilityImage={userReviewFacility[item.facility_id]?.image}
+                facilityName={userReviewFacility[item.facility_id]?.name}
+                reviewDate={item.post_date}
+                reviewScore={item.score}
+                reviewImage={item.img_uri}
+                reviewContent={item.content}
+                reviewHashtags={item.hashtags}
+                edit={true}
+              />
+            </TouchableOpacity>
+          ))}
         </ScrollView>
       </View>
     </SafeAreaView>

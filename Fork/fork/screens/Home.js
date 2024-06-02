@@ -13,37 +13,41 @@ import { Color, GlobalStyles } from '../GlobalStyles';
 import SquareFacility from '../components/SqureFacility';
 import LongFacility from '../components/LongFacility';
 import NavigationBar from '../components/NavigationBar';
+import { FacilityDetails } from './MapViewFunctions';
 
 //To be deleted
 import longImagePlaceholder from '../assets/placeholders/long_image.png';
-import { getNewestFacilities, getTrendingFacilities, fetchImage } from './api';
+import { getNewestFacilities, getTrendingFacilities, fetchImage, USERPREFERENCE, getUserPreferences, getTrendingPreferenceFacilities } from './api';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 
 const Home = () => {
   //Get Informations of facilities
   //img url for ad, Top 5 trending facilities [img_url, name, score, address], Top 5 new failities, Recommendation of 2 restaurants
   const [trending, setTrending] = useState([]);
-  const [trendingImageList, setTrendingImageList] = useState([]);
   const [newest, setNewest] = useState([]);
-  const [newestImageList, setNewestImageList] = useState([]);
+  const [preference, setPreference] = useState([]);
+  const [suggestions, setSuggestions] = useState([]);
+
+  const getRandomItems = (array, n) => {
+    const result = [];
+    const length = array.length;
+    if (n >= length) return array; // Return the whole array if n is greater or equal to the array length
+    const indices = new Set(); // Using a Set to prevent duplicate indices
+    while (indices.size < n) {
+      indices.add(Math.floor(Math.random() * length)); // Generate random index
+    }
+    indices.forEach(index => {
+      result.push(array[index]); // Push the element corresponding to the index to the result array
+    });
+    return result;
+  };
 
   useEffect(() => {
+    console.log("userpreference", USERPREFERENCE);
     const fetchTrending = async () => {
       try {
         const data = await getTrendingFacilities();
         setTrending(data);
-
-        const newTrendingImageList = {};
-        for (const item of data) {
-          if (item.profile_img_uri) {
-            const imageUrl = await fetchImage(item.profile_img_uri);
-            newTrendingImageList[item.id] = imageUrl;
-          } else {
-            newTrendingImageList[item.id] = longImagePlaceholder;
-          }
-        }
-        console.log(newTrendingImageList);
-        setTrendingImageList(newTrendingImageList);
       } catch (error) {
         console.log(error.message);
       }
@@ -53,23 +57,30 @@ const Home = () => {
         const data = await getNewestFacilities();
         console.log(data);
         setNewest(data);
+      } catch (error) {
+        console.log(error.message);
+      }
+    };
+    const fetchPreferences = async () => {
+      try {
+        const indices = getRandomItems(USERPREFERENCE, 2);
 
-        const newNewestImageList = {};
-        for (const item of data) {
-          if (item.profile_img_uri) {
-            const imageUrl = await fetchImage(item.profile_img_uri);
-            newNewestImageList[item.id] = imageUrl;
-          } else {
-            newNewestImageList[item.id] = longImagePlaceholder;
-          }
+        const suggestedFacilities = {};
+        for (const item of indices) {
+          const facilityInfo = await getTrendingPreferenceFacilities(item.id);
+          suggestedFacilities[item.id] = facilityInfo.length > 0 ? facilityInfo[0] : null;
         }
-        setNewestImageList(newNewestImageList);
+        setSuggestions(suggestedFacilities);
+        setPreference(indices);
+
+        console.log("suggesting", suggestedFacilities);
       } catch (error) {
         console.log(error.message);
       }
     };
     fetchTrending();
     fetchNewest();
+    fetchPreferences();
   }, []);
 
   const navigation = useNavigation();
@@ -95,7 +106,7 @@ const Home = () => {
                   navigation.navigate("FacilityDetail", { facilityID: item.id });
                 }}>
                   <SquareFacility
-                    facilityImage={trendingImageList[item.id]}
+                    facilityImage={item.profile_img_uri}
                     facilityName={item.name}
                     facilityAddress={item.english_address}
                     facilityScore={item.avg_score}
@@ -116,7 +127,7 @@ const Home = () => {
                   navigation.navigate("FacilityDetail", { facilityID: item.id });
                 }}>
                   <SquareFacility
-                    facilityImage={newestImageList[item.id]}
+                    facilityImage={item.profile_img_uri}
                     facilityName={item.name}
                     facilityAddress={item.english_address}
                     facilityScore={item.avg_score}
@@ -129,30 +140,20 @@ const Home = () => {
           <Text style={GlobalStyles.h2}>
             Foodie picks
           </Text>
-          <Text style={{ ...GlobalStyles.h3, flexDirection: 'row' }}>
-            <Text>For our </Text>
-            <Text style={{ color: Color.orange_700 }}>meat lovers</Text>
-            <Text>, we suggest ...</Text>
-          </Text>
-          <LongFacility
-            facilityImage={longImagePlaceholder}
-            facilityName={'steak house'}
-            facilityAddress={'21-12 Eoeun-ro 42 and on and on'}
-            facilityScore={'-'}
-            facilityState={'Open'}
-          />
-          <Text style={{ ...GlobalStyles.h3, flexDirection: 'row' }}>
-            <Text>For our </Text>
-            <Text style={{ color: Color.orange_700 }}>sushi lovers</Text>
-            <Text>, we suggest ...</Text>
-          </Text>
-          <LongFacility
-            facilityImage={longImagePlaceholder}
-            facilityName={'eoeun sushi'}
-            facilityAddress={'21-12 Eoeun-ro 42 and on and on'}
-            facilityScore={'-'}
-            facilityState={'Open'}
-          />
+          {preference?.map(item => (
+            <>
+              <Text style={{ ...GlobalStyles.h3, flexDirection: 'row' }}>
+                <Text>For our </Text>
+                <Text style={{ color: Color.orange_700 }}>{item.name} Dish lovers</Text>
+                <Text>, we suggest ...</Text>
+              </Text>
+              <View style={{ width: '105%', paddingBottom: 15 }}>
+                {suggestions[item.id] && (
+                  <FacilityDetails key={item.id} facility={suggestions[item.id]} />
+                )}
+              </View>
+            </>
+          ))}
         </View>
       </ScrollView>
 

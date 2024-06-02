@@ -1,10 +1,9 @@
-import { useState } from 'react';
-import { Image, View, Text, TouchableOpacity, Alert } from 'react-native';
+import { useState, useEffect } from 'react';
+import { Image, View, Text } from 'react-native';
 import { Color, GlobalStyles } from '../GlobalStyles.js';
-import Translator, {
-  TranslatorProvider,
-  useTranslator,
-} from 'react-native-translator';
+import { fetchImage } from '../screens/api.js';
+
+import longImagePlaceholder from '../assets/placeholders/long_image.png';
 
 const Request = ({
   facilityImage,
@@ -12,6 +11,21 @@ const Request = ({
   facilityAddress,
   state,
 }) => {
+  const [facilityImages, setFacilityImages] = useState();
+
+  useEffect(() => {
+    const fetchFacilityImage = async () => {
+      try {
+        const imageUrl = await fetchImage(facilityImage);
+        if (imageUrl != undefined) {
+          setFacilityImages(imageUrl);
+        }
+      } catch (error) {
+        console.log(error.message);
+      };
+    }
+    if (facilityImage != "") { fetchFacilityImage(); };
+  }, []);
 
   return (
     <View style={{ width: '100%', alignItems: 'center' }}>
@@ -25,9 +39,9 @@ const Request = ({
           paddingTop: 5,
         }}>
         <Image
-          style={{...GlobalStyles.squareImage2, marginBottom: 0}}
+          style={{ ...GlobalStyles.squareImage2, marginBottom: 0 }}
           contentFit="cover"
-          source={facilityImage}
+          source={facilityImages ? { uri: facilityImages } : longImagePlaceholder}
         />
         <View style={{ width: '75%', paddingVertical: 10 }}>
           <Text
@@ -38,7 +52,7 @@ const Request = ({
             }}>
             {facilityName}
           </Text>
-          <View style={{padding: 5}}/>
+          <View style={{ padding: 5 }} />
           <Text
             style={{
               ...GlobalStyles.body2,
@@ -63,7 +77,6 @@ const Request = ({
         style={{
           borderBottomColor: Color.lightGrey,
           borderBottomWidth: 1,
-          alignSelf: 'stretch',
           marginVertical: 10,
         }}
       />
