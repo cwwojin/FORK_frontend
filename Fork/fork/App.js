@@ -33,6 +33,8 @@ import Settings from './screens/Settings.js';
 import FacilityRegistrationRequest from './screens/FacilityRegistrationRequest.js';
 import QRScanner from './screens/QRScanner.js';
 import GiveStamp from './screens/GiveStamp.js';
+import EditProfile from './screens/EditProfile.js';
+import FacilityInformationEdit from './screens/FacilityInformationEdit.js';
 {/*import Maps from './screens/Maps';*/ }
 
 const requestLocationPermission = async () => {
@@ -81,7 +83,7 @@ const App = () => {
               screenOptions={{
                 headerShown: false,
               }}
-              initialRouteName="FacilityInformation"
+              initialRouteName="Home"
             >
               <Stack.Screen name="SignUpLogIn" component={SignUpLogIn} />
               <Stack.Screen name="UserType" component={UserType} />
@@ -107,6 +109,8 @@ const App = () => {
               <Stack.Screen name="FacilityRegistrationRequest" component={FacilityRegistrationRequest} />
               <Stack.Screen name="QRScanner" component={QRScanner} />
               <Stack.Screen name="GiveStamp" component={GiveStamp} />
+              <Stack.Screen name="EditProfile" component={EditProfile} />
+              <Stack.Screen name="FacilityInformationEdit" component={FacilityInformationEdit} />
               {/* Register the FavoritesScreen */}
             </Stack.Navigator>
           </View>

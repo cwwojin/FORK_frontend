@@ -14,6 +14,8 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { Dropdown } from 'react-native-element-dropdown';
 import * as ImagePicker from 'expo-image-picker';
+import * as ImageManipulator from 'expo-image-manipulator';
+
 
 
 
@@ -290,7 +292,14 @@ const MyPage = () => {
       if (!result.canceled && result.assets && result.assets.length > 0) {
         const source = { uri: result.assets[0].uri };
         console.log("source uri : " + source.uri);
-        setNoticeImage(source.uri);
+
+        const uncompressedImage = await ImageManipulator.manipulateAsync(
+          source.uri,
+          [],
+          { compress: 1, format: ImageManipulator.SaveFormat.JPEG }
+        );
+
+        setNoticeImage(uncompressedImage.uri);
       }
     } catch (error) {
       console.error('Error selecting image:', error);
@@ -298,7 +307,6 @@ const MyPage = () => {
   };
 
   const sendNotice = async () => {
-    console.log(facilityInfo.id, noticeContent, noticeImage);
     try {
       if (noticeImage == '') {
         const response = await createFacilityPost({ facilityId: facilityInfo.id, content: noticeContent });
@@ -371,7 +379,9 @@ const MyPage = () => {
                     <Text style={{ ...GlobalStyles.body, marginRight: 15 }}>
                       {userInfo.account_id}
                     </Text>
-                    <Text style={GlobalStyles.body2}>Edit</Text>
+                    <TouchableOpacity onPress={() => (navigation.navigate("EditProfile", { userInfo }))}>
+                      <Text style={GlobalStyles.body2}>Edit</Text>
+                    </TouchableOpacity>
                   </View>
                   <Text style={{ ...GlobalStyles.body2, textTransform: 'none' }}>
                     {userInfo.email}
@@ -574,7 +584,9 @@ const MyPage = () => {
                       <Text style={{ ...GlobalStyles.body, marginRight: 15 }}>
                         {userInfo.account_id}
                       </Text>
-                      <Text style={GlobalStyles.body2}>Edit</Text>
+                      <TouchableOpacity onPress={() => (navigation.navigate("EditProfile", { userInfo }))}>
+                        <Text style={GlobalStyles.body2}>Edit</Text>
+                      </TouchableOpacity>
                     </View>
                     <Text style={{ ...GlobalStyles.body2, textTransform: 'none' }}>
                       {userInfo.email}
@@ -603,36 +615,43 @@ const MyPage = () => {
                 </View>
 
                 <View style={{ width: '100%', justifyContent: 'flex-start' }}>
-                  <View style={styles.container}>
-                    {renderLabel()}
-                    <Dropdown
-                      style={[styles.dropdown, isFocus && { borderColor: Color.orange_700 }]}
-                      placeholderStyle={styles.placeholderStyle}
-                      selectedTextStyle={styles.selectedTextStyle}
-                      inputSearchStyle={styles.inputSearchStyle}
-                      iconStyle={styles.iconStyle}
-                      data={myFacilities}
-                      search
-                      maxHeight={300}
-                      labelField="name"
-                      valueField="id"
-                      placeholder={!isFocus ? 'Select facility' : '...'}
-                      searchPlaceholder="Search..."
-                      value={value}
-                      onFocus={() => setIsFocus(true)}
-                      onBlur={() => setIsFocus(false)}
-                      onChange={async (item) => {
-                        try {
-                          setValue(item.id);
-                          setFacilityInfo(item);
-                          const facilityInfoSubData = await fetchFacilityInfoSub(item);
-                          setFacilityInfoSub(facilityInfoSubData);
-                          setIsFocus(false);
-                        } catch (error) {
-                          console.error('Error fetching facility info:', error);
-                        }
-                      }}
-                    />
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingRight: 20 }}>
+                    <View style={styles.container}>
+                      {renderLabel()}
+                      <Dropdown
+                        style={[styles.dropdown, isFocus && { borderColor: Color.orange_700 }]}
+                        placeholderStyle={styles.placeholderStyle}
+                        selectedTextStyle={styles.selectedTextStyle}
+                        inputSearchStyle={styles.inputSearchStyle}
+                        iconStyle={styles.iconStyle}
+                        data={myFacilities}
+                        search
+                        maxHeight={300}
+                        labelField="name"
+                        valueField="id"
+                        placeholder={!isFocus ? 'Select facility' : '...'}
+                        searchPlaceholder="Search..."
+                        value={value}
+                        onFocus={() => setIsFocus(true)}
+                        onBlur={() => setIsFocus(false)}
+                        onChange={async (item) => {
+                          try {
+                            setValue(item.id);
+                            setFacilityInfo(item);
+                            const facilityInfoSubData = await fetchFacilityInfoSub(item);
+                            setFacilityInfoSub(facilityInfoSubData);
+                            setIsFocus(false);
+                          } catch (error) {
+                            console.error('Error fetching facility info:', error);
+                          }
+                        }}
+                      />
+                    </View>
+                    <TouchableOpacity onPress={() => {
+                      navigation.navigate("FacilityInformation", { authorId: USERID, email: userInfo.email })
+                    }}>
+                      <Text style={{ ...GlobalStyles.body3, fontSize: FontSize.size_xl, width: 20 }}>+</Text>
+                    </TouchableOpacity>
                   </View>
                   {facilityInfo && (
                     <>
@@ -663,7 +682,7 @@ const MyPage = () => {
                         </TouchableOpacity>
                       </View>
                       <View style={{ width: '100%' }}>
-                        <TouchableOpacity style={{ paddingTop: 15, alignSelf: 'flex-end' }}>
+                        <TouchableOpacity style={{ paddingTop: 15, alignSelf: 'flex-end' }} onPress={() => (navigation.navigate("FacilityInformationEdit", { facilityINFO: facilityInfo, userEmail: userInfo.email }))}>
                           <Text style={GlobalStyles.body3}>Edit</Text>
                         </TouchableOpacity>
                         <Image
@@ -845,7 +864,9 @@ const MyPage = () => {
                       <Text style={{ ...GlobalStyles.body, marginRight: 15 }}>
                         {userInfo.account_id}
                       </Text>
-                      <Text style={GlobalStyles.body2}>Edit</Text>
+                      <TouchableOpacity onPress={() => (navigation.navigate("EditProfile", { userInfo }))}>
+                        <Text style={GlobalStyles.body2}>Edit</Text>
+                      </TouchableOpacity>
                     </View>
                     <Text style={{ ...GlobalStyles.body2, textTransform: 'none' }}>
                       {userInfo.email}
