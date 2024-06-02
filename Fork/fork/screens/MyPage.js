@@ -130,14 +130,11 @@ const MyPage = () => {
         const data = await getReports(1);
         setReviewReports(data);
 
+        console.log("review reports: ", data);
+
         const newReviewReportsProfile = {};
         for (const item of data) {
           const userInfo = await getUserByID(item.author_id);
-          if (userInfo.profile_img_uri) {
-            userInfo.profile_img_uri = await fetchImage(item.profile_img_uri);
-          } else {
-            userInfo.profile_img_uri = userImage;
-          }
           newReviewReportsProfile[item.id] = userInfo;
         }
         setReviewReportsProfiles(newReviewReportsProfile);
@@ -815,16 +812,17 @@ const MyPage = () => {
                     .map(item => (
                       <Review
                         key={item.id} // Make sure to provide a unique key prop
-                        userImage={reviewReportsProfiles[item.id]?.profile_img_uri}
-                        userName={reviewReportsProfiles[item.id]?.account_id}
+                        reviewId = {item.review_id}
+                        userID = {item.review.author_id}
                         reviewDate={item.created_at}
                         reviewScore={0}
-                        reviewImage={''}
+                        reviewImage={item.review.img_uri}
                         reviewContent={item.content}
                         reviewHashtags={[]}
                         edit={false}
                         admin={true}
                         reviewreport={item.id}
+                        navigation={navigation}
                       />
                     ))
                   }
@@ -868,10 +866,11 @@ const MyPage = () => {
                   </Text>
                   {bugReports.map(item => (
                     <Report
-                      userImage={item.userImage}
-                      userName={item.userName}
-                      reportDate={item.reportDate}
+                      userID={item.author_id}
+                      reportDate={item.created_at}
                       reportContent={item.content}
+                      reportID={item.id}
+                      navigation={navigation}
                     />
                   ))}
 

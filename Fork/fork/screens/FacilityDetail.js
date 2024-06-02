@@ -27,7 +27,10 @@ import stampImage from '../assets/icons/stamp.png';
 
 //To be deleted
 import longImagePlaceholder from '../assets/placeholders/long_image.png';
-import { addFavorite, deleteFavorite, fetchImage, getFacilityByID, getTopHashtags, getFacilityNotices, getFacilityPreferences, getFacilityStamp, getFacilityStampRuleByID, getReviewByQuery, getUserByID, isFacilityBookmarked, USERID } from './api';
+import {
+  addFavorite, deleteFavorite, fetchImage, getFacilityByID, getTopHashtags, getFacilityNotices, getFacilityPreferences, getFacilityStamp,
+  getFacilityStampRuleByID, getReviewByQuery, isFacilityBookmarked, USERID, createReview
+} from './api';
 
 const FacilityDetail = () => {
 
@@ -211,6 +214,24 @@ const FacilityDetail = () => {
     setWriteReview(!writeReview);
   }
 
+  const handleCreateReview = async () => {
+    console.log(facilityID, reviewScore, reviewContent, inputHashtag, reviewImage);
+    try {
+      if (reviewImage == '') {
+        const response = await createReview({ facilityId: facilityID, score: reviewScore, content: reviewContent, hashtags: inputHashtag });
+        console.log('Review uploaded successfully:', response);
+      }
+      else {
+        const response = await createReview({ facilityId: facilityID, score: reviewScore, content: reviewContent, hashtags: inputHashtag, imageUri: reviewImage });
+        console.log('Review uploaded successfully:', response);
+      }
+      toggleWriteReview();
+      navigation.replace("FacilityDetail", {facilityID});
+    } catch (error) {
+      console.log(error.message);
+    }
+  }
+
   const renderStars = () => {
     const stars = [];
     for (let i = 0; i < 5; i++) {
@@ -338,7 +359,7 @@ const FacilityDetail = () => {
                 style={{ ...GlobalStyles.icon, marginRight: 5 }}
                 source={require('../assets/icons/star.png')}
               />
-              <Text style={GlobalStyles.body2}>{ Math.round( facilityInfo.avg_score * 10)/10 }</Text>
+              <Text style={GlobalStyles.body2}>{Math.round(facilityInfo.avg_score * 10) / 10}</Text>
             </View>
             <View
               style={{
@@ -475,6 +496,7 @@ const FacilityDetail = () => {
                   .map(item => (
                     <Review
                       key={item.id} // Make sure to provide a unique key prop
+                      reviewId={item.id}
                       userID={item.author_id}
                       edit={USERID == item.author_id}
                       reviewDate={item.post_date}
@@ -484,6 +506,8 @@ const FacilityDetail = () => {
                       reviewHashtags={item.hashtags}
                       admin={false}
                       reviewreport={item}
+                      facilityID = {item.facility_id}
+                      navigation={navigation}
                     />
                   ))
                 }
@@ -581,7 +605,7 @@ const FacilityDetail = () => {
                   )}
                 </View>
                 <View style={{ width: '100%', justifyContent: 'flex-end', flexDirection: 'row', paddingTop: 20 }}>
-                  <TouchableOpacity>
+                  <TouchableOpacity onPress={handleCreateReview}>
                     <Text style={GlobalStyles.h4}>Send</Text>
                   </TouchableOpacity>
                 </View>

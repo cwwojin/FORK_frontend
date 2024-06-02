@@ -4,12 +4,14 @@ import { Color, GlobalStyles } from '../GlobalStyles.js';
 import Translator, {
   useTranslator,
 } from 'react-native-translator';
+import { useNavigation } from 'react-router-dom';
 
 import Hashtag from './Hashtag';
-import { deleteReport, sendReviewReport, fetchImage, getUserByID } from '../screens/api.js';
+import { deleteReport, sendReviewReport, fetchImage, getUserByID, deleteReview } from '../screens/api.js';
 import userProfilePlaceholder from '../assets/placeholders/User.png';
 
 const Review = ({
+  reviewId,
   userID,
   facilityName,
   facilityImage,
@@ -21,6 +23,8 @@ const Review = ({
   edit,
   admin,
   reviewreport,
+  navigation,
+  facilityID,
 }) => {
 
   const [reviewImages, setReviewImages] = useState();
@@ -28,7 +32,6 @@ const Review = ({
 
   useEffect(() => {
     const fetchUserProfile = async () => {
-      console.log("fetching user");
       try {
         const userInfo = await getUserByID(userID);
         if (userInfo.profile_img_uri) {
@@ -115,11 +118,35 @@ const Review = ({
       setLoading(false);
     }
   };
-
-  const deleteReview = () => { };
+  const deleteReviews = () => {
+    Alert.alert(
+      "Delete Review",
+      "Do you really want to delete this review?",
+      [
+        {
+          text: "Yes",
+          onPress: () => {
+            deleteReview(reviewId);
+            if (reviewreport) { deleteReport(reviewreport); };
+            Alert.alert(
+              "Review deleted"
+            );
+            if (!edit) { navigation.replace("MyPage"); }
+            else { navigation.replace("FacilityDetail", { facilityID }); };
+          }
+        },
+        {
+          text: "No",
+          onPress: () => { },
+          style: "cancel"
+        },
+      ],
+      { cancelable: false }
+    );
+  };
   const keepReview = () => {
     Alert.alert(
-      "Keep the Review",
+      "Keep Review",
       "Do you really want to keep this review?",
       [
         {
@@ -128,7 +155,8 @@ const Review = ({
             deleteReport(reviewreport);
             Alert.alert(
               "Review kept"
-            )
+            );
+            navigation.replace("MyPage");
           }
         },
         {
@@ -148,8 +176,8 @@ const Review = ({
         {
           text: "Yes",
           onPress: () => {
-            console.log("Report Sent");
-            sendReviewReport(reviewreport, reviewreport.id);
+            console.log("Report Sent:", reviewId);
+            sendReviewReport({ content: reviewContent, reviewId: reviewId });
             Alert.alert(
               "Report Sent"
             )
@@ -181,7 +209,7 @@ const Review = ({
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={deleteReview}>
+            onPress={deleteReviews}>
             <Image
               style={GlobalStyles.icon}
               contentFit="cover"
@@ -298,7 +326,7 @@ const Review = ({
 
       {admin && (
         <View style={{ flexDirection: 'row', justifyContent: 'flex-end', width: '100%', paddingBottom: 15 }}>
-          <TouchableOpacity onPress={deleteReview}>
+          <TouchableOpacity onPress={deleteReviews}>
             <Text style={GlobalStyles.h4}>Delete</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={keepReview}>

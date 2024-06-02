@@ -49,7 +49,7 @@ const MyReviews = () => {
   if (loading) {
     return (
       <SafeAreaView style={GlobalStyles.background}>
-        <View style={{...GlobalStyles.content, justifyContent: 'center'}}>
+        <View style={{ ...GlobalStyles.content, justifyContent: 'center' }}>
           <ActivityIndicator size="large" color={Color.orange_700} />
         </View>
       </SafeAreaView>
@@ -95,6 +95,7 @@ const MyReviews = () => {
               }}
             >
               <Review
+                reviewId={item.id}
                 facilityImage={userReviewFacility[item.facility_id]?.image}
                 facilityName={userReviewFacility[item.facility_id]?.name}
                 reviewDate={item.post_date}

@@ -51,7 +51,6 @@ const Stamp = ({
         console.log(error.message);
       }
     };
-
     if (facilityID) { fetchFacilityInfo(); };
   }, []);
 
