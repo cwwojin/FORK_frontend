@@ -77,11 +77,11 @@ const FacilityRegistrationRequest = () => {
         { index: 0, day: 'Sunday', openTime: '', closeTime: '' },
       ];
 
-      facilityInfo.openingHours.forEach(({ day, open_time, close_time }) => {
+      facilityInfo.openingHours.forEach(({ day, openTime, closeTime }) => {
         const item = newtimeData.find((entry) => entry.index === day);
         if (item) {
-          item.openTime = open_time?.slice(0, 5);
-          item.closeTime = close_time?.slice(0, 5);
+          item.openTime = openTime?.slice(0, 5);
+          item.closeTime = closeTime?.slice(0, 5);
         }
       });
 
@@ -126,6 +126,7 @@ const FacilityRegistrationRequest = () => {
             Alert.alert(
               "Registration accepted"
             );
+            navigation.goBack();
             navigation.replace("MyPage");
           }
         },
@@ -150,6 +151,7 @@ const FacilityRegistrationRequest = () => {
             Alert.alert(
               "Registration declined"
             );
+            navigation.goBack();
             navigation.replace("MyPage");
           }
         },

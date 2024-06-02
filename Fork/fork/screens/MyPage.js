@@ -8,10 +8,13 @@ import {
   TouchableOpacity,
   StyleSheet,
   TextInput,
-  Touchable,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Dropdown } from 'react-native-element-dropdown';
+import * as ImagePicker from 'expo-image-picker';
+
 
 
 import { GlobalStyles, Color, Border, FontFamily, FontSize } from '../GlobalStyles';
@@ -31,7 +34,8 @@ import userImage from '../assets/placeholders/User.png';
 import longImagePlaceholder from '../assets/placeholders/long_image.png';
 import {
   USERID, USERPREFERENCE, fetchImage, getFacilityByID, getFacilityRegistrations, getMyFacilities, getMyFacilityRegistrations, getReports, getReviewByQuery,
-  getStampBook, getUserByID, getUserFavorites, getFacilityStampRuleByID
+  getStampBook, getUserByID, getUserFavorites, getFacilityStampRuleByID,
+  createFacilityPost
 } from './api';
 
 const MyPage = () => {
@@ -107,10 +111,10 @@ const MyPage = () => {
         stampRule = newStampRule;
       }
 
-      return {stampImage: stampImage, stamp: stampRule};
+      return { stampImage: stampImage, stamp: stampRule };
     } catch (error) {
       console.log(error.message);
-      return {stampImage: require('../assets/icons/stamp.png'), stamp: []};
+      return { stampImage: require('../assets/icons/stamp.png'), stamp: [] };
     }
   };
 
@@ -262,6 +266,55 @@ const MyPage = () => {
   const toggleUpload = () => {
     setUpload(!upload);
   };
+
+  const requestMediaLibraryPermissions = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      alert('Sorry, we need camera roll permissions to make this work!');
+      return false;
+    }
+    return true;
+  };
+
+  const saveNoticeImage = async (index, type) => {
+    try {
+      const hasPermission = await requestMediaLibraryPermissions();
+      if (!hasPermission) return;
+      let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 3],
+        quality: 1,
+      });
+      console.log("Result object:", result);
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const source = { uri: result.assets[0].uri };
+        console.log("source uri : " + source.uri);
+        setNoticeImage(source.uri);
+      }
+    } catch (error) {
+      console.error('Error selecting image:', error);
+    }
+  };
+
+  const sendNotice = async () => {
+    console.log(facilityInfo.id, noticeContent, noticeImage);
+    try {
+      if (noticeImage == '') {
+        const response = await createFacilityPost({ facilityId: facilityInfo.id, content: noticeContent });
+        console.log('Review uploaded successfully:', response);
+      }
+      else {
+        const response = await createFacilityPost({ facilityId: facilityInfo.id, content: noticeContent, imageUri: noticeImage });
+        console.log('Review uploaded successfully:', response);
+      }
+      toggleUpload();
+      navigation.replace("MyPage");
+    } catch (error) {
+      console.log(error.message);
+    }
+  }
+
 
   const renderLabel = () => {
     if (value || isFocus) {
@@ -702,47 +755,48 @@ const MyPage = () => {
             </ScrollView>
           </SafeAreaView>
           {upload && (
-            <View style={styles.overlay}>
-              <View style={styles.background}>
-                <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
-                  <Text style={GlobalStyles.h2}>Upload Notice</Text>
-                  <TouchableOpacity style={{ ...GlobalStyles.topIcon, marginRight: 0 }} onPress={toggleUpload}>
-                    <Image
-                      source={require('../assets/icons/navigate_close.png')}
-                    />
-                  </TouchableOpacity>
-                </View>
-                <View style={{ width: '100%', alignItems: 'center', paddingVertical: 10 }}>
-                  <Text style={GlobalStyles.h3}>review</Text>
-                  <TouchableOpacity style={{ width: '100%', justifyContent: 'center' }} onPress={() => { }}>
-                    {noticeImage ? (
-                      <Image source={noticeImage} style={{ width: '100%' }} />
-                    ) : (
-                      <Image source={require('../assets/placeholders/long_image.png')} style={{ width: '100%', height: 144, borderRadius: Border.br_sm }} />
-                    )}
-                  </TouchableOpacity>
-                  <View style={styles.inputSection}>
-                    <Text style={GlobalStyles.h3}>description</Text>
-                    <View style={GlobalStyles.inputWrapper3}>
-                      <TextInput
-                        style={GlobalStyles.registrationInput2}
-                        onChangeText={setNoticeContent}
-                        value={noticeContent}
-                        placeholder="Review Content"
-                        multiline={true}
-                        numberOfLines={5}
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+              <View style={styles.overlay}>
+                <View style={styles.background}>
+                  <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+                    <Text style={GlobalStyles.h2}>Upload Notice</Text>
+                    <TouchableOpacity style={{ ...GlobalStyles.topIcon, marginRight: 0 }} onPress={toggleUpload}>
+                      <Image
+                        source={require('../assets/icons/navigate_close.png')}
                       />
-                    </View>
-                  </View>
-                  <View style={{ width: '100%', justifyContent: 'flex-end', flexDirection: 'row', paddingTop: 20 }}>
-                    <TouchableOpacity>
-                      <Text style={GlobalStyles.h4}>Send</Text>
                     </TouchableOpacity>
+                  </View>
+                  <View style={{ width: '100%', alignItems: 'center', paddingVertical: 10 }}>
+                    <Text style={GlobalStyles.h3}>Notice Image</Text>
+                    <TouchableOpacity style={{ width: '100%', justifyContent: 'center' }} onPress={saveNoticeImage}>
+                      {noticeImage ? (
+                        <Image source={Number.isInteger(noticeImage) ? noticeImage : { uri: noticeImage }} style={{ width: '100%', height: 140, borderRadius: Border.br_sm }} />
+                      ) : (
+                        <Image source={require('../assets/placeholders/long_image.png')} style={{ width: '100%', height: 140, borderRadius: Border.br_sm }} />
+                      )}
+                    </TouchableOpacity>
+                    <View style={styles.inputSection}>
+                      <Text style={GlobalStyles.h3}>description</Text>
+                      <View style={GlobalStyles.inputWrapper3}>
+                        <TextInput
+                          style={GlobalStyles.registrationInput2}
+                          onChangeText={setNoticeContent}
+                          value={noticeContent}
+                          placeholder="Review Content"
+                          multiline={true}
+                          numberOfLines={5}
+                        />
+                      </View>
+                    </View>
+                    <View style={{ width: '100%', justifyContent: 'flex-end', flexDirection: 'row', paddingTop: 20 }}>
+                      <TouchableOpacity onPress={sendNotice}>
+                        <Text style={GlobalStyles.h4}>Send</Text>
+                      </TouchableOpacity>
+                    </View>
                   </View>
                 </View>
               </View>
-
-            </View>
+            </TouchableWithoutFeedback>
           )}
         </>
       )
@@ -812,8 +866,8 @@ const MyPage = () => {
                     .map(item => (
                       <Review
                         key={item.id} // Make sure to provide a unique key prop
-                        reviewId = {item.review_id}
-                        userID = {item.review.author_id}
+                        reviewId={item.review_id}
+                        userID={item.review.author_id}
                         reviewDate={item.created_at}
                         reviewScore={0}
                         reviewImage={item.review.img_uri}
@@ -959,14 +1013,6 @@ const styles = StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  overlayTouchable: {
-    width: '80%',
-    height: '80%',
-    backgroundColor: 'white',
-    borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
   },

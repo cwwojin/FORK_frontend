@@ -15,8 +15,8 @@ const S3_ENDPOINT = `${API_ENDPOINT}/s3`
 // export let USERPREFERENCE = "";
 // export let USERBOOKMARKED = "";
 
-export let USERTOKEN = "foodie";
-export let USERID = 3;
+export let USERTOKEN = "facility";
+export let USERID = 2;
 export let USERPREFERENCE = [];
 
 // --------------LOGIN----------------- 
@@ -791,6 +791,48 @@ export const getFacilityNotices = async (facilityID) => {
     }
 };
 
+export const createFacilityPost = async ({facilityId, content, imageUri}) => {
+    try {
+        const formData = new FormData();
+
+        formData.append('authorId', USERID);
+        formData.append('title', "");
+        formData.append('content', content);
+
+        if (imageUri) {
+            const uriParts = imageUri.split('.');
+            const fileType = uriParts[uriParts.length - 1];
+            formData.append('image', {
+                uri: imageUri,
+                name: `photo.${fileType}`,
+                type: `image/${fileType}`,
+            });
+        }
+
+        const response = await fetch(`${BASE_URL}/facilities/${facilityId}/post`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'multipart/form-data',
+                'Authorization': USERTOKEN,
+            },
+            body: formData,
+        });
+
+        if (!response.ok) {
+            const errorData = await response.text();
+            throw new Error(`Error: ${errorData}`);
+        }
+
+        const data = await response.json();
+        console.log(data);
+        return data;
+    } catch (error) {
+        console.error('Error creating facility post:', error.Error);
+        throw error;
+    }
+};
+
+
 // --------------REVIEW-----------------
 
 export const getReviewByQuery = async (userID, facilityId, hasImage, hashtags) => {
@@ -866,7 +908,7 @@ export const deleteReview = async (reviewId) => {
     }
 };
 
-export const createReview = async ({facilityId, score, content, hashtags, imageUri}) => {
+export const createReview = async ({ facilityId, score, content, hashtags, imageUri }) => {
     console.log("?????", facilityId, score, content, hashtags, imageUri);
     try {
         const formData = new FormData();

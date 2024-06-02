@@ -684,14 +684,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  overlayTouchable: {
-    width: '80%',
-    height: '80%',
-    backgroundColor: 'white',
-    borderRadius: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   background: {
     height: '85%',
     width: '90%',
