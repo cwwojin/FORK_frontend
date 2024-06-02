@@ -489,7 +489,6 @@ const MapView = () => {
         })
       }
 
-      //console.log("facilities before filtering " + facilities + "displayed ones " + displayedFacilities);
       if (selectedCuisines.length > 0 || selectedDietaryPreferences.length > 0) {
         //console.log("selectedCuisines.length" + selectedCuisines.length);
         //console.log("selectedCuisines" + selectedCuisines);
@@ -519,6 +518,8 @@ const MapView = () => {
           return acc;
         }
       }, []);
+      console.log("facilities : " + JSON.stringify(uniqueFacilities, null, 2));
+      console.log(neLat + " " + neLng + " " + swLat + " " + swLng);
 
       if (webViewRef.current && uniqueFacilities.length > 0) {
         const { lat, lng, avg_score } = facilities[0];

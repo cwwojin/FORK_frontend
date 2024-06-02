@@ -150,17 +150,26 @@ export const registerFacility = async (facilityData, images) => {
         const url = `${FORK_URL}api/facilities/facility-requests`;
         const formData = new FormData();
 
-        const imageArray = images.map((image, index) => ({
+        images.forEach((image) => {
+            console.log("image type : "+ image.type);
+            formData.append('images', {
+                uri: image.uri.replace('file://', ''),
+                name: image.uri.split('/').pop(),
+                type: 'image/jpeg'
+            })
+        });
+
+       /*  const imageArray = images.map((image, index) => ({
             uri: image.uri,
             name: `image_${index}.jpg`,
             type: 'image/jpeg'
         }));
-        formData.append('images', imageArray);
+        formData.append('images', imageArray); */
         formData.append('authorId', facilityData.authorId);
         formData.append('title', facilityData.title);
         formData.append('content', JSON.stringify(facilityData.content));
 
-        console.log("formData : "+ JSON.stringify(formData, null, 2));
+        //console.log("formData : "+ JSON.stringify(formData, null, 2));
         const response = await fetch(url, {
             method: 'POST',
             headers: {
@@ -174,7 +183,7 @@ export const registerFacility = async (facilityData, images) => {
         }
 
         const responseData = await response.json();
-        //console.log('Facility registration request sent successfully:', responseData);
+        console.log('Facility registration request sent successfully:', responseData);
         return responseData;
     } catch (error) {
         console.error('Error registering facility:', error);
@@ -379,11 +388,11 @@ export const fetchFacilitiesInBounds = async (northEastLat, northEastLng, southW
         const response = await fetch(url, {
             method: 'GET',
             headers: {
-                'Authorization': USERTOKEN,
+                'Authorization': 'foodie',
             }
         });
-        //console.log("Response object:", response);
-        //console.log("Status:", response.status);
+        console.log("Response object:", response);
+        console.log("Status:", response.status);
 
         const jsonResponse = await response.json();
         //console.log("JSON data:", jsonResponse);

@@ -78,7 +78,7 @@ const DayHoursInput = ({ day, hours, setHours }) => {
   );
 };
 
-const API_KEY = '894c8ee198dfae892065023fefacf3ec';
+const API_KEY = '609b3e6da632a6e07f4cc1bd8a5fa05c';
 
 const FacilityInformation = ({navigation}) => {
   const route = useRoute();
@@ -137,94 +137,36 @@ const FacilityInformation = ({navigation}) => {
   };
   
   const getCoordinates = async (address) => {
-    console.log("address : " + address);
+    console.log("address: " + address);
     try {
-      const response = await axios.get('https://dapi.kakao.com/v2/local/search/address.json', {
-        headers: {
-          Authorization: `KakaoAK ${API_KEY}`
-        },
-        params: {
-          query: address
+        const response = await axios.get('https://dapi.kakao.com/v2/local/search/address.json', {
+            headers: {
+                Authorization: `KakaoAK ${API_KEY}`
+            },
+            params: {
+                query: address
+            }
+        });
+
+        const { documents } = response.data;
+        if (documents.length > 0) {
+            const { x, y } = documents[0].address || documents[0].road_address;
+            return { latitude: parseFloat(y), longitude: parseFloat(x) };
+        } else {
+            console.error('No address found');
+            return { latitude: 0, longitude: 0 };
         }
-      });
-      console.log("response : " + response );
-      const { x, y } = response.data.documents[0].address;
-      return { lat: parseFloat(y), lng: parseFloat(x) };
     } catch (error) {
-      console.error('Error fetching coordinates: ', error);
-      return { lat: 0, lng: 0 };
+        console.error('Error fetching coordinates: ', error);
+        return { latitude: 0, longitude: 0 };
     }
   };
 
-  /* const handleRegisterationRequest = async () => {
-    const { latitude, longitude } = await getCoordinates("서울특별시 중구 세종대로 110");
+  const handleRegisterationRequest = async () => {
+    console.log("In handle registration request");
+    const { latitude, longitude } = await getCoordinates(roadAddress);
     //await getCoordinates("대전 유성구 대학로 291 카이스트 학술문화관 2층");
     console.log("latitude : " + latitude + ", longitude : " + longitude);
-    const rewards = facilityInfo.stampProgram.rewards.map(reward => ({
-      name: reward.name,
-      cnt: parseInt(reward.cnt, 10) || 0
-    }));
-  
-    const totalCnt = rewards.reduce((acc, reward) => acc + reward.cnt, 0);
-  
-    const facilityData = {
-      authorId,
-      title: name,
-      content: {
-        name,
-        type: "",
-        businessId: businessRegNo,
-        phone: phoneNumber,
-        email,
-        url: websiteURL,
-        //profileImgUri: facilityImageUri,
-        description: serviceDescription,
-        address: {
-          postNumber,
-          country,
-          city,
-          roadAddress,
-          englishAddress,
-          lat: 1.0, // Change once you find how to convert a Korean address to coordinates
-          lng: 1.0 // Change once you find how to convert a Korean address to coordinates
-        },
-        openingHours: Object.keys(openingHours).map(day => {
-          const hours = openingHours[day];
-          if (hours.open !== 'Closed' && hours.close !== 'Closed' && hours.open !== '' && hours.close !== '' ) {
-            return {
-              day: dayToNumber[day],
-              open_time: hours.open,
-              close_time: hours.close
-            };
-          } 
-          return null;
-        }).filter(Boolean),
-        menu: facilityInfo.menuItems.map(item => ({
-          name: item.name,
-          description: item.serviceDescription,
-          price: item.price,
-          quantity: item.quantity
-        })),
-        preferences: [...cuisineType, ...dietaryPreferences], 
-        stampRuleset: {
-          totalCnt: totalCnt,
-          rewards: rewards
-        }
-      }
-    };
-
-    try {
-      const response = await registerFacility(facilityData);
-      console.log('Facility registration request sent successfully:', response.data);
-      navigation.navigate("PushNotification");  
-    } catch (error) {
-      Alert.alert('Error', 'Failed to send facility registration request. Please try again.');
-      console.error('Error sending facility registration request:', error);
-    }
-  }; */
-
-  const handleRegisterationRequest = async () => {
-    //const { latitude, longitude } = await getCoordinates("서울특별시 중구 세종대로 110");
     const rewards = facilityInfo.stampProgram.rewards.map(reward => ({
       name: reward.name,
       cnt: parseInt(reward.cnt, 10) || 0
@@ -250,16 +192,16 @@ const FacilityInformation = ({navigation}) => {
           city,
           roadAddress,
           englishAddress,
-          lat: 1.0,
-          lng: 1.0
+          lat: latitude,
+          lng: longitude
         },
         openingHours: Object.keys(openingHours).map(day => {
           const hours = openingHours[day];
           if (hours.open !== 'Closed' && hours.close !== 'Closed' && hours.open !== '' && hours.close !== '' ) {
             return {
               day: dayToNumber[day],
-              open_time: hours.open,
-              close_time: hours.close
+              openTime: hours.open,
+              closeTime: hours.close
             };
           } 
           return null;
@@ -288,8 +230,8 @@ const FacilityInformation = ({navigation}) => {
     if (facilityInfo.stampProgram.imageUri) images.push({ uri: facilityInfo.stampProgram.imageUri });
   
     try {
-      console.log('starting');
-      console.log("images : "+JSON.stringify(images, null, 2));
+      //console.log('starting');
+      //console.log("images : "+JSON.stringify(images, null, 2));
       const response = await registerFacility(facilityData, images);
       console.log('Facility registration request sent successfully:', JSON.stringify(response.data, null, 2));
       //navigation.navigate("PushNotification");  
@@ -385,22 +327,22 @@ const FacilityInformation = ({navigation}) => {
         const source = { uri: result.assets[0].uri };
   
         // Compress the image
-        const compressedImage = await ImageManipulator.manipulateAsync(
+        const uncompressedImage = await ImageManipulator.manipulateAsync(
           source.uri,
           [],
-          { compress: 0.5, format: ImageManipulator.SaveFormat.JPEG }
+          { compress: 1, format: ImageManipulator.SaveFormat.JPEG }
         );
   
-        console.log("Compressed image uri:", compressedImage.uri);
+        console.log("Compressed image uri:", uncompressedImage.uri);
   
         if (type === 'facility') {
-          setFacilityImageUri(compressedImage.uri);
+          setFacilityImageUri(uncompressedImage.uri);
         } else if (type === 'menu') {
           const newMenuItems = [...facilityInfo.menuItems];
-          newMenuItems[index].imageUri = compressedImage.uri;
+          newMenuItems[index].imageUri = uncompressedImage.uri;
           setFacilityInfo({ ...facilityInfo, menuItems: newMenuItems });
         } else if (type === 'stamp') {
-          const updatedStampProgram = { ...facilityInfo.stampProgram, imageUri: compressedImage.uri };
+          const updatedStampProgram = { ...facilityInfo.stampProgram, imageUri: uncompressedImage.uri };
           setFacilityInfo({ ...facilityInfo, stampProgram: updatedStampProgram });
         }
       } else {
