@@ -5,16 +5,11 @@ const API_ENDPOINT = "https://taqjpw7a54.execute-api.ap-southeast-2.amazonaws.co
 
 // Backend API endpoint
 const FORK_URL = `${API_ENDPOINT}/dev/`
-// "API_PATH": "api/users" or any other method routes
 
 // S3 endpoint
 const S3_ENDPOINT = `${API_ENDPOINT}/s3`
 
-// export let USERTOKEN = "";
-// export let USERID = "";
-// export let USERPREFERENCE = "";
 // export let USERBOOKMARKED = "";
-
 export let USERTOKEN = "foodie";
 export let USERID = 3;
 export let USERPREFERENCE = [];
@@ -122,33 +117,6 @@ export const registerUser = async (userId, password, userType, email) => {
     }
 };
 
-// export const registerFacility = async (facilityData) => {
-//     try {
-//       const url = `${FORK_URL}api/facilities/facility-requests`;
-//       const response = await fetch(url, {
-//         method: 'POST',
-//         headers: {
-//           'Content-Type': 'application/json',
-//           'Authorization': 'foodie'
-//         },
-//         body: JSON.stringify(facilityData)
-//       });
-
-//       if (!response.ok) {
-//         const errorResponse = await response.json();
-//         console.error('Error response from server in registerFacility:', errorResponse);
-//         throw new Error(errorResponse.message || 'Network response was not ok in registerFacility');
-//       }
-
-//       const data = await response.json();
-//       console.log("Facility registration request sent successfully:", JSON.stringify(data, null, 2));
-//       return data;
-//     } catch (error) {
-//       console.error('Error sending facility registration request:', error);
-//       throw error;
-//     }
-// };
-
 export const registerFacility = async (facilityData, images) => {
     try {
         const url = `${FORK_URL}api/facilities/facility-requests`;
@@ -163,21 +131,14 @@ export const registerFacility = async (facilityData, images) => {
             })
         });
 
-       /*  const imageArray = images.map((image, index) => ({
-            uri: image.uri,
-            name: `image_${index}.jpg`,
-            type: 'image/jpeg'
-        }));
-        formData.append('images', imageArray); */
         formData.append('authorId', facilityData.authorId);
         formData.append('title', facilityData.title);
         formData.append('content', JSON.stringify(facilityData.content));
 
-        //console.log("formData : "+ JSON.stringify(formData, null, 2));
         const response = await fetch(url, {
             method: 'POST',
             headers: {
-                'Authorization': 'foodie' // Do not set 'Content-Type' header for multipart/form-data
+                'Authorization': 'foodie' 
             },
             body: formData
         });
@@ -221,7 +182,7 @@ export const verifyEmail = async (userId, code) => {
         console.log("Email verified successfully : " + JSON.stringify(data, null, 2));
         return data;
     } catch (error) {
-        //console.error('Error verifying email :', error);
+        console.error('Error verifying email :', error);
         //throw error;
     }
 };
@@ -348,7 +309,6 @@ export const fetchFacilityWithName = async (facilityName, openNow = false, prefe
         if (preferences.length > 0) {
             url += `&preferences=${preferences.join(',')}`;
         }
-        //console.log("fetchFaciliyWithName " + url);
 
         const response = await fetch(url, {
             method: 'GET',
@@ -384,11 +344,11 @@ export const fetchFacilitiesInBounds = async (northEastLat, northEastLng, southW
 
 
         if (favorite) {
-            console.log("UserBookmarkedActive");
-            console.log("url : " + url);
+            //console.log("UserBookmarkedActive");
+            //console.log("url : " + url);
         } else {
-            console.log("UserBookmarkedNotActive");
-            console.log("url : " + url);
+            //console.log("UserBookmarkedNotActive");
+            //console.log("url : " + url);
         }
 
         const response = await fetch(url, {
@@ -397,17 +357,16 @@ export const fetchFacilitiesInBounds = async (northEastLat, northEastLng, southW
                 'Authorization': 'foodie',
             }
         });
-        console.log("Response object:", response);
-        console.log("Status:", response.status);
+        //console.log("Response object:", response);
+        //console.log("Status:", response.status);
 
         const jsonResponse = await response.json();
-        //console.log("JSON data:", jsonResponse);
 
         const facilitiesData = jsonResponse.data;
         if (favorite) {
-            console.log("Facilities data in favorite :", JSON.stringify(facilitiesData, null, 2));
+            //console.log("Facilities data in favorite :", JSON.stringify(facilitiesData, null, 2));
         } else {
-            console.log("Facilities data in not favorite :");
+            //console.log("Facilities data in not favorite :");
         }
 
         return facilitiesData;

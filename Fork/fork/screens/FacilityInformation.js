@@ -283,33 +283,6 @@ const FacilityInformation = ({navigation}) => {
     return true;
   };
 
-  /* const selectImage = async (index, type) => {
-    try {
-        const hasPermission = await requestMediaLibraryPermissions();
-        if (!hasPermission) return;
-        let result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsEditing: true,
-            aspect: [4, 3],
-            quality: 1,
-        });
-        console.log("Result object:", result);
-        if (!result.canceled && result.assets && result.assets.length > 0) {
-            const source = { uri: result.assets[0].uri };
-            console.log("source uri : " + source.uri);
-            if (type === 'facility') {
-                setFacilityImageUri(source.uri);
-                console.log("here");
-            } else if (type === 'stamp') {
-                updateStampProgram(index, 'imageUri', source.uri);
-            }
-        
-          }    
-    } catch (error) {
-        console.error('Error selecting image:', error);
-    }
-  }; */
-
   const selectImage = async (index, type) => {
     try {
       const hasPermission = await requestMediaLibraryPermissions();
@@ -326,23 +299,22 @@ const FacilityInformation = ({navigation}) => {
       if (!result.canceled && result.assets && result.assets.length > 0) {
         const source = { uri: result.assets[0].uri };
   
-        // Compress the image
-        const uncompressedImage = await ImageManipulator.manipulateAsync(
+        const compressedImage = await ImageManipulator.manipulateAsync(
           source.uri,
           [],
-          { compress: 1, format: ImageManipulator.SaveFormat.JPEG }
+          { compress: 0.5, format: ImageManipulator.SaveFormat.JPEG }
         );
   
-        console.log("Compressed image uri:", uncompressedImage.uri);
+        console.log("Compressed image uri:", compressedImage.uri);
   
         if (type === 'facility') {
-          setFacilityImageUri(uncompressedImage.uri);
+          setFacilityImageUri(compressedImage.uri);
         } else if (type === 'menu') {
           const newMenuItems = [...facilityInfo.menuItems];
-          newMenuItems[index].imageUri = uncompressedImage.uri;
+          newMenuItems[index].imageUri = compressedImage.uri;
           setFacilityInfo({ ...facilityInfo, menuItems: newMenuItems });
         } else if (type === 'stamp') {
-          const updatedStampProgram = { ...facilityInfo.stampProgram, imageUri: uncompressedImage.uri };
+          const updatedStampProgram = { ...facilityInfo.stampProgram, imageUri: compressedImage.uri };
           setFacilityInfo({ ...facilityInfo, stampProgram: updatedStampProgram });
         }
       } else {
@@ -369,10 +341,6 @@ const FacilityInformation = ({navigation}) => {
       [day]: hours
     }));
   };
-
-  /* useEffect(() => {
-    console.log("Updated facilityImageUri: ", facilityImageUri);
-  }, [facilityImageUri]); */
 
   return (
     <ScrollView style={styles.container}>
@@ -518,53 +486,6 @@ const FacilityInformation = ({navigation}) => {
       ))}
       <View style={styles.line}></View>
       <Text style={styles.subHeader}>MENU</Text>
-      {/* {facilityInfo.menuItems.map((item, index) => (  
-        <View key={index} style={styles.menuItem}>
-          <TouchableOpacity onPress={() => selectImage('stamp')}>
-            <Image 
-              source={facilityInfo.stampProgram.imageUri ? { uri: facilityInfo.stampProgram.imageUri } : placeholderImage} 
-              style={styles.image} 
-            />
-          </TouchableOpacity>
-          <View style={GlobalStyles.inputWrapper2}>
-            <TextInput
-              style={GlobalStyles.registrationInput1}
-              onChangeText={(text) => updateMenuItem(index, 'name', text)}
-              value={item.name}
-              placeholder="Menu Item Name"
-            />
-            <Image source={require("../assets/icons/service.png")} style={GlobalStyles.inputIcon} />
-          </View>
-          <View style={GlobalStyles.inputWrapper2}>
-            <TextInput
-              style={GlobalStyles.registrationInput1}
-              onChangeText={(text) => updateMenuItem(index, 'serviceDescription', text)}
-              value={item.serviceDescription}
-              placeholder="Service Description"
-            />
-            <Image source={require("../assets/icons/menuDescription.png")} style={GlobalStyles.inputIcon} />
-          </View>
-          <View style={GlobalStyles.inputWrapper2}>
-            <TextInput
-              style={GlobalStyles.registrationInput1}
-              onChangeText={(text) => updateMenuItem(index, 'price', text)}
-              keyboardType="numeric"
-              value={item.price}
-              placeholder="Price"
-            />
-            <Image source={require("../assets/icons/price.png")} style={GlobalStyles.inputIcon} />
-          </View>
-          <View style={GlobalStyles.inputWrapper2}>
-            <TextInput
-              style={GlobalStyles.registrationInput1}
-              onChangeText={(text) => updateMenuItem(index, 'quantity', text)}
-              value={item.quantity.toString()}
-              placeholder="Quantity"
-            />
-            <Image source={require("../assets/icons/number.png")} style={GlobalStyles.inputIcon1} />
-          </View>
-        </View>
-      ))} */}
       {facilityInfo.menuItems.map((item, index) => (
         <View key={index} style={styles.menuItem}>
           <TouchableOpacity onPress={() => selectImage(index, 'menu')}>
