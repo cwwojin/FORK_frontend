@@ -123,7 +123,7 @@ export const registerFacility = async (facilityData, images) => {
         const formData = new FormData();
 
         images.forEach((image) => {
-            console.log("image type : "+ image.type);
+            console.log("image type : " + image.type);
             formData.append('images', {
                 uri: image.uri.replace('file://', ''),
                 name: image.uri.split('/').pop(),
@@ -576,6 +576,107 @@ export const getMyFacilities = async () => {
     }
 };
 
+export const addUserPreference2 = async (preferenceId) => {
+    try {
+        console.log(preferenceId);
+        const response = await fetch(`${BASE_URL}/users/preference/${encodeURIComponent(USERID)}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': USERTOKEN
+            },
+            body: JSON.stringify({ preferenceId }),
+        });
+        const data = await response.json();
+        USERPREFERENCE = await getUserPreferences(USERID);
+        if (response.status === 201) {
+            console.log('Preference added successfully:', data);
+        } else {
+            console.error('Failed to add preference:', data);
+        }
+    } catch (error) {
+        console.error('Error adding preference:', error);
+    }
+};
+
+export const deleteUserPreference = async (preferenceId) => {
+    try {
+        const response = await fetch(`${BASE_URL}/users/preference/${encodeURIComponent(USERID)}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': USERTOKEN
+            },
+            body: JSON.stringify({ preferenceId }),
+        });
+        const data = await response.json();
+        USERPREFERENCE = await getUserPreferences(USERID);
+        if (response.status === 200) {
+            console.log('Preference removed successfully:', data);
+        } else {
+            console.error('Failed to remove preference:', data);
+        }
+    } catch (error) {
+        console.error('Error removing preference:', error);
+    }
+};
+
+export const updateUserProfile = async ({ email, password }) => {
+    try {
+        const response = await fetch(`${BASE_URL}/users/profile/${encodeURIComponent(USERID)}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': USERTOKEN
+            },
+            body: JSON.stringify({ email, password }),
+        });
+        const data = await response.json();
+        if (response.status === 201) {
+            console.log('Profile updated successfully:', data);
+        } else {
+            console.error('Failed to update profile:', data);
+        }
+    } catch (error) {
+        console.error('Error updating profile:', error);
+    }
+};
+
+export const uploadUserProfileImage = async ( imageUri ) => {
+    try {
+        const formData = new FormData();
+
+        if (imageUri) {
+            formData.append('image', {
+                uri: imageUri.replace('file://', ''),
+                name: imageUri.split('/').pop(),
+                type: 'image/jpeg'
+            });
+        }
+
+        const response = await fetch(`${BASE_URL}/users/profile/image/${encodeURIComponent(USERID)}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'multipart/form-data',
+                'Authorization': USERTOKEN,
+            },
+            body: formData,
+        });
+
+        if (!response.ok) {
+            const errorData = await response.text();
+            throw new Error(`Error: ${errorData}`);
+        }
+
+        const data = await response.json();
+        console.log(data);
+        return data;
+    } catch (error) {
+        console.error('Error creating facility post:', error.Error);
+        throw error;
+    }
+};
+
 // --------------FACILITY-----------------
 
 export const getFacilityByID = async (facilityID) => {
@@ -759,6 +860,46 @@ export const getFacilityNotices = async (facilityID) => {
     }
 };
 
+export const createFacilityPost = async ({ facilityId, content, imageUri }) => {
+    try {
+        const formData = new FormData();
+
+        formData.append('authorId', USERID);
+        formData.append('title', "");
+        formData.append('content', content);
+
+        if (imageUri) {
+            formData.append('image', {
+                uri: imageUri.replace('file://', ''),
+                name: imageUri.split('/').pop(),
+                type: 'image/jpeg'
+            });
+        }
+
+        const response = await fetch(`${BASE_URL}/facilities/${facilityId}/post`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'multipart/form-data',
+                'Authorization': USERTOKEN,
+            },
+            body: formData,
+        });
+
+        if (!response.ok) {
+            const errorData = await response.text();
+            throw new Error(`Error: ${errorData}`);
+        }
+
+        const data = await response.json();
+        console.log(data);
+        return data;
+    } catch (error) {
+        console.error('Error creating facility post:', error.Error);
+        throw error;
+    }
+};
+
+
 // --------------REVIEW-----------------
 
 export const getReviewByQuery = async (userID, facilityId, hasImage, hashtags) => {
@@ -834,8 +975,7 @@ export const deleteReview = async (reviewId) => {
     }
 };
 
-export const createReview = async ({facilityId, score, content, hashtags, imageUri}) => {
-    console.log("?????", facilityId, score, content, hashtags, imageUri);
+export const createReview = async ({ facilityId, score, content, hashtags, imageUri }) => {
     try {
         const formData = new FormData();
 
@@ -846,12 +986,10 @@ export const createReview = async ({facilityId, score, content, hashtags, imageU
         formData.append('hashtags', JSON.stringify(hashtags));
 
         if (imageUri) {
-            const uriParts = imageUri.split('.');
-            const fileType = uriParts[uriParts.length - 1];
             formData.append('image', {
-                uri: imageUri,
-                name: `photo.${fileType}`,
-                type: `image/${fileType}`,
+                uri: imageUri.replace('file://', ''),
+                name: imageUri.split('/').pop(),
+                type: 'image/jpeg'
             });
         }
 

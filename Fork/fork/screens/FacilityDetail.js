@@ -14,6 +14,8 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import ToggleSwitch from 'toggle-switch-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import QRCode from "react-qr-code";
+import * as ImageManipulator from 'expo-image-manipulator';
+
 
 import { GlobalStyles, Color, FontFamily, FontSize, Border } from '../GlobalStyles';
 import Hashtag from '../components/Hashtag';
@@ -165,8 +167,6 @@ const FacilityDetail = () => {
 
   const navigation = useNavigation();
 
-  reviewHashtags = ['🍣 Japanese Food', '🥬 Vegetarian']
-
   const [isTimeVisible, setTimeVisible] = useState(false);
   const [stamp, setStamp] = useState(false);
   const [tabState, setTabState] = useState("Menu");
@@ -226,7 +226,7 @@ const FacilityDetail = () => {
         console.log('Review uploaded successfully:', response);
       }
       toggleWriteReview();
-      navigation.replace("FacilityDetail", {facilityID});
+      navigation.replace("FacilityDetail", { facilityID });
     } catch (error) {
       console.log(error.message);
     }
@@ -257,21 +257,29 @@ const FacilityDetail = () => {
     return true;
   };
 
-  const saveReviewImage = async (index, type) => {
+  const saveReviewImage = async () => {
     try {
       const hasPermission = await requestMediaLibraryPermissions();
       if (!hasPermission) return;
       let result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
-        aspect: [4, 4],
+        aspect: [1, 1],
         quality: 1,
       });
       console.log("Result object:", result);
       if (!result.canceled && result.assets && result.assets.length > 0) {
         const source = { uri: result.assets[0].uri };
         console.log("source uri : " + source.uri);
-        setReviewImage(source.uri);
+
+        const uncompressedImage = await ImageManipulator.manipulateAsync(
+          source.uri,
+          [], // Adjust width and height as needed
+          { compress: 1, format: ImageManipulator.SaveFormat.JPEG }
+        );
+
+        console.log("Compressed image uri:", uncompressedImage.uri);
+        setReviewImage(uncompressedImage.uri);
       }
     } catch (error) {
       console.error('Error selecting image:', error);
@@ -506,7 +514,7 @@ const FacilityDetail = () => {
                       reviewHashtags={item.hashtags}
                       admin={false}
                       reviewreport={item}
-                      facilityID = {item.facility_id}
+                      facilityID={item.facility_id}
                       navigation={navigation}
                     />
                   ))
@@ -681,14 +689,6 @@ const styles = StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  overlayTouchable: {
-    width: '80%',
-    height: '80%',
-    backgroundColor: 'white',
-    borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
   },

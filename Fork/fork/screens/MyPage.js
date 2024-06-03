@@ -8,10 +8,15 @@ import {
   TouchableOpacity,
   StyleSheet,
   TextInput,
-  Touchable,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Dropdown } from 'react-native-element-dropdown';
+import * as ImagePicker from 'expo-image-picker';
+import * as ImageManipulator from 'expo-image-manipulator';
+
+
 
 
 import { GlobalStyles, Color, Border, FontFamily, FontSize } from '../GlobalStyles';
@@ -31,7 +36,8 @@ import userImage from '../assets/placeholders/User.png';
 import longImagePlaceholder from '../assets/placeholders/long_image.png';
 import {
   USERID, USERPREFERENCE, fetchImage, getFacilityByID, getFacilityRegistrations, getMyFacilities, getMyFacilityRegistrations, getReports, getReviewByQuery,
-  getStampBook, getUserByID, getUserFavorites, getFacilityStampRuleByID
+  getStampBook, getUserByID, getUserFavorites, getFacilityStampRuleByID,
+  createFacilityPost
 } from './api';
 
 const MyPage = () => {
@@ -107,10 +113,10 @@ const MyPage = () => {
         stampRule = newStampRule;
       }
 
-      return {stampImage: stampImage, stamp: stampRule};
+      return { stampImage: stampImage, stamp: stampRule };
     } catch (error) {
       console.log(error.message);
-      return {stampImage: require('../assets/icons/stamp.png'), stamp: []};
+      return { stampImage: require('../assets/icons/stamp.png'), stamp: [] };
     }
   };
 
@@ -263,6 +269,61 @@ const MyPage = () => {
     setUpload(!upload);
   };
 
+  const requestMediaLibraryPermissions = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      alert('Sorry, we need camera roll permissions to make this work!');
+      return false;
+    }
+    return true;
+  };
+
+  const saveNoticeImage = async (index, type) => {
+    try {
+      const hasPermission = await requestMediaLibraryPermissions();
+      if (!hasPermission) return;
+      let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 3],
+        quality: 1,
+      });
+      console.log("Result object:", result);
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const source = { uri: result.assets[0].uri };
+        console.log("source uri : " + source.uri);
+
+        const uncompressedImage = await ImageManipulator.manipulateAsync(
+          source.uri,
+          [],
+          { compress: 1, format: ImageManipulator.SaveFormat.JPEG }
+        );
+
+        setNoticeImage(uncompressedImage.uri);
+      }
+    } catch (error) {
+      console.error('Error selecting image:', error);
+    }
+  };
+
+  const sendNotice = async () => {
+    try {
+      if (noticeImage == '') {
+        const response = await createFacilityPost({ facilityId: facilityInfo.id, content: noticeContent });
+        console.log('Review uploaded successfully:', response);
+      }
+      else {
+        const response = await createFacilityPost({ facilityId: facilityInfo.id, content: noticeContent, imageUri: noticeImage });
+        console.log('Review uploaded successfully:', response);
+      }
+      toggleUpload();
+      navigation.replace("MyPage");
+    } catch (error) {
+      console.log(error.message);
+    }
+  }
+
+
   const renderLabel = () => {
     if (value || isFocus) {
       return (
@@ -318,7 +379,9 @@ const MyPage = () => {
                     <Text style={{ ...GlobalStyles.body, marginRight: 15 }}>
                       {userInfo.account_id}
                     </Text>
-                    <Text style={GlobalStyles.body2}>Edit</Text>
+                    <TouchableOpacity onPress={() => (navigation.navigate("EditProfile", { userInfo }))}>
+                      <Text style={GlobalStyles.body2}>Edit</Text>
+                    </TouchableOpacity>
                   </View>
                   <Text style={{ ...GlobalStyles.body2, textTransform: 'none' }}>
                     {userInfo.email}
@@ -521,7 +584,9 @@ const MyPage = () => {
                       <Text style={{ ...GlobalStyles.body, marginRight: 15 }}>
                         {userInfo.account_id}
                       </Text>
-                      <Text style={GlobalStyles.body2}>Edit</Text>
+                      <TouchableOpacity onPress={() => (navigation.navigate("EditProfile", { userInfo }))}>
+                        <Text style={GlobalStyles.body2}>Edit</Text>
+                      </TouchableOpacity>
                     </View>
                     <Text style={{ ...GlobalStyles.body2, textTransform: 'none' }}>
                       {userInfo.email}
@@ -550,36 +615,43 @@ const MyPage = () => {
                 </View>
 
                 <View style={{ width: '100%', justifyContent: 'flex-start' }}>
-                  <View style={styles.container}>
-                    {renderLabel()}
-                    <Dropdown
-                      style={[styles.dropdown, isFocus && { borderColor: Color.orange_700 }]}
-                      placeholderStyle={styles.placeholderStyle}
-                      selectedTextStyle={styles.selectedTextStyle}
-                      inputSearchStyle={styles.inputSearchStyle}
-                      iconStyle={styles.iconStyle}
-                      data={myFacilities}
-                      search
-                      maxHeight={300}
-                      labelField="name"
-                      valueField="id"
-                      placeholder={!isFocus ? 'Select facility' : '...'}
-                      searchPlaceholder="Search..."
-                      value={value}
-                      onFocus={() => setIsFocus(true)}
-                      onBlur={() => setIsFocus(false)}
-                      onChange={async (item) => {
-                        try {
-                          setValue(item.id);
-                          setFacilityInfo(item);
-                          const facilityInfoSubData = await fetchFacilityInfoSub(item);
-                          setFacilityInfoSub(facilityInfoSubData);
-                          setIsFocus(false);
-                        } catch (error) {
-                          console.error('Error fetching facility info:', error);
-                        }
-                      }}
-                    />
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingRight: 20 }}>
+                    <View style={styles.container}>
+                      {renderLabel()}
+                      <Dropdown
+                        style={[styles.dropdown, isFocus && { borderColor: Color.orange_700 }]}
+                        placeholderStyle={styles.placeholderStyle}
+                        selectedTextStyle={styles.selectedTextStyle}
+                        inputSearchStyle={styles.inputSearchStyle}
+                        iconStyle={styles.iconStyle}
+                        data={myFacilities}
+                        search
+                        maxHeight={300}
+                        labelField="name"
+                        valueField="id"
+                        placeholder={!isFocus ? 'Select facility' : '...'}
+                        searchPlaceholder="Search..."
+                        value={value}
+                        onFocus={() => setIsFocus(true)}
+                        onBlur={() => setIsFocus(false)}
+                        onChange={async (item) => {
+                          try {
+                            setValue(item.id);
+                            setFacilityInfo(item);
+                            const facilityInfoSubData = await fetchFacilityInfoSub(item);
+                            setFacilityInfoSub(facilityInfoSubData);
+                            setIsFocus(false);
+                          } catch (error) {
+                            console.error('Error fetching facility info:', error);
+                          }
+                        }}
+                      />
+                    </View>
+                    <TouchableOpacity onPress={() => {
+                      navigation.navigate("FacilityInformation", { authorId: USERID, email: userInfo.email })
+                    }}>
+                      <Text style={{ ...GlobalStyles.body3, fontSize: FontSize.size_xl, width: 20 }}>+</Text>
+                    </TouchableOpacity>
                   </View>
                   {facilityInfo && (
                     <>
@@ -610,7 +682,7 @@ const MyPage = () => {
                         </TouchableOpacity>
                       </View>
                       <View style={{ width: '100%' }}>
-                        <TouchableOpacity style={{ paddingTop: 15, alignSelf: 'flex-end' }}>
+                        <TouchableOpacity style={{ paddingTop: 15, alignSelf: 'flex-end' }} onPress={() => (navigation.navigate("FacilityInformationEdit", { facilityINFO: facilityInfo, userEmail: userInfo.email }))}>
                           <Text style={GlobalStyles.body3}>Edit</Text>
                         </TouchableOpacity>
                         <Image
@@ -702,47 +774,48 @@ const MyPage = () => {
             </ScrollView>
           </SafeAreaView>
           {upload && (
-            <View style={styles.overlay}>
-              <View style={styles.background}>
-                <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
-                  <Text style={GlobalStyles.h2}>Upload Notice</Text>
-                  <TouchableOpacity style={{ ...GlobalStyles.topIcon, marginRight: 0 }} onPress={toggleUpload}>
-                    <Image
-                      source={require('../assets/icons/navigate_close.png')}
-                    />
-                  </TouchableOpacity>
-                </View>
-                <View style={{ width: '100%', alignItems: 'center', paddingVertical: 10 }}>
-                  <Text style={GlobalStyles.h3}>review</Text>
-                  <TouchableOpacity style={{ width: '100%', justifyContent: 'center' }} onPress={() => { }}>
-                    {noticeImage ? (
-                      <Image source={noticeImage} style={{ width: '100%' }} />
-                    ) : (
-                      <Image source={require('../assets/placeholders/long_image.png')} style={{ width: '100%', height: 144, borderRadius: Border.br_sm }} />
-                    )}
-                  </TouchableOpacity>
-                  <View style={styles.inputSection}>
-                    <Text style={GlobalStyles.h3}>description</Text>
-                    <View style={GlobalStyles.inputWrapper3}>
-                      <TextInput
-                        style={GlobalStyles.registrationInput2}
-                        onChangeText={setNoticeContent}
-                        value={noticeContent}
-                        placeholder="Review Content"
-                        multiline={true}
-                        numberOfLines={5}
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+              <View style={styles.overlay}>
+                <View style={styles.background}>
+                  <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+                    <Text style={GlobalStyles.h2}>Upload Notice</Text>
+                    <TouchableOpacity style={{ ...GlobalStyles.topIcon, marginRight: 0 }} onPress={toggleUpload}>
+                      <Image
+                        source={require('../assets/icons/navigate_close.png')}
                       />
-                    </View>
-                  </View>
-                  <View style={{ width: '100%', justifyContent: 'flex-end', flexDirection: 'row', paddingTop: 20 }}>
-                    <TouchableOpacity>
-                      <Text style={GlobalStyles.h4}>Send</Text>
                     </TouchableOpacity>
+                  </View>
+                  <View style={{ width: '100%', alignItems: 'center', paddingVertical: 10 }}>
+                    <Text style={GlobalStyles.h3}>Notice Image</Text>
+                    <TouchableOpacity style={{ width: '100%', justifyContent: 'center' }} onPress={saveNoticeImage}>
+                      {noticeImage ? (
+                        <Image source={Number.isInteger(noticeImage) ? noticeImage : { uri: noticeImage }} style={{ width: '100%', height: 140, borderRadius: Border.br_sm }} />
+                      ) : (
+                        <Image source={require('../assets/placeholders/long_image.png')} style={{ width: '100%', height: 140, borderRadius: Border.br_sm }} />
+                      )}
+                    </TouchableOpacity>
+                    <View style={styles.inputSection}>
+                      <Text style={GlobalStyles.h3}>description</Text>
+                      <View style={GlobalStyles.inputWrapper3}>
+                        <TextInput
+                          style={GlobalStyles.registrationInput2}
+                          onChangeText={setNoticeContent}
+                          value={noticeContent}
+                          placeholder="Review Content"
+                          multiline={true}
+                          numberOfLines={5}
+                        />
+                      </View>
+                    </View>
+                    <View style={{ width: '100%', justifyContent: 'flex-end', flexDirection: 'row', paddingTop: 20 }}>
+                      <TouchableOpacity onPress={sendNotice}>
+                        <Text style={GlobalStyles.h4}>Send</Text>
+                      </TouchableOpacity>
+                    </View>
                   </View>
                 </View>
               </View>
-
-            </View>
+            </TouchableWithoutFeedback>
           )}
         </>
       )
@@ -791,7 +864,9 @@ const MyPage = () => {
                       <Text style={{ ...GlobalStyles.body, marginRight: 15 }}>
                         {userInfo.account_id}
                       </Text>
-                      <Text style={GlobalStyles.body2}>Edit</Text>
+                      <TouchableOpacity onPress={() => (navigation.navigate("EditProfile", { userInfo }))}>
+                        <Text style={GlobalStyles.body2}>Edit</Text>
+                      </TouchableOpacity>
                     </View>
                     <Text style={{ ...GlobalStyles.body2, textTransform: 'none' }}>
                       {userInfo.email}
@@ -812,8 +887,8 @@ const MyPage = () => {
                     .map(item => (
                       <Review
                         key={item.id} // Make sure to provide a unique key prop
-                        reviewId = {item.review_id}
-                        userID = {item.review.author_id}
+                        reviewId={item.review_id}
+                        userID={item.review.author_id}
                         reviewDate={item.created_at}
                         reviewScore={0}
                         reviewImage={item.review.img_uri}
@@ -959,14 +1034,6 @@ const styles = StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  overlayTouchable: {
-    width: '80%',
-    height: '80%',
-    backgroundColor: 'white',
-    borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
   },
