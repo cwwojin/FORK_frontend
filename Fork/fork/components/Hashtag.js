@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet } from 'react-native';
-import { Border ,Color, GlobalStyles } from '../GlobalStyles.js';
+import { Border, Color, GlobalStyles } from '../GlobalStyles.js';
 
-const Hashtag = ({ tag }) => {
+const Hashtag = ({ tag, tintColor }) => {
 
   const preferences = [
     { id: 1, type: 0, name: 'Korean', icon: require('../assets/icons/attributes/korean.png') },
@@ -23,17 +23,19 @@ const Hashtag = ({ tag }) => {
     { id: 17, type: 1, name: 'Gluten-Free', icon: require('../assets/icons/attributes/glutenfree.png') },
   ];
 
-    // Check if tag is an integer within the range of 0 to 17
-    if (Number.isInteger(tag) && tag >= 0 && tag <= 17) {
-      // Find the corresponding name from the preferences array
-      const tagName = preferences[tag].name;
-      // Assign the tagName to the tag variable
-      tag = tagName;
-    }
+  // Check if tag is an integer within the range of 0 to 17
+  if (Number.isInteger(tag) && tag >= 0 && tag <= 17) {
+    // Find the corresponding name from the preferences array
+    const tagName = preferences[tag].name;
+    // Assign the tagName to the tag variable
+    tag = tagName;
+  }
 
 
   return (
-    <View style={styles.hashtagHolder}>
+    <View style={{
+      ...styles.hashtagHolder, backgroundColor: tintColor ? tintColor : Color.yellow_100,
+   }}>
       <Text
         style={GlobalStyles.hashtag}
         numberOfLines={1}
@@ -46,7 +48,6 @@ const Hashtag = ({ tag }) => {
 
 const styles = StyleSheet.create({
   hashtagHolder: {
-    backgroundColor: Color.yellow_100,
     padding: 10,
     paddingHorizontal: 20,
     alignItems: 'center',
