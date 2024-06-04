@@ -215,10 +215,10 @@ const FacilityRegistrationRequest = () => {
             />
             <View style={{ justifyContent: 'center' }}>
               <Text style={{ ...GlobalStyles.body, marginRight: 15 }}>
-                {userInfo.account_id}
+                {userInfo.business_i}
               </Text>
               <Text style={{ ...GlobalStyles.body2, textTransform: 'none' }}>
-                {userInfo.email}
+                {facilityInfo.email}
               </Text>
             </View>
           </View>

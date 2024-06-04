@@ -119,17 +119,7 @@ const Settings = () => {
     toggleReport();
     setReportContent('');
   };
-
-  if (loading) {
-    return (
-      <SafeAreaView style={GlobalStyles.background}>
-        <View style={GlobalStyles.content}>
-          <Text>Loading...</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
+  
   return (
     <SafeAreaView style={GlobalStyles.background}>
       <View style={GlobalStyles.content}>

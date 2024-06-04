@@ -43,7 +43,7 @@ const FacilityDetail = () => {
   const [facilityInfo, setFacilityInfo] = useState({});
   const [reviewList, setReviewList] = useState('');
   const [stampRule, setStampRule] = useState([]);
-  const [stampLogo, setStampLogo] = useState(stampImage);
+  const [stampLogo, setStampLogo] = useState("");
   const [myStamp, setMyStamp] = useState(0);
   const [preferences, setPreferences] = useState('');
   const [bookmarked, setBookmarked] = useState(false);
@@ -640,15 +640,15 @@ const FacilityDetail = () => {
                 <>
                   <View style={{ width: '80%', aspectRatio: 1, padding: 30 }}>
                     <QRCode
-                      size={'100%'}
+                      size={180}
                       style={{ maxWidth: "100%", width: "100%" }}
-                      value={USERID}
+                      value={Number(USERID)}
                     />
                   </View>
                   <Stamp
                     number={myStamp}
                     stamp={stampRule}
-                    stampImage={stampLogo}
+                    stampImage={stampLogo ? { uri: stampLogo } : ""}
                   />
                 </>
               }

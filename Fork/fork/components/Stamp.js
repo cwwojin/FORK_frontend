@@ -75,7 +75,7 @@ const Stamp = ({
         {stampRule.map((item, index) => (
           <View key={index} style={{ width: '20%', height: 100, alignItems: 'center' }}>
             <Image
-              source={stampLogo}
+              source={stampLogo ? stampLogo : stampImage}
               style={{
                 ...styles.stamp,
                 tintColor: index >= number ? Color.darkgray : null,

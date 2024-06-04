@@ -61,6 +61,7 @@ const MyPage = () => {
   const [myFacilities, setMyFacilities] = useState([]);
   const [facilityInfo, setFacilityInfo] = useState();
   const [facilityInfoSub, setFacilityInfoSub] = useState();
+
   const fetchFacilityInfoSub = async (data) => {
     try {
       const newtimeData = [
@@ -73,21 +74,30 @@ const MyPage = () => {
         { index: 0, day: 'Sunday', openTime: '', closeTime: '' },
 
       ];
-      data.opening_hours.forEach(({ day, open_time, close_time }) => {
-        const item = newtimeData.find(entry => entry.index === day);
-        if (item) {
-          item.openTime = open_time.slice(0, 5);  // Remove seconds
-          item.closeTime = close_time.slice(0, 5); // Remove seconds
-        }
-      });
+      console.log("data opening", data.opening_hours)
+      if (!(data.opening_hours.length === 1 && data.opening_hours[0] === null)) {
+
+        data.opening_hours?.forEach(({ day, open_time, close_time }) => {
+          const item = newtimeData.find(entry => entry.index === day);
+          if (item) {
+            item.openTime = open_time.slice(0, 5);  // Remove seconds
+            item.closeTime = close_time.slice(0, 5); // Remove seconds
+          }
+        });
+      }
+
 
       const stamps = await fetchFacilityInfoSubStamp(data.id);
+      console.log("stamps: ", stamps);
+
+      const imageUrl = data.profile_img_uri ? await fetchImage(data.profile_img_uri) : longImagePlaceholder;
+
 
       if (data.profile_img_uri) {
         const imageUrl = await fetchImage(data.profile_img_uri);
-        return { timeData: newtimeData, stamp: stamps.stamp, stampImage: stamps.stampImage, profileImage: (imageUrl != undefined) ? { uri: imageUrl } : longImagePlaceholder };
+        setFacilityInfoSub({ timeData: newtimeData, stamp: stamps.stamp, stampImage: stamps.stampImage, profileImage: (imageUrl != undefined) ? { uri: imageUrl } : longImagePlaceholder });
       } else {
-        return { timeData: newtimeData, stamp: stamps.stamp, stampImage: stamps.stampImage, profileImage: longImagePlaceholder };
+        setFacilityInfoSub({ timeData: newtimeData, stamp: stamps.stamp, stampImage: stamps.stampImage, profileImage: longImagePlaceholder });
       }
     } catch (error) {
       console.log(error.message);
@@ -96,24 +106,46 @@ const MyPage = () => {
   const fetchFacilityInfoSubStamp = async (id) => {
     try {
       const stamps = await getFacilityStampRuleByID(id);
-      let stampImage = require('../assets/icons/stamp.png');
+      console.log("real stamps: ", stamps);
+      let stampImage = "";
       let stampRule = [];
-      console.log("stamps: ", stamps);
       if (stamps.logo_img_uri) {
         const stampImages = await fetchImage(stamps.logo_img_uri);
-        if (stampImages != undefined) { stampImage = { uri: stampImages } };
-      }
+        if (stampImages != undefined) {
+          stampImage = stampImages
+          if (stamps.rewards) {
+            const maxCnt = Math.max(...stamps.rewards.map(reward => reward.cnt));
+            const newStampRule = Array(maxCnt).fill('');
+            stamps.rewards.forEach(reward => {
+              newStampRule[reward.cnt - 1] = reward?.name;
+            });
+            stampRule = newStampRule;
+            console.log("StampRule: ", stampRule)
+            return { stampImage: stampImage, stamp: stampRule };
+          } else {
+            return { stampImage: stampImage, stamp: stampRule };
+          }
+        } else {
+          return { stampImage: stampImage, stamp: stampRule };
+        };
+      } else {
 
-      if (stamps.rewards) {
-        const maxCnt = Math.max(...stamps.rewards.map(reward => reward.cnt));
-        const newStampRule = Array(maxCnt).fill('');
-        stamps.rewards.forEach(reward => {
-          newStampRule[reward.cnt - 1] = reward?.name;
-        });
-        stampRule = newStampRule;
-      }
+        if (stamps.rewards) {
+          const maxCnt = Math.max(...stamps.rewards.map(reward => reward.cnt));
+          const newStampRule = Array(maxCnt).fill('');
+          stamps.rewards.forEach(reward => {
+            console.log("reading rewards")
+            newStampRule[reward.cnt - 1] = reward?.name;
+          });
+          stampRule = newStampRule;
+          console.log("StampRule: ", newStampRule)
 
-      return { stampImage: stampImage, stamp: stampRule };
+          return { stampImage: stampImage, stamp: stampRule };
+        } else {
+          return { stampImage: stampImage, stamp: stampRule };
+        }
+
+      }
     } catch (error) {
       console.log(error.message);
       return { stampImage: require('../assets/icons/stamp.png'), stamp: [] };
@@ -218,7 +250,6 @@ const MyPage = () => {
       try {
         const data = await getMyFacilities();
         setMyFacilities(data);
-        console.log("??????", data);
       } catch (error) {
         console.log(error.message);
       }
@@ -397,7 +428,7 @@ const MyPage = () => {
                   marginTop: 10,
                 }}>
                 {USERPREFERENCE && USERPREFERENCE.map(item => (
-                  <Hashtag tag={item.name} />
+                  <Hashtag key={item.id} tag={item.name} />
                 ))}
               </View>
 
@@ -638,8 +669,9 @@ const MyPage = () => {
                           try {
                             setValue(item.id);
                             setFacilityInfo(item);
-                            const facilityInfoSubData = await fetchFacilityInfoSub(item);
-                            setFacilityInfoSub(facilityInfoSubData);
+                            setFacilityInfoSub();
+                            await fetchFacilityInfoSub(item);
+                            console.log("facilityinfosub is: ", facilityInfoSub);
                             setIsFocus(false);
                           } catch (error) {
                             console.error('Error fetching facility info:', error);
@@ -648,7 +680,7 @@ const MyPage = () => {
                       />
                     </View>
                     <TouchableOpacity onPress={() => {
-                      navigation.navigate("FacilityInformation", { authorId: USERID, email: userInfo.email })
+                      navigation.navigate("FacilityInformation", { authorId: USERID })
                     }}>
                       <Text style={{ ...GlobalStyles.body3, fontSize: FontSize.size_xl, width: 20 }}>+</Text>
                     </TouchableOpacity>
@@ -717,6 +749,7 @@ const MyPage = () => {
                       <View style={{ flexDirection: 'row', paddingTop: 5, width: '100%', paddingBottom: 20 }}>
                         {facilityInfo?.preferences?.map(item => (
                           <Hashtag
+                            key={item.id}
                             tag={item}
                           />
                         ))}
@@ -760,11 +793,16 @@ const MyPage = () => {
 
                       <View style={{ width: '100%' }}>
                         <Text style={GlobalStyles.h2}>Stamps</Text>
-                        <Stamp
-                          stamp={facilityInfoSub?.stamp}
-                          stampImage={facilityInfoSub?.stampImage}
-                          number={facilityInfoSub?.stamp?.length}
-                        />
+                        {!facilityInfoSub?.stamp ? (
+                          <Text style={{ textAlign: 'center' }}>Stamp not created</Text>
+                        ) : (
+                          <Stamp
+                            stamp={facilityInfoSub?.stamp}
+                            stampImage={facilityInfoSub?.stampImage ? {uri: facilityInfoSub?.stampImage} : ""}
+                            number={facilityInfoSub?.stamp?.length}
+                          />
+                        )}
+
                       </View>
                     </>
                   )}
