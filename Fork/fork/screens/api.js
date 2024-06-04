@@ -11,11 +11,11 @@ const FORK_URL = `${API_ENDPOINT}/dev/`
 // S3 endpoint
 const S3_ENDPOINT = `${API_ENDPOINT}/s3`
 
-// export let USERBOOKMARKED = "";
-export let USERTOKEN = "kaist";
-export let USERID = "1";
+export let USERBOOKMARKED = "";
+export let USERTOKEN = "guest";
+export let USERID = "";
 export let USERPREFERENCE = [];
-export let USERTYPE = 1;
+export let USERTYPE = '';
 
 // --------------LOGIN----------------- 
 
