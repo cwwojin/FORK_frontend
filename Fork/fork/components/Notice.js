@@ -1,7 +1,10 @@
-import { Image, View, Text, StyleSheet } from 'react-native';
+import { Image, View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { Color, GlobalStyles } from '../GlobalStyles.js';
 import { useState, useEffect } from 'react';
 import { fetchImage } from '../screens/api.js';
+import Translator, {
+  useTranslator,
+} from 'react-native-translator';
 
 const Notice = ({
   facilityImage,
@@ -19,6 +22,7 @@ const Notice = ({
   useEffect(() => {
     const fetchNoticeImage = async () => {
       try {
+        console.log(noticeImage);
         const imageUrl = await fetchImage(noticeImage);
         if (imageUrl != undefined) {
           setNoticeImages(imageUrl);
@@ -27,12 +31,40 @@ const Notice = ({
         console.log(error.message);
       };
     }
-    if (noticeImage != "") { 
-      fetchNoticeImage(); };
+    if (noticeImage != "") {
+      fetchNoticeImage();
+    };
   }, []);
+
+  const { translate } = useTranslator();
+  const [result, setResult] = useState(noticeContent);
+
+  const onTranslate = async () => {
+    try {
+      const _result = await translate('en', 'kr', noticeContent, {
+        timeout: 5000,
+      });
+      setResult(_result);
+    } catch (error) {
+      Alert.alert('Translate error!');
+      console.error('Translation error:', error);
+    }
+  };
 
   return (
     <View style={{ width: '100%', alignItems: 'center' }}>
+      <View
+        style={{
+          width: '95%',
+          flexDirection: 'row',
+          justifyContent: 'flex-end',
+        }}>
+        <TouchableOpacity onPress={onTranslate}>
+          <Text style={{ ...GlobalStyles.body2, marginRight: 12 }}>
+            Translate
+          </Text>
+        </TouchableOpacity>
+      </View>
       <View
         style={{
           flexDirection: 'row',
@@ -61,7 +93,7 @@ const Notice = ({
         </Text>
       </View>
 
-      {(noticeImage != '') && (
+      {(noticeImages) && (
         <Image
           style={GlobalStyles.longImage}
           contentFit="cover"
@@ -75,7 +107,7 @@ const Notice = ({
         />
       )}
       <Text style={{ ...GlobalStyles.body4, width: '97%', marginBottom: 18 }}>
-        {noticeContent}
+        {result}
       </Text>
       <View
         style={{

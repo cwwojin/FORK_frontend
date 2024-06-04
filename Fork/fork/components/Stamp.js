@@ -78,7 +78,7 @@ const Stamp = ({
               source={stampLogo ? stampLogo : stampImage}
               style={{
                 ...styles.stamp,
-                tintColor: index >= number ? Color.darkgray : null,
+                opacity: index >= number ? 0.2 : 1,
               }}
             />
             <Text style={{ textAlign: 'center' }}>{item}</Text>

@@ -118,6 +118,7 @@ const Review = ({
       setLoading(false);
     }
   };
+  
   const deleteReviews = () => {
     Alert.alert(
       "Delete Review",
@@ -295,7 +296,7 @@ const Review = ({
           justifyContent: 'flex-start',
           paddingTop: 5,
         }}>
-        {reviewImage && (
+        {reviewImages && (
           <Image
             style={GlobalStyles.squareImage2}
             contentFit="cover"

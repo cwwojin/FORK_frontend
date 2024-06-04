@@ -43,7 +43,7 @@ import {
 const MyPage = () => {
   //Get Informations of facilities
 
-  const [userType, setUserType] = useState(0);
+  const [userType, setUserType] = useState();
   const [userInfo, setUserInfo] = useState('');
   const [userProfile, setUserProfile] = useState(userImage);
   const [userFavorite, setUserFavorite] = useState([]);
@@ -283,7 +283,7 @@ const MyPage = () => {
         console.log(error.message);
       }
     };
-    fetchUser(USERID);
+    if (USERID) { fetchUser(USERID) };
   }, []);
 
   console.log(userInfo);
@@ -341,16 +341,19 @@ const MyPage = () => {
     try {
       if (noticeImage == '') {
         const response = await createFacilityPost({ facilityId: facilityInfo.id, content: noticeContent });
-        console.log('Review uploaded successfully:', response);
+        console.log('Notice uploaded successfully:', response);
+        Alert.alert("Notice upload successful!")
       }
       else {
         const response = await createFacilityPost({ facilityId: facilityInfo.id, content: noticeContent, imageUri: noticeImage });
-        console.log('Review uploaded successfully:', response);
+        console.log('Notice uploaded successfully:', response);
+        Alert.alert("Notice upload successful!")
       }
       toggleUpload();
       navigation.replace("MyPage");
     } catch (error) {
       console.log(error.message);
+      Alert.alert("Notice upload failed. Please try again");
     }
   }
 
@@ -368,6 +371,45 @@ const MyPage = () => {
 
   return (
     <>
+      {/* -----------------GUEST User---------------------- */}
+      {(!userType) && (
+        <SafeAreaView style={GlobalStyles.background}>
+          <View style={GlobalStyles.content}>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                marginTop: -27,
+                paddingBottom: 10,
+              }}>
+              <Text style={GlobalStyles.h1}>My Page</Text>
+              <TouchableOpacity onPress={() => {
+                navigation.navigate("Settings", {
+                  userName: userInfo.account_id,
+                  userProfile: userProfile,
+                  userEmail: userInfo.email
+                });
+              }}>
+                <Image
+                  style={GlobalStyles.topIcon}
+                  source={require('../assets/icons/setting.png')}
+                />
+              </TouchableOpacity>
+            </View>
+            <View
+              style={{
+                flex: 1,
+                justifyContent: 'center',
+                alignItems: 'center',
+                marginTop: 10,
+              }}>
+              <Image source={require('../assets/logos/coloredLogo.png')} style={{ height: 80, width: 80 }} />
+              <Text style={{ ...GlobalStyles.h4, textAlign: 'center', padding: 20 }}>Please Login for more</Text>
+            </View>
+          </View>
+        </SafeAreaView>
+      )}
+
       {/* -----------------KAIST User---------------------- */}
       {(userType == 1) && (
         <SafeAreaView style={GlobalStyles.background}>
@@ -745,6 +787,13 @@ const MyPage = () => {
                           />
                           <Text style={{ ...GlobalStyles.body2, paddingHorizontal: 5 }}>{facilityInfo?.phone}</Text>
                         </View>
+                        <View style={{ flexDirection: 'row' }}>
+                          <Image
+                            style={GlobalStyles.icon}
+                            source={require('../assets/icons/url.png')}
+                          />
+                          <Text style={{ ...GlobalStyles.body2, textTransform: 'none', paddingHorizontal: 5 }}>{facilityInfo?.url}</Text>
+                        </View>
                       </View>
                       <View style={{ flexDirection: 'row', paddingTop: 5, width: '100%', paddingBottom: 20 }}>
                         {facilityInfo?.preferences?.map(item => (
@@ -785,6 +834,7 @@ const MyPage = () => {
                                 menuDescription={item.description}
                                 menuPrice={item.price}
                                 menuImage={item.img_uri}
+                                menuQuantity={item.quantity}
                               />
                             )}
                           </>
@@ -798,7 +848,7 @@ const MyPage = () => {
                         ) : (
                           <Stamp
                             stamp={facilityInfoSub?.stamp}
-                            stampImage={facilityInfoSub?.stampImage ? {uri: facilityInfoSub?.stampImage} : ""}
+                            stampImage={facilityInfoSub?.stampImage ? { uri: facilityInfoSub?.stampImage } : ""}
                             number={facilityInfoSub?.stamp?.length}
                           />
                         )}

@@ -12,8 +12,8 @@ const FORK_URL = `${API_ENDPOINT}/dev/`
 const S3_ENDPOINT = `${API_ENDPOINT}/s3`
 
 // export let USERBOOKMARKED = "";
-export let USERTOKEN = "foodie";
-export let USERID = 3;
+export let USERTOKEN = "facility";
+export let USERID = "2";
 export let USERPREFERENCE = [];
 
 // --------------LOGIN----------------- 
@@ -1329,6 +1329,26 @@ export const deleteFacilityMenu = async ({facilityID, menuID}) => {
         return data.data;
     } catch (error) {
         console.error('Error deleting facility menu:', error);
+        throw error;
+    }
+};
+
+export const getSummaryReview = async (facilityID) => {
+    try {
+        const response = await fetch(`${BASE_URL}/reviews/summary/${facilityID}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': USERTOKEN
+            }
+        });
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        return data.data;
+    } catch (error) {
+        console.error('Error fetching facility registrations:', error);
         throw error;
     }
 };
