@@ -51,6 +51,7 @@ const Stack = createStackNavigator();
 
 const App = () => {
   const [isReady, setIsReady] = useState(false);
+  const [language, setLanguage] = useState('en');
 
   useEffect(() => {
     const loadLanguagePreference = async () => {
@@ -63,8 +64,9 @@ const App = () => {
     loadLanguagePreference();
   }, []);
 
-  const setLanguage = async (lang) => {
+  const changeLanguage = async (lang) => {
     await AsyncStorage.setItem('user-language', lang);
+    setLanguage(lang);
   };
 
   if (!isReady) {
@@ -73,10 +75,14 @@ const App = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <TranslatorProvider translations={{
-        en: require('./locales/en.json'),
-        ko: require('./locales/ko.json')
-      }}>
+      <TranslatorProvider
+        translations={{
+          en: require('./locales/en.json'),
+          ko: require('./locales/ko.json')
+        }}
+        language={language}
+        fallback="en"
+      >
         <NavigationContainer>
           <View style={styles.container}>
             <StatusBar style="auto" />
@@ -84,7 +90,7 @@ const App = () => {
               screenOptions={{
                 headerShown: false,
               }}
-              initialRouteName="Home"
+              initialRouteName="MapView"
             >
               <Stack.Screen name="SignUpLogIn" component={SignUpLogIn} />
               <Stack.Screen name="UserType" component={UserType} />

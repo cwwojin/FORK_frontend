@@ -11,6 +11,7 @@ import { fetchFacilityWithName, fetchFacilitiesInBounds, getParsedUserPreference
 import { FacilityDetails } from './MapViewFunctions';
 import { isOpenNow } from './MapViewFunctions';
 import * as Location from 'expo-location';
+import { getLanguageToken, getAllTranslations } from '../LanguageUtils';
 
 const MapView = () => {
   const navigation = useNavigation();
@@ -24,7 +25,6 @@ const MapView = () => {
   const [mapZoom, setMapZoom] = useState(3); 
   const [filterExpanded, setFilterExpanded] = useState(false);
   const [userPreferencesActive, setUserPreferencesActive] = useState(false);
-  //const [userBookmarkedActive, setUserBookmarkedActive] = useState(false);
   const userBookmarkedActive = useRef(false);
 
 
@@ -57,10 +57,31 @@ const MapView = () => {
     { id: 13, name: 'Vegan', typeIcon: require('../assets/icons/attributes/salad.png')  },
     { id: 14, name: 'Pescatarian', typeIcon: require('../assets/icons/attributes/pescatarian.png')  },
     { id: 15, name: 'Halal', typeIcon: require('../assets/icons/attributes/halal.png')  },
-    { id: 16, name: 'Lactose-Free', typeIcon: require('../assets/icons/attributes/lactosefree.png')  },
-    { id: 17, name: 'Gluten-Free', typeIcon: require('../assets/icons/attributes/glutenfree.png')  },
+    { id: 16, name: 'LactoseFree', typeIcon: require('../assets/icons/attributes/lactosefree.png')  },
+    { id: 17, name: 'GlutenFree', typeIcon: require('../assets/icons/attributes/glutenfree.png')  },
   ];
   
+  const [translations, setTranslations] = useState({
+    filter: '',
+    openFacilitiesOnly: '',
+    allFacilities: '',
+    enterFacilityName: '',
+    cuisineType: '',
+    dietaryPreference: '',
+    loadingFacilities: '',
+    enterFacilityName: '',
+    cuisines: {},
+    dietaryPreferences: {},
+  });
+
+  useEffect(() => {
+    const fetchTranslations = async () => {
+      const fetchedTranslations = await getAllTranslations();
+      setTranslations(fetchedTranslations);
+    };
+    fetchTranslations();
+  }, []);
+
   const handleSelectCuisine = (cuisine) => {
     setSelectedCuisines(prev => {
       const newCuisines = prev.includes(cuisine) ? prev.filter(item => item !== cuisine) : [...prev, cuisine];
@@ -107,40 +128,40 @@ const MapView = () => {
     const newActiveState = !userPreferencesActive;
     setUserPreferencesActive(newActiveState);
     if (newActiveState) {
-      console.log("Preferences active");
+      //console.log("Preferences active");
       const preferences = getParsedUserPreferences();
-      console.log("Parsed preferences (IDs):", preferences);
+      //console.log("Parsed preferences (IDs):", preferences);
       
     // Log each step in the filtering process
     const newSelectedCuisines = preferences.filter(pref => {
       const matched = cuisines.some(c => c.id === pref);
-      console.log(`Checking cuisine ID ${pref}: ${matched}`);
+      //console.log(`Checking cuisine ID ${pref}: ${matched}`);
       return matched;
     });
     
     const newSelectedDietaryPreferences = preferences.filter(pref => {
       const matched = dietaryPreferences.some(d => d.id === pref);
-      console.log(`Checking dietary preference ID ${pref}: ${matched}`);
+      //console.log(`Checking dietary preference ID ${pref}: ${matched}`);
       return matched;
     });
       
       setSelectedCuisines(newSelectedCuisines);
       setSelectedDietaryPreferences(newSelectedDietaryPreferences);
       
-      console.log("New selected cuisines:", newSelectedCuisines);
-      console.log("New selected dietary preferences:", newSelectedDietaryPreferences);
+      //console.log("New selected cuisines:", newSelectedCuisines);
+      //console.log("New selected dietary preferences:", newSelectedDietaryPreferences);
     } else {
-      console.log("Preferences not active");
+      //console.log("Preferences not active");
       setSelectedCuisines([]);
       setSelectedDietaryPreferences([]);
     }
   };
 
   const handleToggleBookmarked = () => {
-    console.log("In handleToggleBookmarked");
+    //console.log("In handleToggleBookmarked");
     newActiveState = !userBookmarkedActive.current;
     userBookmarkedActive.current = newActiveState;
-    console.log("new userBookmarkedActive" + userBookmarkedActive.current);
+    //console.log("new userBookmarkedActive" + userBookmarkedActive.current);
     fetchAndUpdateFacilities(searchQuery, neLat, neLng, swLat, swLng);
   };
   
@@ -478,7 +499,7 @@ const MapView = () => {
           const result = await fetchFacilityWithName(searchQuery, showOnlyOpen);
           facilities = result || [];
       } else if (neLat && neLng && swLat && swLng) {
-          console.log("userBookmarkedActive : "+userBookmarkedActive.current);
+          //console.log("userBookmarkedActive : "+userBookmarkedActive.current);
           facilities = await fetchFacilitiesInBounds(neLat, neLng, swLat, swLng, userBookmarkedActive.current);
         }
 
@@ -518,8 +539,8 @@ const MapView = () => {
           return acc;
         }
       }, []);
-      console.log("facilities : " + JSON.stringify(uniqueFacilities, null, 2));
-      console.log(neLat + " " + neLng + " " + swLat + " " + swLng);
+      //console.log("facilities : " + JSON.stringify(uniqueFacilities, null, 2));
+      //console.log(neLat + " " + neLng + " " + swLat + " " + swLng);
 
       if (webViewRef.current && uniqueFacilities.length > 0) {
         const { lat, lng, avg_score } = facilities[0];
@@ -558,7 +579,7 @@ const MapView = () => {
       if (!searchQuery) {
         fetchAndUpdateFacilities('', data.neLat, data.neLng, data.swLat, data.swLng);
       } else {
-        console.log("Bounds updated but not fetching new facilities due to active search");
+        //console.log("Bounds updated but not fetching new facilities due to active search");
       }
     }
     if (data.type === 'updateCenterAndZoom') {
@@ -572,11 +593,11 @@ const MapView = () => {
       console.log('DEBUG', data.message);
     }
     if (data.type === 'togglePreferences') {
-      console.log("received togglePreferences data type");
+      //console.log("received togglePreferences data type");
       handleTogglePreferences();
     }
     if (data.type === 'toggleBookmarked') {
-      console.log("received toggleBookmarked data type");
+      //console.log("received toggleBookmarked data type");
       handleToggleBookmarked();
     }
   };
@@ -601,11 +622,11 @@ const MapView = () => {
   };
 
   useEffect(() => {
-    console.log("selectedCuisines updated:", selectedCuisines);
+    //console.log("selectedCuisines updated:", selectedCuisines);
   }, [selectedCuisines]);
   
   useEffect(() => {
-    console.log("selectedDietaryPreferences updated:", selectedDietaryPreferences);
+    //console.log("selectedDietaryPreferences updated:", selectedDietaryPreferences);
   }, [selectedDietaryPreferences]);
   
   useEffect(() => {
@@ -632,7 +653,7 @@ const MapView = () => {
           <View style={styles.searchContainer}>
             <TextInput
               style={styles.searchInput}
-              placeholder="Enter facility name"
+              placeholder={translations.enterFacilityName}
               value={searchQuery}
               onChangeText={setSearchQuery}
               onSubmitEditing={handleSearch}
@@ -646,19 +667,19 @@ const MapView = () => {
           </View>
           <View style={styles.allOptionsContainer}>
             <TouchableOpacity onPress={() => setFilterExpanded(!filterExpanded)} style={styles.filterButton} activeOpacity={0.7}>
-              <Text style={styles.filterButtonText}>Filter</Text>
+              <Text style={styles.filterButtonText}>{translations.filter}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => handleShowOnlyOpenToggle()}
               style={styles.toggleButton}
               activeOpacity={0.7}>  
               <Text style={styles.toggleButtonText}>
-                  {showOnlyOpen ? "All Facilities" : "Open Facilities Only"}
+                {showOnlyOpen ? translations.allFacilities : translations.openFacilitiesOnly }
               </Text>
             </TouchableOpacity>
           </View>
           {filterExpanded && (<ScrollView style={filterExpanded? styles.filtersContainer: styles.filtersContainerCollapsed}>
-            <Text style={styles.subHeader}>CUISINE TYPE</Text>
+            <Text style={styles.subHeader}>{translations.cuisineType}</Text>
             <View style={styles.grid}>
               {cuisines.map((item) => (
                 <TouchableOpacity
@@ -667,12 +688,12 @@ const MapView = () => {
                   onPress={() => handleSelectCuisine(item.id)}
                 >
                   <Image source={item.typeIcon} style={styles.typeIcon} />
-                  <Text>{item.name}</Text>
+                  <Text>{translations.cuisines[item.name]}</Text>
                 </TouchableOpacity>
               ))}
             </View>
 
-            <Text style={styles.subHeader}>DIETARY PREFERENCE</Text>
+            <Text style={styles.subHeader}>{translations.dietaryPreference}</Text>
             <View style={styles.grid}>
               {dietaryPreferences.map((item) => (
                 <TouchableOpacity
@@ -687,7 +708,7 @@ const MapView = () => {
                       (item.id === 'lactose-free' || item.id === 'gluten-free') && styles.typeDoubleIconcon
                     ]}
                   />
-                  <Text>{item.name}</Text>
+                  <Text>{translations.dietaryPreferences[item.name]}</Text>
                 </TouchableOpacity>
               ))}
             </View>
@@ -720,7 +741,7 @@ const MapView = () => {
           <ScrollView style={styles.ScrollView}>
           {Array.isArray(displayedFacilities) ? displayedFacilities.map(facility => (
             <FacilityDetails key={facility.id} facility={facility} />
-          )) : <Text>Loading facilities...</Text>}
+          )) : <Text>translations.loadingFacilities</Text>}
           </ScrollView>
         </View>
       </View>
