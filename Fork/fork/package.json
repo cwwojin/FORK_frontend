@@ -2,14 +2,15 @@
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "web": "expo start --web"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^1.23.1",
     "@react-native-community/geolocation": "3.2.1",
     "@react-native-community/masked-view": "^0.1.0",
+    "@react-native-community/push-notification-ios": "^1.11.0",
     "@react-navigation/native": "^6.0.10",
     "@react-navigation/stack": "5.14.3",
     "axios": "^1.7.2",
@@ -52,5 +53,7 @@
   "devDependencies": {
     "@babel/core": "^7.20.0"
   },
-  "private": true
+  "private": true,
+  "name": "fork",
+  "version": "1.0.0"
 }

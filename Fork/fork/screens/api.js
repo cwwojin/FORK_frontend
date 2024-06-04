@@ -12,9 +12,10 @@ const FORK_URL = `${API_ENDPOINT}/dev/`
 const S3_ENDPOINT = `${API_ENDPOINT}/s3`
 
 // export let USERBOOKMARKED = "";
-export let USERTOKEN = "facility";
-export let USERID = "2";
+export let USERTOKEN = "kaist";
+export let USERID = "1";
 export let USERPREFERENCE = [];
+export let USERTYPE = 1;
 
 // --------------LOGIN----------------- 
 
@@ -40,10 +41,12 @@ export const handleLogin = async (username, password) => {
             USERID = jsonResponse.data.user.id;
             USERPREFERENCE = await getUserPreferences(USERID);
             USERBOOKMARKED = await getUserFavorites(USERID);
+            USERTYPE = jsonResponse.data.user.userType;
             console.log("USERID : " + USERID);
             console.log("USERTOKEN : " + USERTOKEN);
             console.log("USERPREFERENCE : " + JSON.stringify(USERPREFERENCE, null, 2));
             console.log("USERBOOKMARKED : " + JSON.stringify(USERBOOKMARKED, null, 2));
+            console.log("USERTYPE : " + USERTYPE);
             return true;
         } else {
             console.log('Login Failed', 'Invalid credentials or insufficient permissions.');
@@ -140,7 +143,7 @@ export const registerFacility = async (facilityData, images) => {
         const response = await fetch(url, {
             method: 'POST',
             headers: {
-                'Authorization': 'foodie' 
+                'Authorization': 'foodie'
             },
             body: formData
         });
@@ -1051,7 +1054,7 @@ export const uploadStampLogo = async ({ facilityID, imageUri }) => {
         console.log("variables", facilityID, imageUri);
         const formData = new FormData();
 
-        
+
         if (imageUri) {
             formData.append('image', {
                 uri: imageUri.replace('file://', ''),
@@ -1089,7 +1092,7 @@ export const uploadFacilityProfile = async ({ facilityID, imageUri }) => {
         console.log("variables", facilityID, imageUri);
         const formData = new FormData();
 
-        
+
         if (imageUri) {
             formData.append('image', {
                 uri: imageUri.replace('file://', ''),
@@ -1240,6 +1243,38 @@ export const createReview = async ({ facilityId, score, content, hashtags, image
     }
 };
 
+export const editReview = async ({ reviewId, content, hashtags }) => {
+    try {
+        const requestBody = {
+            content: content,
+            hashtags: hashtags
+        };
+
+        const response = await fetch(`${BASE_URL}/reviews/${reviewId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': USERTOKEN,
+            },
+            body: JSON.stringify(requestBody),
+        });
+
+        if (!response.ok) {
+            // Log the full response for debugging
+            const errorText = await response.text();
+            console.error('Error response from server:', errorText);
+            throw new Error(`Server responded with ${response.status}: ${errorText}`);
+        }
+
+        const data = await response.json();
+        console.log(data);
+        return data;
+    } catch (error) {
+        console.error('Error uploading review:', error);
+        throw error;
+    }
+};
+
 
 // --------------STAMP-----------------
 
@@ -1313,7 +1348,7 @@ export const sendStampTransaction = async (userID, facilityID, type, amount) => 
     }
 };
 
-export const deleteFacilityMenu = async ({facilityID, menuID}) => {
+export const deleteFacilityMenu = async ({ facilityID, menuID }) => {
     try {
         const response = await fetch(`${BASE_URL}/facilities/${encodeURIComponent(facilityID)}/menu/${encodeURIComponent(menuID)}?limit=${encodeURIComponent(5)}`, {
             method: 'DELETE',

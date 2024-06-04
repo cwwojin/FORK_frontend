@@ -43,7 +43,7 @@ import {
 const MyPage = () => {
   //Get Informations of facilities
 
-  const [userType, setUserType] = useState();
+  const [userType, setUserType] = useState('');
   const [userInfo, setUserInfo] = useState('');
   const [userProfile, setUserProfile] = useState(userImage);
   const [userFavorite, setUserFavorite] = useState([]);

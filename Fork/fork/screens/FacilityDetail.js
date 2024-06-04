@@ -33,7 +33,8 @@ import longImagePlaceholder from '../assets/placeholders/long_image.png';
 import {
   addFavorite, deleteFavorite, fetchImage, getFacilityByID, getTopHashtags, getFacilityNotices, getFacilityPreferences, getFacilityStamp,
   getFacilityStampRuleByID, getReviewByQuery, isFacilityBookmarked, USERID, createReview,
-  getSummaryReview
+  getSummaryReview,
+  USERTYPE
 } from './api';
 
 const FacilityDetail = () => {
@@ -52,7 +53,7 @@ const FacilityDetail = () => {
   const [timeData, setTimeData] = useState([]);
   const [profileImage, setProfileImage] = useState(longImagePlaceholder);
   const [isLoading, setIsLoading] = useState(true);
-  const [summaryReview, setSummaryReview] = useState();
+  const [summaryReview, setSummaryReview] = useState("");
   const [notices, setNotices] = useState([]);
   const [topHashtags, setTopHashtags] = useState([]);
 
@@ -199,7 +200,7 @@ const FacilityDetail = () => {
   };
 
   const toggleBookmarked = () => {
-    if (USERID) {
+    if (USERTYPE == 1) {
       if (bookmarked) {
         deleteFavorite(facilityID);
       } else {
@@ -213,7 +214,7 @@ const FacilityDetail = () => {
   };
 
   const toggleStamp = () => {
-    if (USERID) {
+    if (USERTYPE == 1) {
       setStamp(!stamp);
     } else {
       Alert.alert("Please Login");
@@ -235,7 +236,7 @@ const FacilityDetail = () => {
   }
 
   const toggleWriteReview = () => {
-    if (USERID) {
+    if (USERTYPE == 1) {
       setWriteReview(!writeReview);
     } else {
       Alert.alert("Please Login");
@@ -246,11 +247,11 @@ const FacilityDetail = () => {
     console.log(facilityID, reviewScore, reviewContent, inputHashtag, reviewImage);
     try {
       if (reviewImage == '') {
-        const response = await createReview({ facilityId: facilityID, score: reviewScore, content: reviewContent, hashtags: inputHashtag });
+        const response = await createReview({ facilityId: facilityID, score: reviewScore, content: reviewContent, hashtags: inputHashtag.map(item => (item.tag)) });
         console.log('Review uploaded successfully:', response);
       }
       else {
-        const response = await createReview({ facilityId: facilityID, score: reviewScore, content: reviewContent, hashtags: inputHashtag, imageUri: reviewImage });
+        const response = await createReview({ facilityId: facilityID, score: reviewScore, content: reviewContent, hashtags: inputHashtag.map(item => (item.tag)), imageUri: reviewImage });
         console.log('Review uploaded successfully:', response);
       }
       toggleWriteReview();
@@ -320,10 +321,30 @@ const FacilityDetail = () => {
   };
 
   const pushHashtag = () => {
-    setInputHashtag([...inputHashtag, hashtag]);
+    setInputHashtag([...inputHashtag, { id: inputHashtag.length + 1, tag: hashtag }]);
     setHashtag('');
-    console.log(inputHashtag);
-  }
+  };
+
+  const deleteHashtag = (id) => {
+    setInputHashtag(inputHashtag.filter(item => item.id !== id));
+  };
+
+  const confirmDeleteHashtag = (id) => {
+    Alert.alert(
+      "Delete Hashtag",
+      "Do you want to delete this hashtag?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel"
+        },
+        {
+          text: "OK",
+          onPress: () => deleteHashtag(id)
+        }
+      ]
+    );
+  };
 
   return (
     <SafeAreaView style={GlobalStyles.background}>
@@ -393,7 +414,7 @@ const FacilityDetail = () => {
                 style={styles.icon}
                 source={require('../assets/icons/url.png')}
               />
-              <Text style={{...GlobalStyles.body2, textTransform: 'none'}}>{facilityInfo.url}</Text>
+              <Text style={{ ...GlobalStyles.body2, textTransform: 'none' }}>{facilityInfo.url}</Text>
             </View>
             <View style={{ flexDirection: 'row' }}>
               <Image
@@ -526,7 +547,7 @@ const FacilityDetail = () => {
                             setHashtagFilter();
                           }
                         }}>
-                          <Hashtag key={item.id} tag={item} tintColor={(hashtagFilter == item.id) ? Color.orange_100 : ""}/>
+                          <Hashtag key={item.id} tag={item} tintColor={(hashtagFilter == item.id) ? Color.orange_100 : ""} />
                         </TouchableOpacity>
                       ))
                     }
@@ -543,7 +564,7 @@ const FacilityDetail = () => {
 
                 {reviewList && reviewList
                   .filter(item => !reviewFilter || (reviewFilter && item.img_uri)) // Apply filter conditionally based on reviewFilter state
-                  .filter(item => !hashtagFilter || item.hashtags.some(hashtag => hashtag.id === hashtagFilter)) 
+                  .filter(item => !hashtagFilter || item.hashtags.some(hashtag => hashtag.id === hashtagFilter))
                   .map(item => (
                     <Review
                       key={item.id} // Make sure to provide a unique key prop
@@ -576,7 +597,7 @@ const FacilityDetail = () => {
           </View>
         </ScrollView>
       </View >
-      {(tabState == 'Review') && (
+      {(tabState == 'Review') && (USERTYPE == 1) && (
         <TouchableOpacity onPress={toggleWriteReview}>
           <Image
             source={require('../assets/icons/write_review.png')}
@@ -636,7 +657,9 @@ const FacilityDetail = () => {
                       width: '100%',
                     }}>
                     {inputHashtag && inputHashtag.map(item => (
-                      <Hashtag tag={item} />
+                      <TouchableOpacity key={item.id} onPress={() => confirmDeleteHashtag(item.id)}>
+                        <Hashtag tag={item.tag} />
+                      </TouchableOpacity>
                     ))}
                   </View>
                   <View style={styles.hashtagHolder}>

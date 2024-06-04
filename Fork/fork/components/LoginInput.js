@@ -18,7 +18,8 @@ const LoginInput = () => {
     const onLoginPress = async () => {
       const loginSuccessful = await handleLogin(username, password);
       if (loginSuccessful) {
-        navigation.navigate("Home");
+        navigation.goBack();
+        navigation.replace("Home");
       } else {
         Alert.alert('Login failed. Please check your username and password.');
       }
