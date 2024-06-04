@@ -36,6 +36,7 @@ import GiveStamp from './screens/GiveStamp.js';
 import EditProfile from './screens/EditProfile.js';
 import FacilityInformationEdit from './screens/FacilityInformationEdit.js';
 import EditMenu from './screens/EditMenu.js';
+import EditReview from './screens/EditReview.js';
 {/*import Maps from './screens/Maps';*/ }
 
 const requestLocationPermission = async () => {
@@ -119,6 +120,7 @@ const App = () => {
               <Stack.Screen name="EditProfile" component={EditProfile} />
               <Stack.Screen name="FacilityInformationEdit" component={FacilityInformationEdit} />
               <Stack.Screen name="EditMenu" component={EditMenu} />
+              <Stack.Screen name="EditReview" component={EditReview} />
               {/* Register the FavoritesScreen */}
             </Stack.Navigator>
           </View>
