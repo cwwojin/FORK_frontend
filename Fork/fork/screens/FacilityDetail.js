@@ -34,7 +34,8 @@ import {
   addFavorite, deleteFavorite, fetchImage, getFacilityByID, getTopHashtags, getFacilityNotices, getFacilityPreferences, getFacilityStamp,
   getFacilityStampRuleByID, getReviewByQuery, isFacilityBookmarked, USERID, createReview,
   getSummaryReview,
-  USERTYPE
+  USERTYPE,
+  getMyFacilities
 } from './api';
 
 const FacilityDetail = () => {
@@ -56,12 +57,14 @@ const FacilityDetail = () => {
   const [summaryReview, setSummaryReview] = useState("");
   const [notices, setNotices] = useState([]);
   const [topHashtags, setTopHashtags] = useState([]);
+  const [owner, setOwner] = useState(false);
 
   useEffect(() => {
     const fetchFacility = async (facilityID) => {
       try {
         const data = await getFacilityByID(facilityID);
         setFacilityInfo(data);
+        console.log(data);
 
         const newtimeData = [
           { index: 1, day: 'Monday', openTime: '', closeTime: '' },
@@ -129,7 +132,7 @@ const FacilityDetail = () => {
         const newMyStamp = await getFacilityStamp(facilityID);
 
         if (newMyStamp != '') {
-          setMyStamp(newMyStamp.cnt);
+          setMyStamp(newMyStamp[0].cnt);
         } else {
           setMyStamp(0);
         }
@@ -141,6 +144,18 @@ const FacilityDetail = () => {
       try {
         const preference = await getFacilityPreferences(facilityID);
         setPreferences(preference);
+      } catch (error) {
+        console.log(error.message);
+      }
+    };
+    const isMyFacility = async (facilityID) => {
+      try {
+        const facilities = await getMyFacilities();
+        const facilityExists = facilities.some(facility => facility.id === facilityID);
+
+        if (facilityExists) {
+          setOwner(true);
+        };
       } catch (error) {
         console.log(error.message);
       }
@@ -178,6 +193,7 @@ const FacilityDetail = () => {
     isBookmarked(facilityID);
     fetchNotices(facilityID);
     fetchTopHashtags(facilityID);
+    isMyFacility(facilityID);
   }, []);
 
   const navigation = useNavigation();
@@ -194,6 +210,7 @@ const FacilityDetail = () => {
   const [reviewContent, setReviewContent] = useState('');
   const [hashtag, setHashtag] = useState('');
   const [inputHashtag, setInputHashtag] = useState([]);
+  const [moderating, setModerating] = useState(false);
 
   const toggleTimeVisibility = () => {
     setTimeVisible(!isTimeVisible);
@@ -245,19 +262,31 @@ const FacilityDetail = () => {
 
   const handleCreateReview = async () => {
     console.log(facilityID, reviewScore, reviewContent, inputHashtag, reviewImage);
+    setModerating(true);
     try {
       if (reviewImage == '') {
-        const response = await createReview({ facilityId: facilityID, score: reviewScore, content: reviewContent, hashtags: inputHashtag.map(item => (item.tag)) });
+        const response = await createReview({ facilityId: facilityID, score: reviewScore, content: reviewContent, hashtags: inputHashtag?.map(item => (item.tag)) });
         console.log('Review uploaded successfully:', response);
       }
       else {
-        const response = await createReview({ facilityId: facilityID, score: reviewScore, content: reviewContent, hashtags: inputHashtag.map(item => (item.tag)), imageUri: reviewImage });
+        const response = await createReview({ facilityId: facilityID, score: reviewScore, content: reviewContent, hashtags: inputHashtag?.map(item => (item.tag)), imageUri: reviewImage });
         console.log('Review uploaded successfully:', response);
       }
       toggleWriteReview();
+      setModerating(false)
+      Alert.alert("Review uploaded successfully")
       navigation.replace("FacilityDetail", { facilityID });
     } catch (error) {
+      if (error && error === 499) {
+        setModerating(false);
+        Alert.alert("Error", "Review upload fail due to harmful content");
+      } else {
+        setModerating(false);
+        Alert.alert("Error", "Review upload failed. Please try again.")
+      }
+
       console.log(error.message);
+
     }
   }
 
@@ -509,7 +538,7 @@ const FacilityDetail = () => {
             ))}
             {(tabState == "Review" && isLoading) && (
               <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#0000ff" />
+                <ActivityIndicator size="large" color={Color.orange_700} />
                 <Text>Loading reviews...</Text>
               </View>
             )}
@@ -592,6 +621,10 @@ const FacilityDetail = () => {
                 noticeDate={item.post_date}
                 noticeImage={item.img_uri}
                 noticeContent={item.title + '\n' + item.content}
+                facilityID={facilityID}
+                postId={item.id}
+                owner={owner}
+                navigation={navigation}
               />
             ))}
           </View>
@@ -686,7 +719,16 @@ const FacilityDetail = () => {
               </View>
             </ScrollView>
           </View>
-
+          {moderating && (
+            <View style={styles.overlay}>
+              <View style={styles.background}>
+                <View style={styles.loadingContainer}>
+                  <ActivityIndicator size="large" color={Color.orange_700} />
+                  <Text>Moderating...</Text>
+                </View>
+              </View>
+            </View>
+          )}
         </View>
       )}
       {stamp && (

@@ -44,19 +44,26 @@ const EditReview = () => {
   const [reviewContent, setReviewContent] = useState(reviewConten);
   const [hashtag, setHashtag] = useState("");
   const [inputHashtag, setInputHashtag] = useState(reviewHashtags.map((item, index) => ({ id: index, tag: item })));
+  const [moderate, setModerate] = useState(false);
 
 
   const handleEditReview = async () => {
-    console.log("?????", reviewId, reviewContent, inputHashtag.map(item => (item.tag)));
+    setModerate(true);
     try {
       const response = await editReview({ reviewId: reviewId, content: reviewContent, hashtags: inputHashtag.map(item => (item.tag)) });
       console.log('Review updated successfully:', response);
       Alert.alert("Review updated successfully");
+      setModerate(false);
       navigation.goBack();
       navigation.replace("FacilityDetail", { facilityID });
     } catch (error) {
-      Alert.alert("Review update failed");
-      console.log(error.message);
+      if (error && error === 499) {
+        setModerate(false);
+        Alert.alert("Error", "Review update fail due to harmful content");
+      } else {
+        setModerate(false);
+        Alert.alert("Error", "Review update failed. Please try again.")
+      }
     }
   }
 
@@ -180,6 +187,17 @@ const EditReview = () => {
               </View>
             </ScrollView>
           </View>
+          
+          {moderate && (
+            <View style={styles.overlay}>
+              <View style={styles.background}>
+                <View style={styles.loadingContainer}>
+                  <ActivityIndicator size="large" color={Color.orange_700} />
+                  <Text>Moderating...</Text>
+                </View>
+              </View>
+            </View>
+          )}
 
         </View>
 

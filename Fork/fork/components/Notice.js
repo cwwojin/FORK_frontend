@@ -5,6 +5,8 @@ import { fetchImage } from '../screens/api.js';
 import Translator, {
   useTranslator,
 } from 'react-native-translator';
+import { deletePost } from '../screens/api.js';
+import { useNavigation } from 'react-router-dom';
 
 const Notice = ({
   facilityImage,
@@ -12,7 +14,12 @@ const Notice = ({
   noticeDate,
   noticeImage,
   noticeContent,
+  postId,
+  facilityID,
+  owner,
+  navigation,
 }) => {
+
   if (facilityImage == undefined) {
     facilityImage = require('../assets/placeholders/User.png');
   };
@@ -51,6 +58,31 @@ const Notice = ({
     }
   };
 
+  const deletePosts = () => {
+    Alert.alert(
+      "Delete Post",
+      "Do you really want to delete this post?",
+      [
+        {
+          text: "Yes",
+          onPress: () => {
+            deletePost({facilityID: facilityID, postID: postId});
+            Alert.alert(
+              "Post deleted"
+            );
+            navigation.replace("FacilityDetail", { facilityID });
+          }
+        },
+        {
+          text: "No",
+          onPress: () => { },
+          style: "cancel"
+        },
+      ],
+      { cancelable: false }
+    );
+  };
+
   return (
     <View style={{ width: '100%', alignItems: 'center' }}>
       <View
@@ -64,6 +96,14 @@ const Notice = ({
             Translate
           </Text>
         </TouchableOpacity>
+        {owner && (<TouchableOpacity
+          onPress={deletePosts}>
+          <Image
+            style={GlobalStyles.icon}
+            contentFit="cover"
+            source={require('../assets/icons/delete.png')}
+          />
+        </TouchableOpacity>)}
       </View>
       <View
         style={{

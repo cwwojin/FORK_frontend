@@ -31,7 +31,7 @@ export const handleLogin = async (username, password) => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'foodie'
+                'Authorization': 'guest'
             },
             body: JSON.stringify(requestBody)
         });
@@ -914,14 +914,15 @@ export const createFacilityPost = async ({ facilityId, content, imageUri }) => {
 
         if (!response.ok) {
             const errorData = await response.text();
-            throw new Error(`Error: ${errorData}`);
+            console.log(`Error: ${errorData}`);
+            throw response.status;
         }
 
         const data = await response.json();
         console.log(data);
         return data;
     } catch (error) {
-        console.error('Error creating facility post:', error.Error);
+        console.error('Error creating facility post:', error);
         throw error;
     }
 };
@@ -1125,6 +1126,26 @@ export const uploadFacilityProfile = async ({ facilityID, imageUri }) => {
     }
 };
 
+export const deletePost = async ({ facilityID, postID }) => {
+    try {
+        const response = await fetch(`${BASE_URL}/facilities/${encodeURIComponent(facilityID)}/post/${encodeURIComponent(postID)}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': USERTOKEN
+            }
+        });
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        return data.data;
+    } catch (error) {
+        console.error('Error fetching user:', error);
+        throw error;
+    }
+};
+
 // --------------REVIEW-----------------
 
 export const getReviewByQuery = async (userID, facilityId, hasImage, hashtags) => {
@@ -1201,6 +1222,7 @@ export const deleteReview = async (reviewId) => {
 };
 
 export const createReview = async ({ facilityId, score, content, hashtags, imageUri }) => {
+    console.log("ddddddddddddddd", hashtags);
     try {
         const formData = new FormData();
 
@@ -1208,7 +1230,12 @@ export const createReview = async ({ facilityId, score, content, hashtags, image
         formData.append('facilityId', facilityId);
         formData.append('score', score);
         formData.append('content', content);
-        formData.append('hashtags', JSON.stringify(hashtags));
+        if (hashtags.length != 0) {
+            console.log("eeeeeeeeeeeee");
+            formData.append('hashtags', JSON.stringify(hashtags));
+        } else {
+            formData.append('hashtags', JSON.stringify([]));
+        };
 
         if (imageUri) {
             formData.append('image', {
@@ -1231,7 +1258,7 @@ export const createReview = async ({ facilityId, score, content, hashtags, image
             // Log the full response for debugging
             const errorText = await response.text();
             console.error('Error response from server:', errorText);
-            throw new Error(`Server responded with ${response.status}: ${errorText}`);
+            throw response.status;
         }
 
         const data = await response.json();
@@ -1260,10 +1287,9 @@ export const editReview = async ({ reviewId, content, hashtags }) => {
         });
 
         if (!response.ok) {
-            // Log the full response for debugging
-            const errorText = await response.text();
-            console.error('Error response from server:', errorText);
-            throw new Error(`Server responded with ${response.status}: ${errorText}`);
+            const errorData = await response.text();
+            console.log(`Error: ${errorData}`);
+            throw response.status;
         }
 
         const data = await response.json();

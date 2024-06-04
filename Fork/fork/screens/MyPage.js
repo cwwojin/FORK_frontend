@@ -10,6 +10,8 @@ import {
   TextInput,
   TouchableWithoutFeedback,
   Keyboard,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Dropdown } from 'react-native-element-dropdown';
@@ -293,6 +295,7 @@ const MyPage = () => {
   const [value, setValue] = useState('');
   const [isFocus, setIsFocus] = useState(false);
   const [upload, setUpload] = useState(false);
+  const [moderate, setModerate] = useState(false);
   const [noticeImage, setNoticeImage] = useState('');
   const [noticeContent, setNoticeContent] = useState('');
 
@@ -338,6 +341,7 @@ const MyPage = () => {
   };
 
   const sendNotice = async () => {
+    setModerate(true);
     try {
       if (noticeImage == '') {
         const response = await createFacilityPost({ facilityId: facilityInfo.id, content: noticeContent });
@@ -350,10 +354,18 @@ const MyPage = () => {
         Alert.alert("Notice upload successful!")
       }
       toggleUpload();
+      setModerate(false);
       navigation.replace("MyPage");
     } catch (error) {
-      console.log(error.message);
-      Alert.alert("Notice upload failed. Please try again");
+      if (error && error === 499) {
+        setModerate(false);
+        Alert.alert("Error", "Review upload fail due to harmful content");
+      } else {
+        setModerate(false);
+        console.log(error.message);
+        Alert.alert("Notice upload failed. Please try again");
+      }
+
     }
   }
 
@@ -369,46 +381,49 @@ const MyPage = () => {
     return null;
   };
 
+  {/* -----------------GUEST User---------------------- */ }
+  if (!userType) {
+    return (
+      <SafeAreaView style={GlobalStyles.background}>
+        <View style={GlobalStyles.content}>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              marginTop: -27,
+              paddingBottom: 10,
+            }}>
+            <Text style={GlobalStyles.h1}>My Page</Text>
+            <TouchableOpacity onPress={() => {
+              navigation.navigate("Settings", {
+                userName: userInfo.account_id,
+                userProfile: userProfile,
+                userEmail: userInfo.email
+              });
+            }}>
+              <Image
+                style={GlobalStyles.topIcon}
+                source={require('../assets/icons/setting.png')}
+              />
+            </TouchableOpacity>
+          </View>
+          <View
+            style={{
+              flex: 1,
+              justifyContent: 'center',
+              alignItems: 'center',
+              marginTop: 10,
+            }}>
+            <Image source={require('../assets/logos/coloredLogo.png')} style={{ height: 80, width: 80 }} />
+            <Text style={{ ...GlobalStyles.h4, textAlign: 'center', padding: 20 }}>Please Login for more</Text>
+          </View>
+        </View>
+      </SafeAreaView>
+    )
+  }
+
   return (
     <>
-      {/* -----------------GUEST User---------------------- */}
-      {(!userType) && (
-        <SafeAreaView style={GlobalStyles.background}>
-          <View style={GlobalStyles.content}>
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                marginTop: -27,
-                paddingBottom: 10,
-              }}>
-              <Text style={GlobalStyles.h1}>My Page</Text>
-              <TouchableOpacity onPress={() => {
-                navigation.navigate("Settings", {
-                  userName: userInfo.account_id,
-                  userProfile: userProfile,
-                  userEmail: userInfo.email
-                });
-              }}>
-                <Image
-                  style={GlobalStyles.topIcon}
-                  source={require('../assets/icons/setting.png')}
-                />
-              </TouchableOpacity>
-            </View>
-            <View
-              style={{
-                flex: 1,
-                justifyContent: 'center',
-                alignItems: 'center',
-                marginTop: 10,
-              }}>
-              <Image source={require('../assets/logos/coloredLogo.png')} style={{ height: 80, width: 80 }} />
-              <Text style={{ ...GlobalStyles.h4, textAlign: 'center', padding: 20 }}>Please Login for more</Text>
-            </View>
-          </View>
-        </SafeAreaView>
-      )}
 
       {/* -----------------KAIST User---------------------- */}
       {(userType == 1) && (
@@ -905,6 +920,16 @@ const MyPage = () => {
               </View>
             </TouchableWithoutFeedback>
           )}
+          {moderate && (
+            <View style={styles.overlay}>
+              <View style={styles.background}>
+                <View style={styles.loadingContainer}>
+                  <ActivityIndicator size="large" color={Color.orange_700} />
+                  <Text>Moderating...</Text>
+                </View>
+              </View>
+            </View>
+          )}
         </>
       )
       }
@@ -1138,6 +1163,11 @@ const styles = StyleSheet.create({
   inputSection: {
     width: '100%',
     paddingVertical: 10,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 
