@@ -88,9 +88,13 @@ const Review = ({
   const renderHashtags = () => {
     const hashtags = [];
 
+    if (reviewHashtags[0] == null) {
+      console.log(hashtags, "empty");
+      return hashtags;
+    }
     if (Array.isArray(reviewHashtags)) {
       for (let i = 0; i < reviewHashtags.length; i++) {
-        hashtags.push(<Hashtag tag={reviewHashtags[i]} />);
+        hashtags.push(<Hashtag tag={reviewHashtags[i].name} />);
       }
     } else {
       console.error('reviewHashtags is not an array.');

@@ -40,7 +40,8 @@ import longImagePlaceholder from '../assets/placeholders/long_image.png';
 import {
   USERID, USERPREFERENCE, fetchImage, getFacilityByID, getFacilityRegistrations, getMyFacilities, getMyFacilityRegistrations, getReports, getReviewByQuery,
   getStampBook, getUserByID, getUserFavorites, getFacilityStampRuleByID,
-  createFacilityPost
+  createFacilityPost,
+  USERTYPE
 } from './api';
 
 const MyPage = () => {
@@ -67,6 +68,7 @@ const MyPage = () => {
   const [translations, setTranslations] = useState({});
 
   useEffect(() => {
+    console.log("?????????????", USERID, USERTYPE);
     const fetchTranslations = async () => {
       const fetchedTranslations = await getAllTranslations();
       setTranslations(fetchedTranslations);

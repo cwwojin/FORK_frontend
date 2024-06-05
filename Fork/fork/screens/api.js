@@ -1,12 +1,12 @@
 import FacilityDetail from "./FacilityDetail";
 
-const BASE_URL = 'https://taqjpw7a54.execute-api.ap-southeast-2.amazonaws.com/stage-dev/dev/api';
+const BASE_URL = 'https://taqjpw7a54.execute-api.ap-southeast-2.amazonaws.com/stage-dev/prod/api';
 
 // This is the base-url that leads to all backend & S3
 const API_ENDPOINT = "https://taqjpw7a54.execute-api.ap-southeast-2.amazonaws.com/stage-dev";
 
 // Backend API endpoint
-const FORK_URL = `${API_ENDPOINT}/dev/`
+const FORK_URL = `${API_ENDPOINT}/prod/`
 
 // S3 endpoint
 const S3_ENDPOINT = `${API_ENDPOINT}/s3`
@@ -14,7 +14,7 @@ const S3_ENDPOINT = `${API_ENDPOINT}/s3`
 // export let USERBOOKMARKED = "";
 export let USERTOKEN = 'guest';
 export let USERREFRESHTOKEN = 'guest';
-export let USERID = 3;
+export let USERID = "";
 export let USERPREFERENCE = [];
 export let USERTYPE = '';
 
@@ -45,9 +45,10 @@ export const handleLogin = async (username, password) => {
             USERPREFERENCE = await getUserPreferences(USERID);
             USERBOOKMARKED = await getUserFavorites(USERID);
             USERTYPE = jsonResponse.data.user.userType;
+            USERREFRESHTOKEN = jsonResponse.data.refreshToken;
             console.log("USERID : " + USERID);
             console.log("USERTOKEN : " + USERTOKEN);
-            //console.log("USERREFRESHTOKEN : " + USERREFRESHTOKEN);
+            console.log("USERREFRESHTOKEN : " + USERREFRESHTOKEN);
             console.log("USERPREFERENCE : " + JSON.stringify(USERPREFERENCE, null, 2));
             console.log("USERBOOKMARKED : " + JSON.stringify(USERBOOKMARKED, null, 2));
             return true;

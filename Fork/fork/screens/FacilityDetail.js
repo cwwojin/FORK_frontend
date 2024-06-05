@@ -100,9 +100,9 @@ const FacilityDetail = () => {
       try {
         const data = await getReviewByQuery('', facilityID, '', '');
         setReviewList(data);
-        console.log(data);
+        console.log("review list", data);
         setIsLoading(false);
-      } catch (error) {
+      } catch (error) { 
         console.log(error.message);
       }
     };
@@ -183,7 +183,7 @@ const FacilityDetail = () => {
       try {
         const hashtags = await getTopHashtags(facilityID);
         setTopHashtags(hashtags);
-        console.log(hashtags);
+        console.log("hashtags: ", hashtags);
       } catch (error) {
         console.log(error.message);
       }
@@ -579,16 +579,16 @@ const FacilityDetail = () => {
                       width: '100%',
                       paddingTop: 20,
                     }}>
-                    {topHashtags
+                    {topHashtags && topHashtags
                       .map(item => (
-                        <TouchableOpacity onPress={() => {
+                        <TouchableOpacity key={item.id} onPress={() => {
                           if (hashtagFilter != item.id) {
                             setHashtagFilter(item.id);
                           } else {
                             setHashtagFilter();
                           }
                         }}>
-                          <Hashtag key={item.id} tag={item} tintColor={(hashtagFilter == item.id) ? Color.orange_100 : ""} />
+                          <Hashtag key={item.id} tag={item.name} tintColor={(hashtagFilter == item.id) ? Color.orange_100 : ""} />
                         </TouchableOpacity>
                       ))
                     }
