@@ -1,10 +1,20 @@
-import React, { useCallback, useState }  from 'react';
+import React, { useCallback, useState, useEffect }  from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Image, TouchableOpacity, SafeAreaView } from 'react-native';
 import {LinearGradient}  from 'expo-linear-gradient';
 import { Border, Color, GlobalStyles } from "../GlobalStyles.js"; 
 import { useNavigation } from '@react-navigation/native';
+import { getAllTranslations, getLanguageToken } from '../LanguageUtils';
 
 const SuccessfulRegistration = ({navigation}) => {
+  const [translations, setTranslations] = useState({});
+
+  useEffect(() => {
+    const fetchTranslations = async () => {
+      const fetchedTranslations = await getAllTranslations();
+      setTranslations(fetchedTranslations);
+    };
+    fetchTranslations();
+  }, []);
 
   const onStart = useCallback(() => {
     navigation.navigate("Home");
@@ -18,9 +28,9 @@ const SuccessfulRegistration = ({navigation}) => {
             style={styles.image}
             source={require('../assets/logos/coloredLogo.png')}
           />
-          <Text style={styles.title}>You successfully registered on FORK !</Text>
+          <Text style={styles.title}>{translations.successfulRegistrationTitle}</Text>
           <TouchableOpacity style={GlobalStyles.confirmButton} onPress={onStart}>
-          <Text style={GlobalStyles.confirmButtonText}>Start</Text>
+          <Text style={GlobalStyles.confirmButtonText}>{translations.start}</Text>
           </TouchableOpacity>
         </View>
       </View>

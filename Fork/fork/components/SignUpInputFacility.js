@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, TextInput, StyleSheet, Text, TouchableOpacity, Image, Alert } from 'react-native';
 import { Border, Color, GlobalStyles } from "../GlobalStyles.js";
 import { useNavigation } from '@react-navigation/native';
 import { registerUser } from '../screens/api';
+
+import { getAllTranslations, getLanguageToken } from '../LanguageUtils';
 
 const SignUpInputFacility = () => {
     const navigation = useNavigation();
@@ -10,10 +12,20 @@ const SignUpInputFacility = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [translations, setTranslations] = useState({});
+
+    useEffect(() => {
+      const fetchTranslations = async () => {
+        const fetchedTranslations = await getAllTranslations();
+        setTranslations(fetchedTranslations);
+      };
+      fetchTranslations();
+    }, []);
+
 
     const handleRegister = async () => {
       if (password !== confirmPassword) {
-        Alert.alert('Error', 'Passwords do not match');
+        Alert.alert(translations.error, translations.passwordsDoNotMatch);
         return;
       }
       try {
@@ -33,7 +45,7 @@ const SignUpInputFacility = () => {
                     style={GlobalStyles.registrationInput}
                     onChangeText={setUsername}
                     value={username}
-                    placeholder="Username"
+                    placeholder={translations.username}
                     autoCapitalize="none"
                 />
                 <Image source={require("../assets/icons/username.png")} style={GlobalStyles.inputIcon} />
@@ -43,7 +55,7 @@ const SignUpInputFacility = () => {
                   style={GlobalStyles.registrationInput}
                   onChangeText={setEmail}
                   value={email}
-                  placeholder="Email"
+                  placeholder={translations.email}
                   keyboardType="email-address"
                   autoCapitalize="none"
                 />
@@ -54,7 +66,7 @@ const SignUpInputFacility = () => {
                   style={GlobalStyles.registrationInput}
                   onChangeText={setPassword}
                   value={password}
-                  placeholder="Password"
+                  placeholder={translations.password}
                   autoCapitalize="none"  
                 />
                 <Image source={require("../assets/icons/password.png")} style={GlobalStyles.passwordIcon} />
@@ -65,7 +77,7 @@ const SignUpInputFacility = () => {
                   style={GlobalStyles.registrationInput}
                   onChangeText={setConfirmPassword}
                   value={confirmPassword}
-                  placeholder="Confirm Password"
+                  placeholder={translations.confirmPassword}
                   autoCapitalize="none"  
                 />
                 <Image source={require("../assets/icons/password.png")} style={GlobalStyles.passwordIcon} />
@@ -73,7 +85,7 @@ const SignUpInputFacility = () => {
             </View>
           </View>
           <TouchableOpacity style={GlobalStyles.confirmButton} onPress={handleRegister}>
-          <Text style={GlobalStyles.confirmButtonText}>Sign Up</Text>
+          <Text style={GlobalStyles.confirmButtonText}>{translations.signUp}</Text>
         </TouchableOpacity>
         </View>
     );

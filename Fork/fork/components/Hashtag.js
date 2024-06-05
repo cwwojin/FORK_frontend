@@ -1,7 +1,19 @@
 import { View, Text, StyleSheet } from 'react-native';
+import React, { useCallback, useState, useEffect }  from 'react';
 import { Border ,Color, GlobalStyles } from '../GlobalStyles.js';
+import { getAllTranslations, getLanguageToken } from '../LanguageUtils';
+
 
 const Hashtag = ({ tag }) => {
+  const [translations, setTranslations] = useState({});
+
+  useEffect(() => {
+    const fetchTranslations = async () => {
+      const fetchedTranslations = await getAllTranslations();
+      setTranslations(fetchedTranslations);
+    };
+    fetchTranslations();
+  }, []);
 
   const preferences = [
     { id: 1, type: 0, name: 'Korean', icon: require('../assets/icons/attributes/korean.png') },
@@ -19,8 +31,8 @@ const Hashtag = ({ tag }) => {
     { id: 13, type: 1, name: 'Vegan', icon: require('../assets/icons/attributes/salad.png') },
     { id: 14, type: 1, name: 'Pescatarian', icon: require('../assets/icons/attributes/pescatarian.png') },
     { id: 15, type: 1, name: 'Halal', icon: require('../assets/icons/attributes/halal.png') },
-    { id: 16, type: 1, name: 'Lactose-Free', icon: require('../assets/icons/attributes/lactosefree.png') },
-    { id: 17, type: 1, name: 'Gluten-Free', icon: require('../assets/icons/attributes/glutenfree.png') },
+    { id: 16, type: 1, name: 'LactoseFree', icon: require('../assets/icons/attributes/lactosefree.png') },
+    { id: 17, type: 1, name: 'GlutenFree', icon: require('../assets/icons/attributes/glutenfree.png') },
   ];
 
     // Check if tag is an integer within the range of 0 to 17
@@ -28,7 +40,7 @@ const Hashtag = ({ tag }) => {
       // Find the corresponding name from the preferences array
       const tagName = preferences[tag].name;
       // Assign the tagName to the tag variable
-      tag = tagName;
+      tag = translations.pref[tagName];
     }
 
 

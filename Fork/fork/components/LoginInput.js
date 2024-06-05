@@ -1,8 +1,9 @@
-import React, { useState, useCallback} from 'react';
+import React, { useState, useEffect, useCallback} from 'react';
 import { View, TextInput, StyleSheet, Text, TouchableOpacity, Image, Dimensions, Alert } from 'react-native';
 import { Border, Color, GlobalStyles } from "../GlobalStyles.js";
 import { useNavigation } from '@react-navigation/native';
 import { handleLogin } from '../screens/api.js';
+import { getAllTranslations, getLanguageToken } from '../LanguageUtils';
 
 const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;
@@ -14,13 +15,23 @@ const LoginInput = () => {
     const onResetPassword = useCallback(() => {
     navigation.navigate("ResetPassword"); 
     }, [navigation]);
+    
+    const [translations, setTranslations] = useState({});
+
+    useEffect(() => {
+      const fetchTranslations = async () => {
+        const fetchedTranslations = await getAllTranslations();
+        setTranslations(fetchedTranslations);
+      };
+      fetchTranslations();
+    }, []);
 
     const onLoginPress = async () => {
       const loginSuccessful = await handleLogin(username, password);
       if (loginSuccessful) {
         navigation.navigate("Home");
       } else {
-        Alert.alert('Login failed. Please check your username and password.');
+        Alert.alert(translations.logInFailed);
       }
     };
 
@@ -32,7 +43,7 @@ const LoginInput = () => {
                     style={GlobalStyles.registrationInput}
                     onChangeText={setUsername}
                     value={username}
-                    placeholder="Username"
+                    placeholder={translations.username}
                     autoCapitalize="none"
                 />
                 <Image source={require("../assets/icons/username.png")} style={GlobalStyles.inputIcon} />
@@ -42,18 +53,18 @@ const LoginInput = () => {
                   style={GlobalStyles.registrationInput}
                   onChangeText={setPassword}
                   value={password}
-                  placeholder="Password"
+                  placeholder={translations.password}
                   autoCapitalize="none"  
                 />
                 <Image source={require("../assets/icons/password.png")} style={GlobalStyles.passwordIcon} />
                 <Image source={require("../assets/icons/eyeoff.png")} style={GlobalStyles.eyeIcon} />
             </View>
             <TouchableOpacity onPress={onResetPassword}>
-            <Text style={styles.resetPassword}>Forgot password?</Text>
+            <Text style={styles.resetPassword}>{translations.forgotPassword}</Text>
             </TouchableOpacity>
           </View>
           <TouchableOpacity style={GlobalStyles.confirmButton} onPress={onLoginPress}>
-          <Text style={GlobalStyles.confirmButtonText}>Log In</Text>
+          <Text style={GlobalStyles.confirmButtonText}>{translations.logIn}</Text>
         </TouchableOpacity>
         </View>
     );

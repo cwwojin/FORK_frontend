@@ -89,7 +89,7 @@ const App = () => {
               screenOptions={{
                 headerShown: false,
               }}
-              initialRouteName="MapView"
+              initialRouteName=""
             >
               <Stack.Screen name="SignUpLogIn" component={SignUpLogIn} />
               <Stack.Screen name="UserType" component={UserType} />

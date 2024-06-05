@@ -17,6 +17,7 @@ import Stamp from '../components/Stamp';
 
 import userImage from '../assets/placeholders/User.png';
 import { getStampBook } from './api';
+import { getAllTranslations, getLanguageToken } from '../LanguageUtils';
 
 //To be deleted
 import longImagePlaceholder from '../assets/placeholders/long_image.png';
@@ -26,6 +27,15 @@ const MyStamps = () => {
 
   const [userStamp, setUserStamp] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [translations, setTranslations] = useState({});
+
+  useEffect(() => {
+    const fetchTranslations = async () => {
+      const fetchedTranslations = await getAllTranslations();
+      setTranslations(fetchedTranslations);
+    };
+    fetchTranslations();
+  }, []);
 
   useEffect(() => {
     const fetchMyStamps = async () => {
@@ -71,7 +81,7 @@ const MyStamps = () => {
               alignItems: 'center',
               marginTop: -27,
             }}>
-            <Text style={GlobalStyles.h1}>My Stamps</Text>
+            <Text style={GlobalStyles.h1}>{translations.myStamps}</Text>
           </View>
         </View>
 

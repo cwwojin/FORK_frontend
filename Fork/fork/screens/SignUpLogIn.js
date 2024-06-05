@@ -1,9 +1,25 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import { View, Text, Button, StyleSheet, Image, TouchableOpacity, SafeAreaView } from 'react-native';
 import {LinearGradient}  from 'expo-linear-gradient';
 import { Border, Color, GlobalStyles } from "../GlobalStyles.js";
+import { getAllTranslations, getLanguageToken } from '../LanguageUtils';
 
 const SignUpLogIn = ({ navigation }) => {
+
+  const [translations, setTranslations] = useState({
+    signUp: '',
+    logIn: '',
+    startWithoutAccount: '',
+  });
+
+  useEffect(() => {
+    const fetchTranslations = async () => {
+      const fetchedTranslations = await getAllTranslations();
+      setTranslations(fetchedTranslations);
+    };
+    fetchTranslations();
+  }, []);
+
   const onSignUp = useCallback(() => {
     navigation.navigate("UserType"); 
   }, [navigation]);
@@ -33,13 +49,13 @@ const SignUpLogIn = ({ navigation }) => {
           </View>
           <View style={GlobalStyles.authOptions}>
             <TouchableOpacity style={GlobalStyles.startButton} onPress={onSignUp}>
-              <Text style={GlobalStyles.startButtonText}>Sign Up</Text>
+              <Text style={GlobalStyles.startButtonText}>{translations.signUp}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={GlobalStyles.startButton} onPress={onLogIn}>
-              <Text style={GlobalStyles.startButtonText}>Log In</Text>
+              <Text style={GlobalStyles.startButtonText}>{translations.logIn}</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={onStartWithoutAccount}>
-              <Text style={GlobalStyles.startText}>Start without an account</Text>
+              <Text style={GlobalStyles.startText}>{translations.startWithoutAccount}</Text>
             </TouchableOpacity>
           </View>
         </View>

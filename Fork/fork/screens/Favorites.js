@@ -14,6 +14,7 @@ import userImage from '../assets/placeholders/User.png';
 //To be deleted
 import longImagePlaceholder from '../assets/placeholders/long_image.png';
 import { TouchableOpacity } from 'react-native-gesture-handler';
+import { getLanguageToken, getTranslations, getAllTranslations } from '../LanguageUtils';
 
 const Favorites = () => {
   //Get Informations of facilities
@@ -22,6 +23,18 @@ const Favorites = () => {
   const [myFavorites, setMyFavorites] = useState([]);
   const [favoritesImageList, setFavoritesImageList] = useState([]);
   const [notices, setNotices] = useState([]);
+  const [translations, setTranslations] = useState({
+    favorites: '',
+    noNotices: '',
+  });
+
+  useEffect(() => {
+    const fetchTranslations = async () => {
+      const fetchedTranslations = await getAllTranslations();
+      setTranslations(fetchedTranslations);
+    };
+    fetchTranslations();
+  }, []);
 
   useEffect(() => {
     const fetchFavorites = async () => {
@@ -71,7 +84,7 @@ const Favorites = () => {
               marginTop: -27,
               paddingBottom: 10,
             }}>
-            <Text style={GlobalStyles.h1}>Favorites</Text>
+            <Text style={GlobalStyles.h1}>{translations.favorites}</Text>
           </View>
           <ScrollView
             horizontal
@@ -115,7 +128,7 @@ const Favorites = () => {
                 </TouchableOpacity>
               ))
             ) : (
-              <Text>No notices available</Text>
+              <Text>{translations.noNotices}</Text>
             )}
           </ScrollView>
         </View>
