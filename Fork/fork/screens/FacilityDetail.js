@@ -61,11 +61,32 @@ const FacilityDetail = () => {
   const [notices, setNotices] = useState([]);
   const [topHashtags, setTopHashtags] = useState([]);
   const [owner, setOwner] = useState(false);
+  const navigation = useNavigation();
+  const [translations, setTranslations] = useState({});
 
+  useEffect(() => {
+    const fetchTranslations = async () => {
+      const fetchedTranslations = await getAllTranslations();
+      setTranslations(fetchedTranslations);
+    };
+    fetchTranslations();
+  }, []);
+
+  const [language, setLanguage] = useState('en');
+
+  useEffect(() => {
+      const initializeLanguage = async () => {
+        const savedLanguage = await getLanguageToken();
+        setLanguage(savedLanguage);
+      };
+      initializeLanguage();
+  }, [language]);
+  
   useEffect(() => {
     const fetchFacility = async (facilityID) => {
       try {
         const data = await getFacilityByID(facilityID);
+        console.log("data: "+JSON.stringify(data, null, 2));
         setFacilityInfo(data);
         console.log(data);
 
@@ -199,16 +220,7 @@ const FacilityDetail = () => {
     isMyFacility(facilityID);
   }, []);
 
-  const navigation = useNavigation();
-  const [translations, setTranslations] = useState({});
-
-  useEffect(() => {
-    const fetchTranslations = async () => {
-      const fetchedTranslations = await getAllTranslations();
-      setTranslations(fetchedTranslations);
-    };
-    fetchTranslations();
-  }, []);
+  
 
   const [isTimeVisible, setTimeVisible] = useState(false);
   const [stamp, setStamp] = useState(false);
@@ -410,7 +422,7 @@ const FacilityDetail = () => {
                 paddingBottom: 10,
                 width: '70%'
               }}>
-              <Text style={GlobalStyles.h1} numberOfLines={1}>{facilityInfo?.name}</Text>
+              <Text style={GlobalStyles.h1} numberOfLines={1}>{language === 'ko' ? facilityInfo?.name : facilityInfo?.english_name}</Text>
             </View>
           </View>
           <View style={{ flexDirection: 'row' }}>
@@ -441,7 +453,7 @@ const FacilityDetail = () => {
                 style={{ ...GlobalStyles.icon, marginRight: 5 }}
                 source={require('../assets/icons/location.png')}
               />
-              <Text style={GlobalStyles.body2}>{facilityInfo.english_address}</Text>
+              <Text style={GlobalStyles.body2}>{language === 'ko' ? facilityInfo?.road_address : facilityInfo?.english_address}</Text>
             </View>
             <View style={{ flexDirection: 'row' }}>
               <Image

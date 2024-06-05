@@ -1,9 +1,12 @@
-import { Image, View, Text } from 'react-native';
+import { Image, View, Text, ActivityIndicator } from 'react-native';
 import { Color, GlobalStyles } from '../GlobalStyles.js';
 import { fetchImage } from '../screens/api.js';
 import { useEffect, useState } from 'react';
-
 import longImagePlaceholder from '../assets/placeholders/long_image.png';
+import { getLanguageToken } from '../LanguageUtils';
+import Translator, {
+  useTranslator,
+} from 'react-native-translator';
 
 const Menu = ({
   menuName,
@@ -13,22 +16,51 @@ const Menu = ({
   menuImage,
 }) => {
   const [menuImages, setMenuImages] = useState();
+  const [translatedMenu, setTranslatedMenu] = useState({
+    name: menuName,
+    description: menuDescription,
+    quantity: menuQuantity,
+  });
+  const [loading, setLoading] = useState(true);
+  const { translate } = useTranslator();
+  const [language, setLanguage] = useState('en');
 
   useEffect(() => {
-    const fetchMenuImage = async () => {
+    const fetchData = async () => {
       try {
         const imageUrl = await fetchImage(menuImage);
         if (imageUrl != undefined) {
           setMenuImages(imageUrl);
         }
+        const currentLanguage = await getLanguageToken();
+        console.log("currentLanguage" + currentLanguage);
+    
+        const targetLanguage = currentLanguage === 'kr' ? 'en' : 'kr';
+        let translatedMenuData = {
+          name: await translate(targetLanguage, currentLanguage, menuName, {
+            timeout: 5000,
+          }),
+          description: await translate(targetLanguage, currentLanguage, menuDescription, {
+            timeout: 5000,
+          }),
+          quantity: await translate(targetLanguage, currentLanguage, menuQuantity, {
+              timeout: 5000,
+          })
+        };
+        setTranslatedMenu(translatedMenuData);
+        setLanguage(targetLanguage);
       } catch (error) {
         console.log(error.message);
-      };
-    }
-    if (menuImage != "") {
-      fetchMenuImage();
-    };
-  }, []);
+      } finally {
+        setLoading(false);
+      }
+    }; 
+    fetchData();
+  }, [language]);
+
+  if (loading) {
+    return <ActivityIndicator size="large" color={Color.orange_700} />;
+  }
 
   return (
     <View style={{ width: '100%', alignItems: 'center' }}>
@@ -52,7 +84,7 @@ const Menu = ({
                 ...GlobalStyles.body,
                 padding: 3,
               }}>
-              {menuName}
+              {translatedMenu.name}
             </Text>
             <Text
               style={{
@@ -60,7 +92,7 @@ const Menu = ({
                 padding: 3,
 
               }}>
-              {menuDescription}
+              {translatedMenu.description}
             </Text>
             <Text
               style={{
@@ -68,7 +100,7 @@ const Menu = ({
                 padding: 3,
 
               }}>
-              {menuQuantity}
+              {translatedMenu.quantity}
             </Text>
           </View>
           <Text style={{ ...GlobalStyles.body4 }}>{menuPrice} Won</Text>

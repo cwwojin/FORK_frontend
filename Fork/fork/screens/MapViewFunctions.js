@@ -1,12 +1,25 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { StyleSheet, Text, View, Image, SafeAreaView, ScrollView, TextInput, Button, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, Image, SafeAreaView, ScrollView, TextInput, Button, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Color, GlobalStyles } from '../GlobalStyles';
 import LongImage from '../assets/placeholders/long_image.png';
-
+import { getAllTranslations, getLanguageToken } from '../LanguageUtils';
+import Translator, {
+    useTranslator,
+  } from 'react-native-translator';
 
 export const isOpenNow = (openingHours) => {
+    const [translation, setTranslation] = useState({});
+
+    useEffect(() => {
+      const fetchTranslations = async () => {
+        const fetchedTranslations = await getAllTranslations();
+        setTranslation(fetchedTranslations);
+      };
+      fetchTranslations();
+    }, []);
+
     if (!openingHours || openingHours.length === 0) {
-        return { status: "Closed", color: 'red' };
+        return { status: translation.closed, color: 'red' };
     }
     const now = new Date();
     const dayOfWeek = now.getDay(); // JavaScript's Date.getDay() gives Sunday - Saturday : 0 - 6
@@ -17,7 +30,7 @@ export const isOpenNow = (openingHours) => {
     const todayHours = openingHours.find(obj => obj !== null && obj.day !== null && obj.day === apiDayIndex);
     if (!todayHours || todayHours.open_time === null || todayHours.close_time === null) {
         // If today's hours are undefined or times or day are null, assume closed
-        return { status: "Closed", color: 'red' };
+        return { status: translation.closed, color: 'red' };
     }
 
     const currentTime = now.toTimeString().substr(0, 8); // "HH:MM:SS" format
@@ -25,9 +38,9 @@ export const isOpenNow = (openingHours) => {
 
     // Check if the current time is between the opening and closing times
     if (currentTime >= open_time && currentTime <= close_time) {
-        return { status: "Open", color: 'green' };
+        return { status: translation.open, color: 'green' };
     }
-    return { status: "Closed", color: 'red' };
+    return { status: translation.closed, color: 'red' };
 };
 
 const s3UriToRequestUrl = (baseUrl, uri) => {
@@ -48,6 +61,20 @@ const categorizePreferences = (preferences) => {
 
 
 export const FacilityDetails = ({ facility, onPress }) => {
+    const [translations, setTranslations] = useState({});
+    const [language, setLanguage] = useState('en');
+
+    useEffect(() => {
+        const initializeLanguage = async () => {
+          const savedLanguage = await getLanguageToken();
+          setLanguage(savedLanguage);
+          const fetchedTranslations = await getAllTranslations();
+          setTranslations(fetchedTranslations);
+        };
+        initializeLanguage();
+    }, [language]);
+
+    
     let status = "Unknown";
     let color = 'grey';
     if (facility.opening_hours != null) {
@@ -95,7 +122,7 @@ export const FacilityDetails = ({ facility, onPress }) => {
                                 style={{ ...GlobalStyles.body, marginRight: 10 }}
                                 numberOfLines={1}
                                 ellipsizeMode="tail">
-                                {facility.name}
+                                {language === 'ko' ? facility.name : facility.english_name}
                             </Text>
                             <Text style={{...GlobalStyles.body2, color: color}}>{status}</Text>
                         </View>
@@ -109,10 +136,7 @@ export const FacilityDetails = ({ facility, onPress }) => {
                         </View>
                     </View>
                     <Text style={{ ...GlobalStyles.body2, marginBottom: 18 }} numberOfLines={1} ellipsizeMode="tail">
-                        {facility.english_address}
-                    </Text>
-                    <Text style={{ ...GlobalStyles.body4, marginBottom: 18 }} numberOfLines={1} ellipsizeMode="tail">
-                        {facility.description}
+                        {language === 'ko' ? facility.road_address : facility.english_address}
                     </Text>
                 </View>
             </View>
