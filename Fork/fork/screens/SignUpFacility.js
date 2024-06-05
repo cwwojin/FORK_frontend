@@ -1,10 +1,21 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import { View, Text, Button, StyleSheet, Image, TouchableOpacity, SafeAreaView } from 'react-native';
 import {LinearGradient}  from 'expo-linear-gradient';
 import { Border, Color, GlobalStyles } from "../GlobalStyles.js";
 import SignUpInputFacility from '../components/SignUpInputFacility'; 
+import { getAllTranslations, getLanguageToken } from '../LanguageUtils';
 
 const SignUpFacility= ({ navigation }) => {
+  const [translations, setTranslations] = useState({});
+
+  useEffect(() => {
+    const fetchTranslations = async () => {
+      const fetchedTranslations = await getAllTranslations();
+      setTranslations(fetchedTranslations);
+    };
+    fetchTranslations();
+  }, []);
+
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -14,7 +25,7 @@ const SignUpFacility= ({ navigation }) => {
             style={styles.image}
             source={require('../assets/logos/coloredLogo.png')}
           />
-          <Text style={GlobalStyles.title}>Sign Up</Text>
+          <Text style={GlobalStyles.title}>{translations.signUp}</Text>
         </View>
         <View style={styles.userInputs}>
           <SignUpInputFacility /> 

@@ -1,8 +1,10 @@
-import React, { useCallback, useState }  from 'react';
+import React, { useCallback, useState, useEffect }  from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Image, TouchableOpacity, SafeAreaView } from 'react-native';
 import {LinearGradient}  from 'expo-linear-gradient';
 import { Border, Color, GlobalStyles } from "../GlobalStyles.js"; 
 import { useNavigation } from '@react-navigation/native';
+import { getAllTranslations, getLanguageToken } from '../LanguageUtils';
+import { LANGUAGE_CODES } from 'react-native-translator';
 
 const PushNotification= ({navigation}) => {
 
@@ -10,19 +12,29 @@ const PushNotification= ({navigation}) => {
     navigation.navigate("WaitingApproval");
   }, [navigation]);
 
+  const [translations, setTranslations] = useState({});
+
+  useEffect(() => {
+    const fetchTranslations = async () => {
+      const fetchedTranslations = await getAllTranslations();
+      setTranslations(fetchedTranslations);
+    };
+    fetchTranslations();
+  }, []);
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <View style={styles.container}>
         <View style={styles.mainArea}>
-          <Text style={GlobalStyles.title}>Allow push notifications</Text>
-          <Text style={styles.text}>Would you like to enable push notifications to be notified once you registration request is accepted?</Text>
+          <Text style={GlobalStyles.title}>{translations.allowNotif}</Text>
+          <Text style={styles.text}>{translations.permissionNotif}</Text>
         </View>
         <View style={styles.subArea}>
             <TouchableOpacity style={GlobalStyles.confirmButton} onPress={onConfirm}>
-            <Text style={GlobalStyles.confirmButtonText}>Yes</Text>
+            <Text style={GlobalStyles.confirmButtonText}>{translations.yes}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={GlobalStyles.confirmButton1} onPress={onConfirm}>
-            <Text style={GlobalStyles.confirmButtonText1}>No</Text>
+            <Text style={GlobalStyles.confirmButtonText1}>{translations.no}</Text>
             </TouchableOpacity>
           </View>
       </View>

@@ -1,13 +1,23 @@
-import React, { useState, useCallback} from 'react';
+import React, { useState, useCallback, useEffect} from 'react';
 import { ScrollView, View, Text, TouchableOpacity, Image, StyleSheet, Alert } from 'react-native';
 import { Border, Color, GlobalStyles } from "../GlobalStyles.js";
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { addUserPreference } from '../screens/api';
+import { getAllTranslations, getLanguageToken } from '../LanguageUtils';
 
 const Survey = ({ navigation }) => {
   const route = useRoute();
   // const id  = route.params.id;
   const id = 9;
+  const [translations, setTranslations] = useState({});
+
+  useEffect(() => {
+    const fetchTranslations = async () => {
+      const fetchedTranslations = await getAllTranslations();
+      setTranslations(fetchedTranslations);
+    };
+    fetchTranslations();
+  }, []);
 
   const [selectedCuisines, setSelectedCuisines] = useState([]);
   const [selectedDietaryPreferences, setSelectedDietaryPreferences] = useState([]);
@@ -31,8 +41,8 @@ const Survey = ({ navigation }) => {
     { id: 13, type: 1, name: 'Vegan', icon: require('../assets/icons/attributes/salad.png')  },
     { id: 14, type: 1, name: 'Pescatarian', icon: require('../assets/icons/attributes/pescatarian.png')  },
     { id: 15, type: 1, name: 'Halal', icon: require('../assets/icons/attributes/halal.png')  },
-    { id: 16, type: 1, name: 'Lactose-Free', icon: require('../assets/icons/attributes/lactosefree.png')  },
-    { id: 17, type: 1, name: 'Gluten-Free', icon: require('../assets/icons/attributes/glutenfree.png')  },
+    { id: 16, type: 1, name: 'LactoseFree', icon: require('../assets/icons/attributes/lactosefree.png')  },
+    { id: 17, type: 1, name: 'GlutenFree', icon: require('../assets/icons/attributes/glutenfree.png')  },
   ];
 
   const handleSelectCuisine = (cuisine) => {
@@ -62,9 +72,9 @@ const Survey = ({ navigation }) => {
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.header}>Your food preferences</Text>
+      <Text style={styles.header}>{translations.foodPreferences}</Text>
       
-      <Text style={styles.subHeader}>CUISINE TYPE</Text>
+      <Text style={styles.subHeader}>{translations.cuisineTypes}</Text>
       <View style={styles.grid}>
         {cuisines.map((item) => (
           <TouchableOpacity
@@ -73,12 +83,12 @@ const Survey = ({ navigation }) => {
             onPress={() => handleSelectCuisine(item.id)}
           >
             <Image source={item.icon} style={styles.icon} />
-            <Text>{item.name}</Text>
+            <Text>{translations.pref[item.name]}</Text>
           </TouchableOpacity>
         ))}
       </View>
 
-      <Text style={styles.subHeader}>DIETARY PREFERENCE</Text>
+      <Text style={styles.subHeader}>{translations.dietaryPreferences}</Text>
       <View style={styles.grid}>
         {dietaryPreferences.map((item) => (
           <TouchableOpacity
@@ -90,16 +100,16 @@ const Survey = ({ navigation }) => {
               source={item.icon} 
               style={[
                 styles.icon, 
-                (item.id === 'lactose-free' || item.id === 'gluten-free') && styles.doubleIcon
+                (item.id === 16 || item.id === 17) && styles.doubleIcon
               ]}
             />
-            <Text>{item.name}</Text>
+            <Text>{translations.pref[item.name]}</Text>
           </TouchableOpacity>
         ))}
       </View>
       <View style={styles.mainArea}>
         <TouchableOpacity style={GlobalStyles.confirmButton}onPress={handlePreferences}>
-          <Text style={GlobalStyles.confirmButtonText}>Confirm</Text>
+          <Text style={GlobalStyles.confirmButtonText}>{translations.confirm}</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>

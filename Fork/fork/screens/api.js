@@ -11,9 +11,9 @@ const FORK_URL = `${API_ENDPOINT}/dev/`
 // S3 endpoint
 const S3_ENDPOINT = `${API_ENDPOINT}/s3`
 
-export let USERBOOKMARKED = "";
-export let USERTOKEN = "guest";
-export let USERID = "";
+// export let USERBOOKMARKED = "";
+export let USERTOKEN = 'guest';
+export let USERID = 3;
 export let USERPREFERENCE = [];
 export let USERTYPE = '';
 
@@ -31,7 +31,7 @@ export const handleLogin = async (username, password) => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'guest'
+                'Authorization': USERTOKEN
             },
             body: JSON.stringify(requestBody)
         });
@@ -105,7 +105,7 @@ export const resetPassword = async (userId) => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'foodie'
+                'Authorization': USERTOKEN
             },
             body: JSON.stringify(payload),
         });
@@ -139,7 +139,7 @@ export const registerUser = async (userId, password, userType, email) => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'foodie'
+                'Authorization': USERTOKEN
             },
             body: JSON.stringify(requestBody)
         });
@@ -178,7 +178,7 @@ export const registerFacility = async (facilityData, images) => {
         const response = await fetch(url, {
             method: 'POST',
             headers: {
-                'Authorization': 'foodie'
+                'Authorization': USERTOKEN 
             },
             body: formData
         });
@@ -209,7 +209,7 @@ export const verifyEmail = async (userId, code) => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'foodie'
+                'Authorization': USERTOKEN
             },
             body: JSON.stringify(requestBody)
         });
@@ -237,7 +237,7 @@ export const resendVerifyEmail = async (userId) => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'foodie'
+                'Authorization': USERTOKEN
             },
             body: JSON.stringify(requestBody)
         });
@@ -265,7 +265,7 @@ export const addUserPreference = async (userId, preferenceId) => {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'foodie'
+                'Authorization': USERTOKEN
             },
             body: JSON.stringify(requestBody)
         });
@@ -353,7 +353,7 @@ export const fetchFacilityWithName = async (facilityName, openNow = false, prefe
         const response = await fetch(url, {
             method: 'GET',
             headers: {
-                'Authorization': 'foodie',
+                'Authorization': USERTOKEN,
             }
         });
 
@@ -394,7 +394,7 @@ export const fetchFacilitiesInBounds = async (northEastLat, northEastLng, southW
         const response = await fetch(url, {
             method: 'GET',
             headers: {
-                'Authorization': 'foodie',
+                'Authorization': USERTOKEN,
             }
         });
         //console.log("Response object:", response);

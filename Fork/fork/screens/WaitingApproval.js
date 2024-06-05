@@ -1,11 +1,21 @@
-import React, { useCallback, useState }  from 'react';
+import React, { useCallback, useState, useEffect }  from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Image, TouchableOpacity, SafeAreaView } from 'react-native';
 import {LinearGradient}  from 'expo-linear-gradient';
 import { Border, Color, GlobalStyles } from "../GlobalStyles.js"; 
 import { useNavigation } from '@react-navigation/native';
+import { getAllTranslations, getLanguageToken } from '../LanguageUtils';
 
 const WaitingApproval = ({navigation}) => {
+  const [translations, setTranslations] = useState({});
 
+  useEffect(() => {
+    const fetchTranslations = async () => {
+      const fetchedTranslations = await getAllTranslations();
+      setTranslations(fetchedTranslations);
+    };
+    fetchTranslations();
+  }, []);
+  
   const onStart = useCallback(() => {
     navigation.navigate("Home");
   }, [navigation]);
@@ -18,10 +28,10 @@ const WaitingApproval = ({navigation}) => {
             style={styles.image}
             source={require('../assets/logos/coloredLogo.png')}
           />
-          <Text style={styles.title}>Registration request sent</Text>
-          <Text style={styles.text}>Once FORK admin reviews your registration request, a notification will be sent by both FORK application and email.</Text>
+          <Text style={styles.title}>{translations.registerReq}</Text>
+          <Text style={styles.text}>{translations.reqText}</Text>
           <TouchableOpacity style={GlobalStyles.confirmButton} onPress={onStart}>
-          <Text style={GlobalStyles.confirmButtonText}>Start</Text>
+          <Text style={GlobalStyles.confirmButtonText}>{translations.start}</Text>
           </TouchableOpacity>
         </View>
       </View>

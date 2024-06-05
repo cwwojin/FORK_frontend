@@ -37,12 +37,15 @@ import {
   USERTYPE,
   getMyFacilities
 } from './api';
+import { getAllTranslations, getLanguageToken } from '../LanguageUtils';
 
 const FacilityDetail = () => {
 
   const route = useRoute();
 
   const { facilityID } = route.params;
+  console.log('parameters:' +JSON.stringify(route.params, null, 2));
+
 
   const [facilityInfo, setFacilityInfo] = useState({});
   const [reviewList, setReviewList] = useState('');
@@ -197,6 +200,15 @@ const FacilityDetail = () => {
   }, []);
 
   const navigation = useNavigation();
+  const [translations, setTranslations] = useState({});
+
+  useEffect(() => {
+    const fetchTranslations = async () => {
+      const fetchedTranslations = await getAllTranslations();
+      setTranslations(fetchedTranslations);
+    };
+    fetchTranslations();
+  }, []);
 
   const [isTimeVisible, setTimeVisible] = useState(false);
   const [stamp, setStamp] = useState(false);
@@ -516,13 +528,13 @@ const FacilityDetail = () => {
 
           <View style={{ flexDirection: 'row', paddingVertical: 15, paddingHorizontal: 3 }}>
             <TouchableOpacity style={{ marginRight: 20 }} onPress={switchTabMenu}>
-              <Text style={{ ...styles.tab, color: tabState === "Menu" ? Color.orange_700 : Color.orange_100 }}>Menu</Text>
+              <Text style={{ ...styles.tab, color: tabState === "Menu" ? Color.orange_700 : Color.orange_100 }}>{translations.menuSmall}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={{ marginRight: 20 }} onPress={switchTabReview}>
-              <Text style={{ ...styles.tab, color: tabState === "Review" ? Color.orange_700 : Color.orange_100 }}>Review</Text>
+              <Text style={{ ...styles.tab, color: tabState === "Review" ? Color.orange_700 : Color.orange_100 }}>{translations.review}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={{ marginRight: 20 }} onPress={switchTabNotice}>
-              <Text style={{ ...styles.tab, color: tabState === "Notice" ? Color.orange_700 : Color.orange_100 }}>Notice</Text>
+              <Text style={{ ...styles.tab, color: tabState === "Notice" ? Color.orange_700 : Color.orange_100 }}>{translations.notice}</Text>
             </TouchableOpacity>
           </View>
           <View>
@@ -642,7 +654,7 @@ const FacilityDetail = () => {
         <View style={styles.overlay}>
           <View style={styles.background}>
             <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
-              <Text style={GlobalStyles.h2}>Write Reviews</Text>
+              <Text style={GlobalStyles.h2}>{translations.writeReviews}</Text>
               <TouchableOpacity style={{ ...GlobalStyles.topIcon, marginRight: 0 }} onPress={toggleWriteReview}>
                 <Image
                   source={require('../assets/icons/navigate_close.png')}
@@ -668,7 +680,7 @@ const FacilityDetail = () => {
                   {renderStars()}
                 </View>
                 <View style={styles.inputSection}>
-                  <Text style={GlobalStyles.h3}>Review</Text>
+                  <Text style={GlobalStyles.h3}>{translations.review}</Text>
                   <View style={GlobalStyles.inputWrapper3}>
                     <TextInput
                       style={GlobalStyles.registrationInput2}
@@ -681,7 +693,7 @@ const FacilityDetail = () => {
                   </View>
                 </View>
                 <View style={styles.inputSection}>
-                  <Text style={GlobalStyles.h3}>Hashtags</Text>
+                  <Text style={GlobalStyles.h3}>{translations.hashtags}</Text>
                   <View
                     style={{
                       flexDirection: 'row',
@@ -706,14 +718,14 @@ const FacilityDetail = () => {
                   {hashtag && (
                     <TouchableOpacity onPress={pushHashtag}>
                       <View style={styles.hashtagHolder}>
-                        <Text style={{ ...GlobalStyles.hashtag, color: Color.lightGrey }}>Add Hashtag</Text>
+                        <Text style={{ ...GlobalStyles.hashtag, color: Color.lightGrey }}>{translations.addHashtag}</Text>
                       </View>
                     </TouchableOpacity>
                   )}
                 </View>
                 <View style={{ width: '100%', justifyContent: 'flex-end', flexDirection: 'row', paddingTop: 20 }}>
                   <TouchableOpacity onPress={handleCreateReview}>
-                    <Text style={GlobalStyles.h4}>Send</Text>
+                    <Text style={GlobalStyles.h4}>{translations.send}</Text>
                   </TouchableOpacity>
                 </View>
               </View>

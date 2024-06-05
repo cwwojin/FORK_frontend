@@ -19,6 +19,8 @@ import { FacilityDetails } from './MapViewFunctions';
 import longImagePlaceholder from '../assets/placeholders/long_image.png';
 import { getNewestFacilities, getTrendingFacilities, fetchImage, USERPREFERENCE, getUserPreferences, getTrendingPreferenceFacilities } from './api';
 import { TouchableOpacity } from 'react-native-gesture-handler';
+import { getLanguageToken, getAllTranslations } from '../LanguageUtils';
+
 
 const Home = () => {
   //Get Informations of facilities
@@ -27,6 +29,22 @@ const Home = () => {
   const [newest, setNewest] = useState([]);
   const [preference, setPreference] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
+  const [translations, setTranslations] = useState({
+    trending: '',
+    new: '',
+    foodiePicks: '',
+    forOur: '',
+    dishLovers: '',
+    weSuggest: '',
+  });
+
+  useEffect(() => {
+    const fetchTranslations = async () => {
+      const fetchedTranslations = await getAllTranslations();
+      setTranslations(fetchedTranslations);
+    };
+    fetchTranslations();
+  }, []);
 
   const getRandomItems = (array, n) => {
     const result = [];
@@ -44,6 +62,7 @@ const Home = () => {
 
   useEffect(() => {
     console.log("userpreference", USERPREFERENCE);
+
     const fetchTrending = async () => {
       try {
         const data = await getTrendingFacilities();
@@ -95,7 +114,7 @@ const Home = () => {
             source={require('../assets/placeholders/long_image.png')}
           />
 
-          <Text style={GlobalStyles.h2}>Trending</Text>
+          <Text style={GlobalStyles.h2}>{translations.trending}</Text>
           <View style={{ ...GlobalStyles.scroll, height: 210 }}>
             <ScrollView
               horizontal
@@ -116,7 +135,7 @@ const Home = () => {
             </ScrollView>
           </View>
 
-          <Text style={GlobalStyles.h2}>New</Text>
+          <Text style={GlobalStyles.h2}>{translations.new}</Text>
           <View style={{ ...GlobalStyles.scroll, height: 210 }}>
             <ScrollView
               horizontal
@@ -138,14 +157,14 @@ const Home = () => {
           </View>
 
           <Text style={GlobalStyles.h2}>
-            Foodie picks
+            {translations.foodiePicks}
           </Text>
           {preference?.map(item => (
             <>
               <Text style={{ ...GlobalStyles.h3, flexDirection: 'row' }}>
-                <Text>For our </Text>
-                <Text style={{ color: Color.orange_700 }}>{item.name} Dish lovers</Text>
-                <Text>, we suggest ...</Text>
+                <Text>{translations.forOur}</Text>
+                <Text style={{ color: Color.orange_700 }}>{item.name} {translations.dishLovers}</Text>
+                <Text>, {translations.weSuggest} ...</Text>
               </Text>
               <View style={{ width: '105%', paddingBottom: 15 }}>
                 {suggestions[item.id] && (

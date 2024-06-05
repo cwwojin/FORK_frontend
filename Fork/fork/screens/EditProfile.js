@@ -18,6 +18,7 @@ import * as ImageManipulator from 'expo-image-manipulator';
 import { GlobalStyles, Color, FontSize } from '../GlobalStyles';
 import Review from '../components/Review';
 import { fetchImage, USERPREFERENCE, addUserPreference2, deleteUserPreference, updateUserProfile, uploadUserProfileImage } from './api';
+import { getAllTranslations, getLanguageToken } from '../LanguageUtils';
 
 
 const EditProfiles = () => {
@@ -34,6 +35,15 @@ const EditProfiles = () => {
   const [email, setEmail] = useState(userInfo.email)
   const [password, setPassword] = useState();
   const userType = userInfo.user_type;
+  const [translations, setTranslations] = useState({});
+
+  useEffect(() => {
+    const fetchTranslations = async () => {
+      const fetchedTranslations = await getAllTranslations();
+      setTranslations(fetchedTranslations);
+    };
+    fetchTranslations();
+  }, []);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -217,7 +227,7 @@ const EditProfiles = () => {
               marginTop: -27,
               paddingBottom: 10,
             }}>
-            <Text style={GlobalStyles.h1}>Edit Profile</Text>
+            <Text style={GlobalStyles.h1}>{translations.editProfil}</Text>
           </View>
         </View>
         <ScrollView
@@ -277,9 +287,9 @@ const EditProfiles = () => {
 
             {(userType == 1) && (
               <>
-                <Text style={{ ...GlobalStyles.h2, textAlign: 'center' }}>Your food preferences</Text>
+                <Text style={{ ...GlobalStyles.h2, textAlign: 'center' }}>{translations.foodPreferences}</Text>
 
-                <Text style={{ ...GlobalStyles.h4, textAlign: 'center' }}>CUISINE TYPE</Text>
+                <Text style={{ ...GlobalStyles.h4, textAlign: 'center' }}>{translations.cuisineTypes}</Text>
                 <View style={styles.grid}>
                   {cuisines.map((item) => (
                     <TouchableOpacity
@@ -288,12 +298,12 @@ const EditProfiles = () => {
                       onPress={() => handleSelectCuisine(item.id)}
                     >
                       <Image source={item.icon} style={styles.icon} />
-                      <Text style={{ textAlign: 'center' }}>{item.name}</Text>
+                      <Text style={{ textAlign: 'center' }}>{translations.pref[item.name]}</Text>
                     </TouchableOpacity>
                   ))}
                 </View>
 
-                <Text style={{ ...GlobalStyles.h4, textAlign: 'center' }}>DIETARY PREFERENCE</Text>
+                <Text style={{ ...GlobalStyles.h4, textAlign: 'center' }}>{translations.dietaryPreferences}</Text>
                 <View style={styles.grid}>
                   {dietaryPreferences.map((item) => (
                     <TouchableOpacity
@@ -308,7 +318,7 @@ const EditProfiles = () => {
                           (item.id === 16 || item.id === 17) && styles.doubleIcon
                         ]}
                       />
-                      <Text style={{ textAlign: 'center' }}>{item.name}</Text>
+                      <Text style={{ textAlign: 'center' }}>{translations.pref[item.name]}</Text>
                     </TouchableOpacity>
                   ))}
                 </View>
@@ -317,7 +327,7 @@ const EditProfiles = () => {
 
             <View style={{ marginTop: 30, width: '100%' }}>
               <TouchableOpacity onPress={handleSubmit}>
-                <Text style={{ ...GlobalStyles.h4, marginLeft: 0, fontSize: FontSize.size_xl, textAlign: 'center' }}>Save</Text>
+                <Text style={{ ...GlobalStyles.h4, marginLeft: 0, fontSize: FontSize.size_xl, textAlign: 'center' }}>{translations.save}</Text>
               </TouchableOpacity>
             </View>
           </View>

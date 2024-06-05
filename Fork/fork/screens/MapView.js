@@ -511,22 +511,23 @@ const MapView = () => {
       }
 
       if (selectedCuisines.length > 0 || selectedDietaryPreferences.length > 0) {
-        //console.log("selectedCuisines.length" + selectedCuisines.length);
+        console.log("selectedCuisines.length" + selectedCuisines);
         //console.log("selectedCuisines" + selectedCuisines);
         //console.log("selectedDiets.length" + selectedDietaryPreferences.length);
         facilities = facilities.filter(facility => {
           const validPreferences = facility.preferences ? facility.preferences.filter(pref => pref) : [];
-          //console.log("validPreferences" + validPreferences[0])
-          const facilityCuisines = validPreferences.filter(pref => pref.type === 0).map(pref => pref.name);
-          //console.log(facility.name + " => Cuisine type : " + facilityCuisines);
-          const facilityDiets = validPreferences.filter(pref => pref.type === 1).map(pref => pref.name);
+          console.log("validPreferences" + validPreferences)
+          const facilityCuisines = validPreferences.filter(pref => pref.type === 0).map(pref => pref.id);
+          console.log("facilityCuisines : " + facilityCuisines);
+          const facilityDiets = validPreferences.filter(pref => pref.type === 1).map(pref => pref.id);
           //console.log(facility.name + " => Diet type : " + facilityDiets);
-          //console.log("selectedCuisines" + selectedCuisines);
+          console.log("selectedCuisines" + selectedCuisines);
           const hasSelectedCuisine = selectedCuisines.some(cuisine => 
-            facilityCuisines.map(c => c.toLowerCase()).includes(cuisine.toLowerCase()));
+            facilityCuisines.includes(cuisine));
           //console.log("hasSelectedCuisine" + hasSelectedCuisine);
           const hasSelectedDiet = selectedDietaryPreferences.some(diet => 
             facilityDiets.map(c => c.toLowerCase()).includes(diet.toLowerCase()));
+          //console.log("BOOLEAN" + hasSelectedCuisine || hasSelectedDiet); 
           return hasSelectedCuisine || hasSelectedDiet;
         });
       }
@@ -539,7 +540,7 @@ const MapView = () => {
           return acc;
         }
       }, []);
-      //console.log("facilities : " + JSON.stringify(uniqueFacilities, null, 2));
+      console.log("facilities : " + JSON.stringify(uniqueFacilities, null, 2));
       //console.log(neLat + " " + neLng + " " + swLat + " " + swLng);
 
       if (webViewRef.current && uniqueFacilities.length > 0) {
@@ -688,12 +689,13 @@ const MapView = () => {
                   onPress={() => handleSelectCuisine(item.id)}
                 >
                   <Image source={item.typeIcon} style={styles.typeIcon} />
-                  <Text>{translations.cuisines[item.name]}</Text>
+                  {/* <Text>{item.name}</Text> */}
+                  <Text>{translations.pref[item.name]}</Text>
                 </TouchableOpacity>
               ))}
             </View>
 
-            <Text style={styles.subHeader}>{translations.dietaryPreference}</Text>
+            <Text style={styles.subHeader}>{translations.dietaryPreferences}</Text>
             <View style={styles.grid}>
               {dietaryPreferences.map((item) => (
                 <TouchableOpacity
@@ -708,7 +710,8 @@ const MapView = () => {
                       (item.id === 'lactose-free' || item.id === 'gluten-free') && styles.typeDoubleIconcon
                     ]}
                   />
-                  <Text>{translations.dietaryPreferences[item.name]}</Text>
+                  {/* <Text>{item.name}</Text> */}
+                  <Text>{translations.pref[item.name]}</Text>
                 </TouchableOpacity>
               ))}
             </View>
@@ -740,7 +743,7 @@ const MapView = () => {
           </TouchableOpacity>
           <ScrollView style={styles.ScrollView}>
           {Array.isArray(displayedFacilities) ? displayedFacilities.map(facility => (
-            <FacilityDetails key={facility.id} facility={facility} />
+            <FacilityDetails key={facility.id} facility={facility}  onPress={() => navigation.navigate('FacilityDetail', { facilityID: facility.id })}/>
           )) : <Text>translations.loadingFacilities</Text>}
           </ScrollView>
         </View>

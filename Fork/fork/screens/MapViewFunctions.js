@@ -47,7 +47,7 @@ const categorizePreferences = (preferences) => {
 };
 
 
-export const FacilityDetails = ({ facility }) => {
+export const FacilityDetails = ({ facility, onPress }) => {
     let status = "Unknown";
     let color = 'grey';
     if (facility.opening_hours != null) {
@@ -76,7 +76,7 @@ export const FacilityDetails = ({ facility }) => {
 
     return (
 
-        <View style={styles.facilityContainer}>
+        <TouchableOpacity onPress={onPress} style={styles.facilityContainer}>
             <View style={{ width: '100%', alignItems: 'center' }}>
                 <Image
                     style={{ ...GlobalStyles.longImage, marginTop: 5 }}
@@ -116,7 +116,7 @@ export const FacilityDetails = ({ facility }) => {
                     </Text>
                 </View>
             </View>
-        </View>
+        </TouchableOpacity>
     );
 };
 

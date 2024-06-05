@@ -8,6 +8,7 @@ import axios from 'axios';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { registerFacility } from './api';
 const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+import { getAllTranslations, getLanguageToken } from '../LanguageUtils';
 
 const dayToNumber = {
   Monday: 1,
@@ -33,16 +34,28 @@ const cuisines = [
   { id: 11, name: 'Bar', icon: require('../assets/icons/attributes/bar.png') },
 ];
 
+
 const dietaryOptions = [
   { id: 12, name: 'Vegetarian', icon: require('../assets/icons/attributes/vegetarian.png') },
   { id: 13, name: 'Vegan', icon: require('../assets/icons/attributes/salad.png') },
   { id: 14, name: 'Pescatarian', icon: require('../assets/icons/attributes/pescatarian.png') },
   { id: 15, name: 'Halal', icon: require('../assets/icons/attributes/halal.png') },
-  { id: 16, name: 'Lactose-Free', icon: require('../assets/icons/attributes/lactosefree.png') },
-  { id: 17, name: 'Gluten-Free', icon: require('../assets/icons/attributes/glutenfree.png') },
+  { id: 16, name: 'LactoseFree', icon: require('../assets/icons/attributes/lactosefree.png') },
+  { id: 17, name: 'GlutenFree', icon: require('../assets/icons/attributes/glutenfree.png') },
 ];
 
 const DayHoursInput = ({ day, hours, setHours }) => {
+  
+  const [translations, setTranslations] = useState({});
+
+  useEffect(() => {
+    const fetchTranslations = async () => {
+      const fetchedTranslations = await getAllTranslations();
+      setTranslations(fetchedTranslations);
+    };
+    fetchTranslations();
+  }, []);
+
   const handleOpenTimeChange = (time) => {
     const newHours = { ...hours, open: time };
     setHours(day, newHours);
@@ -61,7 +74,7 @@ const DayHoursInput = ({ day, hours, setHours }) => {
           style={GlobalStyles.registrationInput1}
           onChangeText={handleOpenTimeChange}
           value={hours.open}
-          placeholder="Open Time (e.g., 09:00, Closed)"
+          placeholder={translations.openTimePlaceholder}
         />
         <Image source={require("../assets/icons/hour.png")} style={GlobalStyles.inputIcon} />
       </View>
@@ -70,7 +83,7 @@ const DayHoursInput = ({ day, hours, setHours }) => {
           style={GlobalStyles.registrationInput1}
           onChangeText={handleCloseTimeChange}
           value={hours.close}
-          placeholder="Close Time (e.g., 17:00, Closed)"
+          placeholder={translations.closeTimePlaceholder}
         />
         <Image source={require("../assets/icons/hour.png")} style={GlobalStyles.inputIcon} />
       </View>
@@ -94,6 +107,16 @@ const FacilityInformation = ({navigation}) => {
       rewards: [{ name: '', cnt: '' }]
     } 
   });
+
+  const [translations, setTranslations] = useState({});
+
+  useEffect(() => {
+    const fetchTranslations = async () => {
+      const fetchedTranslations = await getAllTranslations();
+      setTranslations(fetchedTranslations);
+    };
+    fetchTranslations();
+  }, []);
 
   const [facilityImageUri, setFacilityImageUri] = useState('');
   const [name, setName] = useState('');
@@ -234,7 +257,7 @@ const FacilityInformation = ({navigation}) => {
       //console.log("images : "+JSON.stringify(images, null, 2));
       const response = await registerFacility(facilityData, images);
       console.log('Facility registration request sent successfully:', JSON.stringify(response.data, null, 2));
-      //navigation.navigate("PushNotification");  
+      navigation.navigate("PushNotification");  
     } catch (error) {
       Alert.alert('Error', 'Failed to send facility registration request. Please try again.');
       console.error('Error sending facility registration request:', error);
@@ -344,7 +367,7 @@ const FacilityInformation = ({navigation}) => {
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={GlobalStyles.h2}>MY FACILITY</Text>
+      <Text style={GlobalStyles.h2}>{translations.myFacility}</Text>
 
       <View style={styles.section}>
         <View style={GlobalStyles.inputWrapper1}>
@@ -360,7 +383,7 @@ const FacilityInformation = ({navigation}) => {
             style={GlobalStyles.registrationInput1}
             onChangeText={setName}
             value={name}
-            placeholder="Name"
+            placeholder={translations.name}
           />
           <Image source={require("../assets/icons/facility.png")} style={GlobalStyles.inputIcon} />
         </View>
@@ -369,7 +392,7 @@ const FacilityInformation = ({navigation}) => {
             style={GlobalStyles.registrationInput1}
             onChangeText={setServiceDescription}
             value={serviceDescription}
-            placeholder="Service Description"
+            placeholder={translations.serviceDescription}
           />
           <Image source={require("../assets/icons/service.png")} style={GlobalStyles.inputIcon1} />
         </View>
@@ -378,7 +401,7 @@ const FacilityInformation = ({navigation}) => {
             style={GlobalStyles.registrationInput1}
             onChangeText={setWebsiteURL}
             value={websiteURL}
-            placeholder="Website URL"
+            placeholder={translations.websiteURL}
           />
           <Image source={require("../assets/icons/url.png")} style={GlobalStyles.inputIcon} />
         </View>
@@ -387,7 +410,7 @@ const FacilityInformation = ({navigation}) => {
             style={GlobalStyles.registrationInput1}
             onChangeText={setPhoneNumber}
             value={phoneNumber}
-            placeholder="Phone Number"
+            placeholder={translations.phoneNumber}
           />
           <Image source={require("../assets/icons/phone.png")} style={GlobalStyles.inputIcon} />
         </View>
@@ -396,7 +419,7 @@ const FacilityInformation = ({navigation}) => {
             style={GlobalStyles.registrationInput1}
             onChangeText={setBusinessRegNo}
             value={businessRegNo}
-            placeholder="Business Registration Number"
+            placeholder={translations.businessRegistrationNumber}
           />
           <Image source={require("../assets/icons/business.png")} style={GlobalStyles.inputIcon3} />
         </View>
@@ -405,7 +428,7 @@ const FacilityInformation = ({navigation}) => {
             style={GlobalStyles.registrationInput1}
             onChangeText={setRoadAddress}
             value={roadAddress}
-            placeholder="Road Address"
+            placeholder={translations.roadAddress}
           />
           <Image source={require("../assets/icons/location.png")} style={GlobalStyles.inputIcon4} />
         </View>
@@ -414,7 +437,7 @@ const FacilityInformation = ({navigation}) => {
             style={GlobalStyles.registrationInput1}
             onChangeText={setEnglishAddress}
             value={englishAddress}
-            placeholder="English Address"
+            placeholder={translations.englishAddress}
           />
           <Image source={require("../assets/icons/location.png")} style={GlobalStyles.inputIcon4} />
         </View>
@@ -423,7 +446,7 @@ const FacilityInformation = ({navigation}) => {
             style={GlobalStyles.registrationInput1}
             onChangeText={setPostNumber}
             value={postNumber}
-            placeholder="Post Number"
+            placeholder={translations.postNumber}
           />
           <Image source={require("../assets/icons/location.png")} style={GlobalStyles.inputIcon4} />
         </View>
@@ -432,7 +455,7 @@ const FacilityInformation = ({navigation}) => {
             style={GlobalStyles.registrationInput1}
             onChangeText={setCity}
             value={city}
-            placeholder="City"
+            placeholder={translations.city}
           />
           <Image source={require("../assets/icons/location.png")} style={GlobalStyles.inputIcon4} />
         </View>
@@ -441,13 +464,13 @@ const FacilityInformation = ({navigation}) => {
             style={GlobalStyles.registrationInput1}
             onChangeText={setCountry}
             value={country}
-            placeholder="Country"
+            placeholder={translations.country}
           />
           <Image source={require("../assets/icons/location.png")} style={GlobalStyles.inputIcon4} />
         </View>
       </View>
       <View style={styles.line}></View>
-      <Text style={styles.subHeader}>CUISINE TYPES</Text>
+      <Text style={styles.subHeader}>{translations.cuisineTypes}</Text>
       <View style={styles.grid}>
         {cuisines.map((item) => (
           <TouchableOpacity
@@ -457,11 +480,12 @@ const FacilityInformation = ({navigation}) => {
           >
             <Image source={item.icon} style={styles.icon1} />
             <Text>{item.name}</Text>
+            {/* <Text>{translations.pref[item.name]}</Text> */}
           </TouchableOpacity>
         ))}
       </View>
       <View style={styles.line}></View>
-      <Text style={styles.subHeader}>DIETARY PREFERENCES</Text>
+      <Text style={styles.subHeader}>{translations.dietaryPreferences}</Text>
       <View style={styles.grid}>
         {dietaryOptions.map((item) => (
           <TouchableOpacity
@@ -471,11 +495,12 @@ const FacilityInformation = ({navigation}) => {
           >
             <Image source={item.icon} style={styles.icon1} />
             <Text>{item.name}</Text>
+            {/* <Text>{translations.pref[item.name]}</Text> */}
           </TouchableOpacity>
         ))}
       </View>
       <View style={styles.line}></View>
-      <Text style={styles.subHeader1}>OPENING HOURS</Text>
+      <Text style={styles.subHeader1}>{translations.openingHours}</Text>
       {daysOfWeek.map(day => (
         <DayHoursInput
           key={day}
@@ -485,7 +510,7 @@ const FacilityInformation = ({navigation}) => {
         />
       ))}
       <View style={styles.line}></View>
-      <Text style={styles.subHeader}>MENU</Text>
+      <Text style={styles.subHeader}>{translations.menu}</Text>
       {facilityInfo.menuItems.map((item, index) => (
         <View key={index} style={styles.menuItem}>
           <TouchableOpacity onPress={() => selectImage(index, 'menu')}>
@@ -499,7 +524,7 @@ const FacilityInformation = ({navigation}) => {
               style={GlobalStyles.registrationInput1}
               onChangeText={(text) => updateMenuItem(index, 'name', text)}
               value={item.name}
-              placeholder="Menu Item Name"
+              placeholder={translations.menuItemName}
             />
             <Image source={require("../assets/icons/service.png")} style={GlobalStyles.inputIcon} />
           </View>
@@ -508,7 +533,7 @@ const FacilityInformation = ({navigation}) => {
               style={GlobalStyles.registrationInput1}
               onChangeText={(text) => updateMenuItem(index, 'serviceDescription', text)}
               value={item.serviceDescription}
-              placeholder="Service Description"
+              placeholder={translations.serviceDescription}
             />
             <Image source={require("../assets/icons/menuDescription.png")} style={GlobalStyles.inputIcon} />
           </View>
@@ -518,7 +543,7 @@ const FacilityInformation = ({navigation}) => {
               onChangeText={(text) => updateMenuItem(index, 'price', text)}
               keyboardType="numeric"
               value={item.price}
-              placeholder="Price"
+              placeholder={translations.price}
             />
             <Image source={require("../assets/icons/price.png")} style={GlobalStyles.inputIcon} />
           </View>
@@ -527,16 +552,16 @@ const FacilityInformation = ({navigation}) => {
               style={GlobalStyles.registrationInput1}
               onChangeText={(text) => updateMenuItem(index, 'quantity', text)}
               value={item.quantity.toString()}
-              placeholder="Quantity"
+              placeholder={translations.quantity}
             />
             <Image source={require("../assets/icons/number.png")} style={GlobalStyles.inputIcon1} />
           </View>
         </View>
       ))}
 
-      <Button title="Add Menu Item" onPress={addMenuItem} color={Color.orange_700} marginBottom={15}/>
+      <Button title={translations.menuItem || 'Add Menu Item'} onPress={addMenuItem} color={Color.orange_700} marginBottom={15}/>
       <View style={styles.line}></View>
-      <Text style={styles.subHeader1}>STAMPS</Text>
+      <Text style={styles.subHeader1}>{translations.stamps}</Text>
       <View style={styles.menuItem}>
         <TouchableOpacity onPress={() => selectImage(null, 'stamp')}>
           <Image 
@@ -554,7 +579,7 @@ const FacilityInformation = ({navigation}) => {
                 style={GlobalStyles.registrationInput1}
                 onChangeText={text => handleRewardChange(rewardIndex, 'name', text)}
                 value={reward.name}
-                placeholder="Reward Name"
+                placeholder={translations.rewardName}
               />
               <Image source={require("../assets/icons/stamp.png")} style={GlobalStyles.inputIcon5} />
             </View>
@@ -564,17 +589,17 @@ const FacilityInformation = ({navigation}) => {
                 onChangeText={text => handleRewardChange(rewardIndex, 'cnt', text)}
                 value={reward.cnt.toString()}
                 keyboardType="numeric"
-                placeholder="Number of Stamps Required"
+                placeholder={translations.numberOfStampsRequired}
               />
               <Image source={require("../assets/icons/number.png")} style={GlobalStyles.inputIcon1} />
             </View>
           </View>
         ))}
-        <Button title="Add Reward" onPress={addReward} color={Color.orange_700} />
+        <Button title={translations.reward || 'Add Reward'} onPress={addReward} color={Color.orange_700} />
       </View>
       <View style={styles.mainArea}>
         <TouchableOpacity style={GlobalStyles.confirmButton} onPress={handleRegisterationRequest}>
-          <Text style={GlobalStyles.confirmButtonText}>Confirm</Text>
+          <Text style={GlobalStyles.confirmButtonText}>{translations.confirm}</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>

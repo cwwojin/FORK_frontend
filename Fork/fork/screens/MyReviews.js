@@ -14,6 +14,7 @@ import { useEffect, useState } from 'react';
 import { GlobalStyles, Color } from '../GlobalStyles';
 import Review from '../components/Review';
 import { getReviewByQuery, getFacilityByID, USERID } from './api';
+import { getAllTranslations, getLanguageToken } from '../LanguageUtils';
 
 
 const MyReviews = () => {
@@ -21,6 +22,15 @@ const MyReviews = () => {
   //All the reviews [facility_img, facility_name, score(int), date(string), review_img, review_content, hashtags(Array)]
 
   const navigation = useNavigation();
+  const [translations, setTranslations] = useState({});
+
+  useEffect(() => {
+    const fetchTranslations = async () => {
+      const fetchedTranslations = await getAllTranslations();
+      setTranslations(fetchedTranslations);
+    };
+    fetchTranslations();
+  }, []);
 
   const [userReview, setUserReview] = useState([]);
   const [userReviewFacility, setUserReviewFacility] = useState([]);
@@ -76,7 +86,7 @@ const MyReviews = () => {
               marginTop: -27,
               paddingBottom: 10,
             }}>
-            <Text style={GlobalStyles.h1}>My Reviews</Text>
+            <Text style={GlobalStyles.h1}>{translations.myReviews}</Text>
           </View>
         </View>
 

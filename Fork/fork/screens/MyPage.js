@@ -33,6 +33,7 @@ import Stamp from '../components/Stamp';
 import NavigationBar from '../components/NavigationBar';
 
 import userImage from '../assets/placeholders/User.png';
+import { getLanguageToken, getTranslations, getAllTranslations } from '../LanguageUtils';
 
 //To be deleted
 import longImagePlaceholder from '../assets/placeholders/long_image.png';
@@ -63,6 +64,15 @@ const MyPage = () => {
   const [myFacilities, setMyFacilities] = useState([]);
   const [facilityInfo, setFacilityInfo] = useState();
   const [facilityInfoSub, setFacilityInfoSub] = useState();
+  const [translations, setTranslations] = useState({});
+
+  useEffect(() => {
+    const fetchTranslations = async () => {
+      const fetchedTranslations = await getAllTranslations();
+      setTranslations(fetchedTranslations);
+    };
+    fetchTranslations();
+  }, []);
 
   const fetchFacilityInfoSub = async (data) => {
     try {
@@ -437,7 +447,7 @@ const MyPage = () => {
                   marginTop: -27,
                   paddingBottom: 10,
                 }}>
-                <Text style={GlobalStyles.h1}>My Page</Text>
+                <Text style={GlobalStyles.h1}>{translations.myPage}</Text>
                 <TouchableOpacity onPress={() => {
                   navigation.navigate("Settings", {
                     userName: userInfo.account_id,
@@ -468,7 +478,7 @@ const MyPage = () => {
                       {userInfo.account_id}
                     </Text>
                     <TouchableOpacity onPress={() => (navigation.navigate("EditProfile", { userInfo }))}>
-                      <Text style={GlobalStyles.body2}>Edit</Text>
+                      <Text style={GlobalStyles.body2}>{translations.edit}</Text>
                     </TouchableOpacity>
                   </View>
                   <Text style={{ ...GlobalStyles.body2, textTransform: 'none' }}>
@@ -485,7 +495,7 @@ const MyPage = () => {
                   marginTop: 10,
                 }}>
                 {USERPREFERENCE && USERPREFERENCE.map(item => (
-                  <Hashtag key={item.id} tag={item.name} />
+                  <Hashtag tag={translations.pref[item.name]} />
                 ))}
               </View>
 
@@ -503,7 +513,7 @@ const MyPage = () => {
                     width: 'flexwrap',
                     justifyContent: 'center',
                   }}>
-                  Favorites
+                  {translations.favorites}
                 </Text>
                 <TouchableOpacity
                   onPress={() => {
@@ -552,7 +562,7 @@ const MyPage = () => {
                     width: 'flexwrap',
                     justifyContent: 'center',
                   }}>
-                  My Stamps
+                  {translations.myStamps}
                 </Text>
                 <TouchableOpacity
                   onPress={() => {
@@ -593,7 +603,7 @@ const MyPage = () => {
                     width: 'flexwrap',
                     justifyContent: 'center',
                   }}>
-                  My Reviews
+                  {translations.myReviews}
                 </Text>
                 <TouchableOpacity
                   onPress={() => {
@@ -642,7 +652,7 @@ const MyPage = () => {
                     marginTop: -27,
                     paddingBottom: 10,
                   }}>
-                  <Text style={GlobalStyles.h1}>My Page</Text>
+                  <Text style={GlobalStyles.h1}>{translations.myPage}</Text>
                   <TouchableOpacity onPress={() => {
                     navigation.navigate("Settings", {
                       userName: userInfo.account_id,
@@ -673,7 +683,7 @@ const MyPage = () => {
                         {userInfo.account_id}
                       </Text>
                       <TouchableOpacity onPress={() => (navigation.navigate("EditProfile", { userInfo }))}>
-                        <Text style={GlobalStyles.body2}>Edit</Text>
+                        <Text style={GlobalStyles.body2}>{translations.edit}</Text>
                       </TouchableOpacity>
                     </View>
                     <Text style={{ ...GlobalStyles.body2, textTransform: 'none' }}>
@@ -690,7 +700,7 @@ const MyPage = () => {
                     style={{
                       ...GlobalStyles.h2,
                     }}>
-                    Registration Request
+                    {translations.registrationRequest}
                   </Text>
                   {myFacilityRegistrations?.map(item => (
                     <Request
@@ -717,8 +727,8 @@ const MyPage = () => {
                         maxHeight={300}
                         labelField="name"
                         valueField="id"
-                        placeholder={!isFocus ? 'Select facility' : '...'}
-                        searchPlaceholder="Search..."
+                        placeholder={(!isFocus) ? "{translations.selectFacility}" : "..."}
+                        searchPlaceholder={translations.search}
                         value={value}
                         onFocus={() => setIsFocus(true)}
                         onBlur={() => setIsFocus(false)}
@@ -750,7 +760,7 @@ const MyPage = () => {
                             source={require('../assets/icons/upload.png')}
                             style={styles.buttonIcon}
                           />
-                          <Text style={styles.buttonText}>Notice</Text>
+                          <Text style={styles.buttonText}>{translations.notice}</Text>
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.facilityButton} onPress={() => navigation.navigate('QRScanner', { facilityID: facilityInfo?.id })}>
                           <Image
@@ -767,12 +777,12 @@ const MyPage = () => {
                             source={require('../assets/icons/toFacility.png')}
                             style={styles.buttonIcon}
                           />
-                          <Text style={styles.buttonText}>Facility</Text>
+                          <Text style={styles.buttonText}>{translations.facility}</Text>
                         </TouchableOpacity>
                       </View>
                       <View style={{ width: '100%' }}>
                         <TouchableOpacity style={{ paddingTop: 15, alignSelf: 'flex-end' }} onPress={() => (navigation.navigate("FacilityInformationEdit", { facilityINFO: facilityInfo, userEmail: userInfo.email }))}>
-                          <Text style={GlobalStyles.body3}>Edit</Text>
+                          <Text style={GlobalStyles.body3}>{translations.edit}</Text>
                         </TouchableOpacity>
                         <Image
                           source={facilityInfoSub?.profileImage ? facilityInfoSub?.profileImage : longImagePlaceholder}
@@ -881,7 +891,7 @@ const MyPage = () => {
               <View style={styles.overlay}>
                 <View style={styles.background}>
                   <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
-                    <Text style={GlobalStyles.h2}>Upload Notice</Text>
+                    <Text style={GlobalStyles.h2}>{translations.uploadNotice}</Text>
                     <TouchableOpacity style={{ ...GlobalStyles.topIcon, marginRight: 0 }} onPress={toggleUpload}>
                       <Image
                         source={require('../assets/icons/navigate_close.png')}
@@ -889,7 +899,7 @@ const MyPage = () => {
                     </TouchableOpacity>
                   </View>
                   <View style={{ width: '100%', alignItems: 'center', paddingVertical: 10 }}>
-                    <Text style={GlobalStyles.h3}>Notice Image</Text>
+                    <Text style={GlobalStyles.h3}>{translations.noticeImage}</Text>
                     <TouchableOpacity style={{ width: '100%', justifyContent: 'center' }} onPress={saveNoticeImage}>
                       {noticeImage ? (
                         <Image source={Number.isInteger(noticeImage) ? noticeImage : { uri: noticeImage }} style={{ width: '100%', height: 140, borderRadius: Border.br_sm }} />
@@ -898,7 +908,7 @@ const MyPage = () => {
                       )}
                     </TouchableOpacity>
                     <View style={styles.inputSection}>
-                      <Text style={GlobalStyles.h3}>description</Text>
+                      <Text style={GlobalStyles.h3}>{translations.description}</Text>
                       <View style={GlobalStyles.inputWrapper3}>
                         <TextInput
                           style={GlobalStyles.registrationInput2}
@@ -912,7 +922,7 @@ const MyPage = () => {
                     </View>
                     <View style={{ width: '100%', justifyContent: 'flex-end', flexDirection: 'row', paddingTop: 20 }}>
                       <TouchableOpacity onPress={sendNotice}>
-                        <Text style={GlobalStyles.h4}>Send</Text>
+                        <Text style={GlobalStyles.h4}>{translations.send}</Text>
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -947,7 +957,7 @@ const MyPage = () => {
                     marginTop: -27,
                     paddingBottom: 10,
                   }}>
-                  <Text style={GlobalStyles.h1}>My Page</Text>
+                  <Text style={GlobalStyles.h1}>{translations.myPage}</Text>
                   <TouchableOpacity onPress={() => {
                     navigation.navigate("Settings", {
                       userName: userInfo.account_id,
@@ -978,7 +988,7 @@ const MyPage = () => {
                         {userInfo.account_id}
                       </Text>
                       <TouchableOpacity onPress={() => (navigation.navigate("EditProfile", { userInfo }))}>
-                        <Text style={GlobalStyles.body2}>Edit</Text>
+                        <Text style={GlobalStyles.body2}>{translations.edit}</Text>
                       </TouchableOpacity>
                     </View>
                     <Text style={{ ...GlobalStyles.body2, textTransform: 'none' }}>
@@ -994,7 +1004,7 @@ const MyPage = () => {
                   }}>
                   <Text
                     style={GlobalStyles.h2}>
-                    Review Reports
+                    {translations.reviewReports}
                   </Text>
                   {reviewReports
                     .map(item => (
@@ -1023,7 +1033,7 @@ const MyPage = () => {
                   }}>
                   <Text
                     style={GlobalStyles.h2}>
-                    Facility Registration
+                    {translations.facilityRegistration}
                   </Text>
                   <ScrollView
                     horizontal
@@ -1050,7 +1060,7 @@ const MyPage = () => {
                   }}>
                   <Text
                     style={GlobalStyles.h2}>
-                    Bug Reports
+                    {translations.bugReports}
                   </Text>
                   {bugReports.map(item => (
                     <Report
