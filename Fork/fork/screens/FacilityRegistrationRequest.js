@@ -22,7 +22,7 @@ const FacilityRegistrationRequest = () => {
   const [timeData, setTimeData] = useState([]);
   const [facilityImage, setFacilityImage] = useState(longImagePlaceholder);
   const [stampRule, setStampRule] = useState([]);
-  const [stampLogo, setStampLogo] = useState(require('../assets/icons/stamp.png'));
+  const [stampLogo, setStampLogo] = useState("");
   const [loading, setLoading] = useState(true);
 
 
@@ -110,7 +110,7 @@ const FacilityRegistrationRequest = () => {
 
       setLoading(false);
     };
-
+    console.log(facilityInfo);
     initializeData();
   }, []);
 
@@ -167,7 +167,7 @@ const FacilityRegistrationRequest = () => {
 
   if (loading) {
     return (
-      <View style={{flex: 1, justifyContent: 'center'}}>
+      <View style={{ flex: 1, justifyContent: 'center' }}>
         <ActivityIndicator size="large" color={Color.orange_700} />
       </View>
     );
@@ -303,7 +303,7 @@ const FacilityRegistrationRequest = () => {
                 menuName={item.name}
                 menuDescription={item.description}
                 menuPrice={item.price}
-                menuImage={item.image}
+                menuImage={item.imgUri ? item.imgUri : ""}
                 menuQuantity={item.quantity}
               />
             ))}
@@ -313,7 +313,7 @@ const FacilityRegistrationRequest = () => {
               <Text style={GlobalStyles.h2}>Stamps</Text>
               <Stamp
                 stamp={stampRule}
-                stampImage={require('../assets/icons/stamp.png')}
+                stampImage={stampLogo}
               />
             </View>
           )}
