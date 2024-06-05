@@ -738,7 +738,7 @@ const MyPage = () => {
                         maxHeight={300}
                         labelField="name"
                         valueField="id"
-                        placeholder={(!isFocus) ? "{translations.selectFacility}" : "..."}
+                        placeholder={(!isFocus) ? (translations.selectFacility) : "..."}
                         searchPlaceholder={translations.search}
                         value={value}
                         onFocus={() => setIsFocus(true)}

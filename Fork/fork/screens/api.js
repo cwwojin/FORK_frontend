@@ -69,6 +69,7 @@ export const handleLogin = async (username, password) => {
             const jsonResponse = await response.json();
 
             USERTOKEN = jsonResponse.data.token;
+            console.log(jsonResponse.data);
             USERREFRESHTOKEN = jsonResponse.data.refreshToken;
             USERID = jsonResponse.data.user.id;
             USERPREFERENCE = await getUserPreferences(USERID);
