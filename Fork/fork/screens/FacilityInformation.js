@@ -120,6 +120,7 @@ const FacilityInformation = ({navigation}) => {
 
   const [facilityImageUri, setFacilityImageUri] = useState('');
   const [name, setName] = useState('');
+  const [englishName, setEnglishName] = useState('');
   const [location, setLocation] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [businessRegNo, setBusinessRegNo] = useState('');
@@ -202,6 +203,7 @@ const FacilityInformation = ({navigation}) => {
       title: name,
       content: {
         name,
+        englishName,
         type: "",
         businessId: businessRegNo,
         phone: phoneNumber,
@@ -384,6 +386,15 @@ const FacilityInformation = ({navigation}) => {
             onChangeText={setName}
             value={name}
             placeholder={translations.name}
+          />
+          <Image source={require("../assets/icons/facility.png")} style={GlobalStyles.inputIcon} />
+        </View>
+        <View style={GlobalStyles.inputWrapper1}>
+          <TextInput
+            style={GlobalStyles.registrationInput1}
+            onChangeText={setEnglishName}
+            value={englishName}
+            placeholder={translations.englishName}
           />
           <Image source={require("../assets/icons/facility.png")} style={GlobalStyles.inputIcon} />
         </View>

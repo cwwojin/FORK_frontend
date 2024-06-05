@@ -110,7 +110,8 @@ const translations = {
       tryAgainWithCorrectCode: 'Try again with the correct verification code',
 
       myFacility: 'MY FACILITY',
-      name: 'Name',
+      name: 'Korean Name',
+      englishName: 'English Name',
       serviceDescription: 'Service Description',
       websiteURL: 'Website URL',
       phoneNumber: 'Phone Number',
@@ -269,7 +270,8 @@ const translations = {
       tryAgainWithCorrectCode: '올바른 인증 코드로 다시 시도하세요',
 
       myFacility: '내 시설',
-      name: '이름',
+      name: '한국 이름',
+      englishName: '영어 이름',
       serviceDescription: '서비스 설명',
       websiteURL: '웹사이트 URL',
       phoneNumber: '전화번호',
