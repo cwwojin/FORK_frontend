@@ -21,7 +21,7 @@ const Notice = ({
   navigation,
 }) => {
 
-  
+
   const [translations, setTranslations] = useState({});
 
   useEffect(() => {
@@ -31,7 +31,7 @@ const Notice = ({
     };
     fetchTranslations();
   }, []);
-  
+
 
   if (facilityImage == undefined) {
     facilityImage = require('../assets/placeholders/User.png');
@@ -58,16 +58,16 @@ const Notice = ({
 
   const { translate } = useTranslator();
   const [result, setResult] = useState(noticeContent);
-  
+
   const onTranslate = async () => {
     try {
       const currentLanguage = await getLanguageToken();
       console.log("currentLanguage" + currentLanguage);
-      const targetLanguage = currentLanguage === 'kr' ? 'kr' : 'en';
-      const _result = await translate('kr', 'en', noticeContent, {
+      const targetLanguage = currentLanguage === 'kr' ? 'en' : 'kr';
+      const _result = await translate(targetLanguage, currentLanguage, noticeContent, {
         timeout: 5000,
       });
-      console.log('result'+ result);
+      console.log('result' + result);
       setResult(_result);
     } catch (error) {
       Alert.alert('Translate error!');
@@ -83,7 +83,7 @@ const Notice = ({
         {
           text: "Yes",
           onPress: () => {
-            deletePost({facilityID: facilityID, postID: postId});
+            deletePost({ facilityID: facilityID, postID: postId });
             Alert.alert(
               "Post deleted"
             );
@@ -108,11 +108,13 @@ const Notice = ({
           flexDirection: 'row',
           justifyContent: 'flex-end',
         }}>
-        <TouchableOpacity onPress={onTranslate}>
-          <Text style={{ ...GlobalStyles.body2, marginRight: 12 }}>
-            {translations.translate}
-          </Text>
-        </TouchableOpacity>
+        {postId && (
+          <TouchableOpacity onPress={onTranslate}>
+            <Text style={{ ...GlobalStyles.body2, marginRight: 12 }}>
+              {translations.translate}
+            </Text>
+          </TouchableOpacity>
+        )}
         {owner && (<TouchableOpacity
           onPress={deletePosts}>
           <Image

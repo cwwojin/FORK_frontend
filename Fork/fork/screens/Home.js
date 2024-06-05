@@ -17,7 +17,7 @@ import { FacilityDetails } from './MapViewFunctions';
 
 //To be deleted
 import longImagePlaceholder from '../assets/placeholders/long_image.png';
-import { getNewestFacilities, getTrendingFacilities, fetchImage, USERPREFERENCE, getUserPreferences, getTrendingPreferenceFacilities } from './api';
+import { getNewestFacilities, getTrendingFacilities, fetchImage, USERPREFERENCE, getTrendingPreferenceFacilities } from './api';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { getLanguageToken, getAllTranslations } from '../LanguageUtils';
 
