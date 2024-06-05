@@ -8,6 +8,7 @@ import longImagePlaceholder from '../assets/placeholders/long_image.png';
 const Menu = ({
   menuName,
   menuDescription,
+  menuQuantity,
   menuPrice,
   menuImage,
 }) => {
@@ -60,6 +61,14 @@ const Menu = ({
 
               }}>
               {menuDescription}
+            </Text>
+            <Text
+              style={{
+                ...GlobalStyles.body2,
+                padding: 3,
+
+              }}>
+              {menuQuantity}
             </Text>
           </View>
           <Text style={{ ...GlobalStyles.body4 }}>{menuPrice} Won</Text>

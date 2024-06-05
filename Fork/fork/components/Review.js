@@ -118,6 +118,7 @@ const Review = ({
       setLoading(false);
     }
   };
+
   const deleteReviews = () => {
     Alert.alert(
       "Delete Review",
@@ -144,6 +145,7 @@ const Review = ({
       { cancelable: false }
     );
   };
+  
   const keepReview = () => {
     Alert.alert(
       "Keep Review",
@@ -192,7 +194,6 @@ const Review = ({
       { cancelable: false }
     );
   };
-  const editReview = () => { };
 
   return (
     <View style={{ width: '100%', alignItems: 'center' }}>
@@ -203,7 +204,7 @@ const Review = ({
             flexDirection: 'row',
             justifyContent: 'flex-end',
           }}>
-          <TouchableOpacity onPress={editReview}>
+          <TouchableOpacity onPress={() => (navigation.navigate("EditReview", { reviewId: reviewId, reviewConten: reviewContent, reviewImage: reviewImages, reviewHashtags: (reviewHashtags.map(item => (item.name))), reviewScore: reviewScore, facilityID: facilityID }))}>
             <Text style={{ ...GlobalStyles.body2, marginRight: 12 }}>
               Edit
             </Text>
@@ -295,7 +296,7 @@ const Review = ({
           justifyContent: 'flex-start',
           paddingTop: 5,
         }}>
-        {reviewImage && (
+        {reviewImages && (
           <Image
             style={GlobalStyles.squareImage2}
             contentFit="cover"
@@ -342,7 +343,9 @@ const Review = ({
           marginBottom: 10,
         }}
       />
+
     </View>
+
   );
 };
 

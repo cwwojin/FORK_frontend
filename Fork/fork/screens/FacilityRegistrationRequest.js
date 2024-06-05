@@ -215,10 +215,10 @@ const FacilityRegistrationRequest = () => {
             />
             <View style={{ justifyContent: 'center' }}>
               <Text style={{ ...GlobalStyles.body, marginRight: 15 }}>
-                {userInfo.account_id}
+                {userInfo.business_i}
               </Text>
               <Text style={{ ...GlobalStyles.body2, textTransform: 'none' }}>
-                {userInfo.email}
+                {facilityInfo.email}
               </Text>
             </View>
           </View>
@@ -252,6 +252,13 @@ const FacilityRegistrationRequest = () => {
                 style={GlobalStyles.icon}
               />
               <Text style={{ ...GlobalStyles.body2, paddingHorizontal: 5 }}>{facilityInfo.phone}</Text>
+            </View>
+            <View style={{ flexDirection: 'row', paddingVertical: 5 }}>
+              <Image
+                source={require('../assets/icons/url.png')}
+                style={GlobalStyles.icon}
+              />
+              <Text style={{ ...GlobalStyles.body2, textTransform: 'none', paddingHorizontal: 5 }}>{facilityInfo.url}</Text>
             </View>
           </View>
           <View style={{ flexDirection: 'row', paddingTop: 5, width: '100%', paddingBottom: 20 }}>
@@ -290,6 +297,7 @@ const FacilityRegistrationRequest = () => {
                 menuDescription={item.description}
                 menuPrice={item.price}
                 menuImage={item.image}
+                menuQuantity={item.quantity}
               />
             ))}
           </View>

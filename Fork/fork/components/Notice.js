@@ -1,7 +1,12 @@
-import { Image, View, Text, StyleSheet } from 'react-native';
+import { Image, View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { Color, GlobalStyles } from '../GlobalStyles.js';
 import { useState, useEffect } from 'react';
 import { fetchImage } from '../screens/api.js';
+import Translator, {
+  useTranslator,
+} from 'react-native-translator';
+import { deletePost } from '../screens/api.js';
+import { useNavigation } from 'react-router-dom';
 
 const Notice = ({
   facilityImage,
@@ -9,7 +14,12 @@ const Notice = ({
   noticeDate,
   noticeImage,
   noticeContent,
+  postId,
+  facilityID,
+  owner,
+  navigation,
 }) => {
+
   if (facilityImage == undefined) {
     facilityImage = require('../assets/placeholders/User.png');
   };
@@ -19,6 +29,7 @@ const Notice = ({
   useEffect(() => {
     const fetchNoticeImage = async () => {
       try {
+        console.log(noticeImage);
         const imageUrl = await fetchImage(noticeImage);
         if (imageUrl != undefined) {
           setNoticeImages(imageUrl);
@@ -27,12 +38,73 @@ const Notice = ({
         console.log(error.message);
       };
     }
-    if (noticeImage != "") { 
-      fetchNoticeImage(); };
+    if (noticeImage != "") {
+      fetchNoticeImage();
+    };
   }, []);
+
+  const { translate } = useTranslator();
+  const [result, setResult] = useState(noticeContent);
+
+  const onTranslate = async () => {
+    try {
+      const _result = await translate('en', 'kr', noticeContent, {
+        timeout: 5000,
+      });
+      setResult(_result);
+    } catch (error) {
+      Alert.alert('Translate error!');
+      console.error('Translation error:', error);
+    }
+  };
+
+  const deletePosts = () => {
+    Alert.alert(
+      "Delete Post",
+      "Do you really want to delete this post?",
+      [
+        {
+          text: "Yes",
+          onPress: () => {
+            deletePost({facilityID: facilityID, postID: postId});
+            Alert.alert(
+              "Post deleted"
+            );
+            navigation.replace("FacilityDetail", { facilityID });
+          }
+        },
+        {
+          text: "No",
+          onPress: () => { },
+          style: "cancel"
+        },
+      ],
+      { cancelable: false }
+    );
+  };
 
   return (
     <View style={{ width: '100%', alignItems: 'center' }}>
+      <View
+        style={{
+          width: '95%',
+          flexDirection: 'row',
+          justifyContent: 'flex-end',
+        }}>
+        <TouchableOpacity onPress={onTranslate}>
+          <Text style={{ ...GlobalStyles.body2, marginRight: 12 }}>
+            Translate
+          </Text>
+        </TouchableOpacity>
+        {owner && (<TouchableOpacity
+          onPress={deletePosts}>
+          <Image
+            style={GlobalStyles.icon}
+            contentFit="cover"
+            source={require('../assets/icons/delete.png')}
+          />
+        </TouchableOpacity>)}
+      </View>
       <View
         style={{
           flexDirection: 'row',
@@ -61,7 +133,7 @@ const Notice = ({
         </Text>
       </View>
 
-      {(noticeImage != '') && (
+      {(noticeImages) && (
         <Image
           style={GlobalStyles.longImage}
           contentFit="cover"
@@ -75,7 +147,7 @@ const Notice = ({
         />
       )}
       <Text style={{ ...GlobalStyles.body4, width: '97%', marginBottom: 18 }}>
-        {noticeContent}
+        {result}
       </Text>
       <View
         style={{

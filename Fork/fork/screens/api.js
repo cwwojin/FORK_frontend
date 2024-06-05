@@ -1,3 +1,5 @@
+import FacilityDetail from "./FacilityDetail";
+
 const BASE_URL = 'https://taqjpw7a54.execute-api.ap-southeast-2.amazonaws.com/stage-dev/dev/api';
 
 // This is the base-url that leads to all backend & S3
@@ -13,6 +15,7 @@ const S3_ENDPOINT = `${API_ENDPOINT}/s3`
 export let USERTOKEN = 'guest';
 export let USERID = 3;
 export let USERPREFERENCE = [];
+export let USERTYPE = '';
 
 // --------------LOGIN----------------- 
 
@@ -38,10 +41,12 @@ export const handleLogin = async (username, password) => {
             USERID = jsonResponse.data.user.id;
             USERPREFERENCE = await getUserPreferences(USERID);
             USERBOOKMARKED = await getUserFavorites(USERID);
+            USERTYPE = jsonResponse.data.user.userType;
             console.log("USERID : " + USERID);
             console.log("USERTOKEN : " + USERTOKEN);
             console.log("USERPREFERENCE : " + JSON.stringify(USERPREFERENCE, null, 2));
             console.log("USERBOOKMARKED : " + JSON.stringify(USERBOOKMARKED, null, 2));
+            console.log("USERTYPE : " + USERTYPE);
             return true;
         } else {
             console.log('Login Failed', 'Invalid credentials or insufficient permissions.');
@@ -642,7 +647,7 @@ export const updateUserProfile = async ({ email, password }) => {
     }
 };
 
-export const uploadUserProfileImage = async ( imageUri ) => {
+export const uploadUserProfileImage = async (imageUri) => {
     try {
         const formData = new FormData();
 
@@ -673,6 +678,28 @@ export const uploadUserProfileImage = async ( imageUri ) => {
         return data;
     } catch (error) {
         console.error('Error creating facility post:', error.Error);
+        throw error;
+    }
+};
+
+export const deleteFacility = async (facilityID) => {
+    try {
+        const response = await fetch(`${BASE_URL}/users/${encodeURIComponent(USERID)}/myfacility/${encodeURIComponent(facilityID)}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': USERTOKEN
+            }
+        });
+        if (!response.ok) {
+            const result = await response.text();
+            console.log(result);
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        return data.data;
+    } catch (error) {
+        console.error('Error deleting facility:', error);
         throw error;
     }
 };
@@ -887,18 +914,237 @@ export const createFacilityPost = async ({ facilityId, content, imageUri }) => {
 
         if (!response.ok) {
             const errorData = await response.text();
-            throw new Error(`Error: ${errorData}`);
+            console.log(`Error: ${errorData}`);
+            throw response.status;
         }
 
         const data = await response.json();
         console.log(data);
         return data;
     } catch (error) {
-        console.error('Error creating facility post:', error.Error);
+        console.error('Error creating facility post:', error);
         throw error;
     }
 };
 
+export const editFacility = async ({ facilityID, facilityData }) => {
+    try {
+        const url = `${BASE_URL}/users/${USERID}/myfacility/${facilityID}`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': USERTOKEN,
+            },
+            body: JSON.stringify(facilityData),
+        });
+
+        if (!response.ok) {
+            const responseData = await response.text();
+            console.log(responseData);
+            throw new Error('Network response was not ok: ', responseData);
+        }
+
+        const responseData = await response.json();
+        console.log('Facility edit request sent successfully:', responseData);
+        return responseData;
+    } catch (error) {
+        console.error('Error registering facility:', error);
+        throw error;
+    }
+};
+
+export const uploadMenuImage = async ({ facilityId, menuId, imageUri }) => {
+    console.log("uploading menu images: ", facilityId, menuId, imageUri);
+    try {
+        const url = `${BASE_URL}/facilities/${facilityId}/menu/${menuId}/image`;
+        const formData = new FormData();
+
+        const imageFile = {
+            uri: imageUri,
+            name: imageUri.split('/').pop(),
+            type: 'image/jpeg', // or the appropriate MIME type for your image
+        };
+
+        formData.append('image', imageFile);
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'multipart/form-data',
+                'Authorization': USERTOKEN,
+            },
+            body: formData,
+        });
+
+        if (!response.ok) {
+            const responseData = await response.text();
+            console.log(responseData);
+            throw new Error('Network response was not ok');
+        }
+
+        const responseData = await response.json();
+        console.log('Menu image uploaded successfully:', responseData);
+        return responseData;
+    } catch (error) {
+        console.error('Error uploading menu image:', error);
+        throw error;
+    }
+};
+
+export const updateFacilityMenu = async ({ facilityID, menuID, menuData }) => {
+    try {
+        const url = `${BASE_URL}/facilities/${facilityID}/menu/${menuID}`;
+
+        const response = await fetch(url, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': USERTOKEN,
+            },
+            body: JSON.stringify(menuData),
+        });
+
+        if (!response.ok) {
+            const responseData = await response.text();
+            console.log(responseData);
+            throw new Error('Network response was not ok: ', responseData);
+        }
+
+        const responseData = await response.json();
+        console.log('Facility edit request sent successfully:', responseData);
+        return responseData;
+    } catch (error) {
+        console.error('Error registering facility:', error);
+        throw error;
+    }
+};
+
+export const createFacilityMenu = async ({ facilityID, menuData }) => {
+    try {
+        const url = `${BASE_URL}/facilities/${facilityID}/menu`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': USERTOKEN,
+            },
+            body: JSON.stringify(menuData),
+        });
+
+        if (!response.ok) {
+            const responseData = await response.text();
+            console.log(responseData);
+            throw new Error('Network response was not ok: ', responseData);
+        }
+
+        const responseData = await response.json();
+        console.log('Facility edit request sent successfully:', responseData);
+        return responseData.data;
+    } catch (error) {
+        console.error('Error registering facility:', error);
+        throw error;
+    }
+};
+
+export const uploadStampLogo = async ({ facilityID, imageUri }) => {
+    try {
+        const url = `${BASE_URL}/facilities/${facilityID}/stamp-ruleset/logo`;
+        console.log("variables", facilityID, imageUri);
+        const formData = new FormData();
+
+
+        if (imageUri) {
+            formData.append('image', {
+                uri: imageUri.replace('file://', ''),
+                name: imageUri.split('/').pop(),
+                type: 'image/jpeg'
+            });
+        }
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Authorization': USERTOKEN,
+            },
+            body: formData,
+        });
+
+        if (!response.ok) {
+            const responseData = await response.text();
+            console.log(responseData);
+            throw new Error('Network response was not ok: ', responseData);
+        }
+
+        const responseData = await response.json();
+        console.log('Facility edit request sent successfully:', responseData);
+        return responseData.data;
+    } catch (error) {
+        console.error('Error registering facility:', error);
+        throw error;
+    }
+};
+
+export const uploadFacilityProfile = async ({ facilityID, imageUri }) => {
+    try {
+        const url = `${BASE_URL}/facilities/${facilityID}/profile/image`;
+        console.log("variables", facilityID, imageUri);
+        const formData = new FormData();
+
+
+        if (imageUri) {
+            formData.append('image', {
+                uri: imageUri.replace('file://', ''),
+                name: imageUri.split('/').pop(),
+                type: 'image/jpeg'
+            });
+        }
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'multipart/form-data',
+                'Authorization': USERTOKEN,
+            },
+            body: formData,
+        });
+
+        if (!response.ok) {
+            const responseData = await response.text();
+            console.log(responseData);
+            throw new Error('Network response was not ok: ', responseData);
+        }
+
+        const responseData = await response.json();
+        console.log('Facility edit request sent successfully:', responseData);
+        return responseData.data;
+    } catch (error) {
+        console.error('Error registering facility:', error);
+        throw error;
+    }
+};
+
+export const deletePost = async ({ facilityID, postID }) => {
+    try {
+        const response = await fetch(`${BASE_URL}/facilities/${encodeURIComponent(facilityID)}/post/${encodeURIComponent(postID)}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': USERTOKEN
+            }
+        });
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        return data.data;
+    } catch (error) {
+        console.error('Error fetching user:', error);
+        throw error;
+    }
+};
 
 // --------------REVIEW-----------------
 
@@ -1006,7 +1252,38 @@ export const createReview = async ({ facilityId, score, content, hashtags, image
             // Log the full response for debugging
             const errorText = await response.text();
             console.error('Error response from server:', errorText);
-            throw new Error(`Server responded with ${response.status}: ${errorText}`);
+            throw response.status;
+        }
+
+        const data = await response.json();
+        console.log(data);
+        return data;
+    } catch (error) {
+        console.error('Error uploading review:', error);
+        throw error;
+    }
+};
+
+export const editReview = async ({ reviewId, content, hashtags }) => {
+    try {
+        const requestBody = {
+            content: content,
+            hashtags: hashtags
+        };
+
+        const response = await fetch(`${BASE_URL}/reviews/${reviewId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': USERTOKEN,
+            },
+            body: JSON.stringify(requestBody),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.text();
+            console.log(`Error: ${errorData}`);
+            throw response.status;
         }
 
         const data = await response.json();
@@ -1087,6 +1364,46 @@ export const sendStampTransaction = async (userID, facilityID, type, amount) => 
         return data.data;
     } catch (error) {
         console.error('Error sending stamp transaction:', error);
+        throw error;
+    }
+};
+
+export const deleteFacilityMenu = async ({ facilityID, menuID }) => {
+    try {
+        const response = await fetch(`${BASE_URL}/facilities/${encodeURIComponent(facilityID)}/menu/${encodeURIComponent(menuID)}?limit=${encodeURIComponent(5)}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': USERTOKEN
+            }
+        });
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        return data.data;
+    } catch (error) {
+        console.error('Error deleting facility menu:', error);
+        throw error;
+    }
+};
+
+export const getSummaryReview = async (facilityID) => {
+    try {
+        const response = await fetch(`${BASE_URL}/reviews/summary/${facilityID}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': USERTOKEN
+            }
+        });
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        return data.data;
+    } catch (error) {
+        console.error('Error fetching facility registrations:', error);
         throw error;
     }
 };

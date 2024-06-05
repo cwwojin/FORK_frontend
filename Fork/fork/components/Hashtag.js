@@ -45,7 +45,9 @@ const Hashtag = ({ tag }) => {
 
 
   return (
-    <View style={styles.hashtagHolder}>
+    <View style={{
+      ...styles.hashtagHolder, backgroundColor: tintColor ? tintColor : Color.yellow_100,
+   }}>
       <Text
         style={GlobalStyles.hashtag}
         numberOfLines={1}
@@ -58,7 +60,6 @@ const Hashtag = ({ tag }) => {
 
 const styles = StyleSheet.create({
   hashtagHolder: {
-    backgroundColor: Color.yellow_100,
     padding: 10,
     paddingHorizontal: 20,
     alignItems: 'center',

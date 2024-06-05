@@ -35,6 +35,8 @@ import QRScanner from './screens/QRScanner.js';
 import GiveStamp from './screens/GiveStamp.js';
 import EditProfile from './screens/EditProfile.js';
 import FacilityInformationEdit from './screens/FacilityInformationEdit.js';
+import EditMenu from './screens/EditMenu.js';
+import EditReview from './screens/EditReview.js';
 {/*import Maps from './screens/Maps';*/ }
 
 const requestLocationPermission = async () => {
@@ -89,7 +91,7 @@ const App = () => {
               screenOptions={{
                 headerShown: false,
               }}
-              initialRouteName=""
+              initialRouteName="SignUpLogIn"
             >
               <Stack.Screen name="SignUpLogIn" component={SignUpLogIn} />
               <Stack.Screen name="UserType" component={UserType} />
@@ -117,6 +119,8 @@ const App = () => {
               <Stack.Screen name="GiveStamp" component={GiveStamp} />
               <Stack.Screen name="EditProfile" component={EditProfile} />
               <Stack.Screen name="FacilityInformationEdit" component={FacilityInformationEdit} />
+              <Stack.Screen name="EditMenu" component={EditMenu} />
+              <Stack.Screen name="EditReview" component={EditReview} />
               {/* Register the FavoritesScreen */}
             </Stack.Navigator>
           </View>

@@ -10,6 +10,8 @@ import {
   TextInput,
   TouchableWithoutFeedback,
   Keyboard,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Dropdown } from 'react-native-element-dropdown';
@@ -44,7 +46,7 @@ import {
 const MyPage = () => {
   //Get Informations of facilities
 
-  const [userType, setUserType] = useState(0);
+  const [userType, setUserType] = useState('');
   const [userInfo, setUserInfo] = useState('');
   const [userProfile, setUserProfile] = useState(userImage);
   const [userFavorite, setUserFavorite] = useState([]);
@@ -84,21 +86,30 @@ const MyPage = () => {
         { index: 0, day: 'Sunday', openTime: '', closeTime: '' },
 
       ];
-      data.opening_hours.forEach(({ day, open_time, close_time }) => {
-        const item = newtimeData.find(entry => entry.index === day);
-        if (item) {
-          item.openTime = open_time.slice(0, 5);  // Remove seconds
-          item.closeTime = close_time.slice(0, 5); // Remove seconds
-        }
-      });
+      console.log("data opening", data.opening_hours)
+      if (!(data.opening_hours.length === 1 && data.opening_hours[0] === null)) {
+
+        data.opening_hours?.forEach(({ day, open_time, close_time }) => {
+          const item = newtimeData.find(entry => entry.index === day);
+          if (item) {
+            item.openTime = open_time.slice(0, 5);  // Remove seconds
+            item.closeTime = close_time.slice(0, 5); // Remove seconds
+          }
+        });
+      }
+
 
       const stamps = await fetchFacilityInfoSubStamp(data.id);
+      console.log("stamps: ", stamps);
+
+      const imageUrl = data.profile_img_uri ? await fetchImage(data.profile_img_uri) : longImagePlaceholder;
+
 
       if (data.profile_img_uri) {
         const imageUrl = await fetchImage(data.profile_img_uri);
-        return { timeData: newtimeData, stamp: stamps.stamp, stampImage: stamps.stampImage, profileImage: (imageUrl != undefined) ? { uri: imageUrl } : longImagePlaceholder };
+        setFacilityInfoSub({ timeData: newtimeData, stamp: stamps.stamp, stampImage: stamps.stampImage, profileImage: (imageUrl != undefined) ? { uri: imageUrl } : longImagePlaceholder });
       } else {
-        return { timeData: newtimeData, stamp: stamps.stamp, stampImage: stamps.stampImage, profileImage: longImagePlaceholder };
+        setFacilityInfoSub({ timeData: newtimeData, stamp: stamps.stamp, stampImage: stamps.stampImage, profileImage: longImagePlaceholder });
       }
     } catch (error) {
       console.log(error.message);
@@ -107,24 +118,46 @@ const MyPage = () => {
   const fetchFacilityInfoSubStamp = async (id) => {
     try {
       const stamps = await getFacilityStampRuleByID(id);
-      let stampImage = require('../assets/icons/stamp.png');
+      console.log("real stamps: ", stamps);
+      let stampImage = "";
       let stampRule = [];
-      console.log("stamps: ", stamps);
       if (stamps.logo_img_uri) {
         const stampImages = await fetchImage(stamps.logo_img_uri);
-        if (stampImages != undefined) { stampImage = { uri: stampImages } };
-      }
+        if (stampImages != undefined) {
+          stampImage = stampImages
+          if (stamps.rewards) {
+            const maxCnt = Math.max(...stamps.rewards.map(reward => reward.cnt));
+            const newStampRule = Array(maxCnt).fill('');
+            stamps.rewards.forEach(reward => {
+              newStampRule[reward.cnt - 1] = reward?.name;
+            });
+            stampRule = newStampRule;
+            console.log("StampRule: ", stampRule)
+            return { stampImage: stampImage, stamp: stampRule };
+          } else {
+            return { stampImage: stampImage, stamp: stampRule };
+          }
+        } else {
+          return { stampImage: stampImage, stamp: stampRule };
+        };
+      } else {
 
-      if (stamps.rewards) {
-        const maxCnt = Math.max(...stamps.rewards.map(reward => reward.cnt));
-        const newStampRule = Array(maxCnt).fill('');
-        stamps.rewards.forEach(reward => {
-          newStampRule[reward.cnt - 1] = reward?.name;
-        });
-        stampRule = newStampRule;
-      }
+        if (stamps.rewards) {
+          const maxCnt = Math.max(...stamps.rewards.map(reward => reward.cnt));
+          const newStampRule = Array(maxCnt).fill('');
+          stamps.rewards.forEach(reward => {
+            console.log("reading rewards")
+            newStampRule[reward.cnt - 1] = reward?.name;
+          });
+          stampRule = newStampRule;
+          console.log("StampRule: ", newStampRule)
 
-      return { stampImage: stampImage, stamp: stampRule };
+          return { stampImage: stampImage, stamp: stampRule };
+        } else {
+          return { stampImage: stampImage, stamp: stampRule };
+        }
+
+      }
     } catch (error) {
       console.log(error.message);
       return { stampImage: require('../assets/icons/stamp.png'), stamp: [] };
@@ -229,7 +262,6 @@ const MyPage = () => {
       try {
         const data = await getMyFacilities();
         setMyFacilities(data);
-        console.log("??????", data);
       } catch (error) {
         console.log(error.message);
       }
@@ -263,7 +295,7 @@ const MyPage = () => {
         console.log(error.message);
       }
     };
-    fetchUser(USERID);
+    if (USERID) { fetchUser(USERID) };
   }, []);
 
   console.log(userInfo);
@@ -273,6 +305,7 @@ const MyPage = () => {
   const [value, setValue] = useState('');
   const [isFocus, setIsFocus] = useState(false);
   const [upload, setUpload] = useState(false);
+  const [moderate, setModerate] = useState(false);
   const [noticeImage, setNoticeImage] = useState('');
   const [noticeContent, setNoticeContent] = useState('');
 
@@ -318,19 +351,31 @@ const MyPage = () => {
   };
 
   const sendNotice = async () => {
+    setModerate(true);
     try {
       if (noticeImage == '') {
         const response = await createFacilityPost({ facilityId: facilityInfo.id, content: noticeContent });
-        console.log('Review uploaded successfully:', response);
+        console.log('Notice uploaded successfully:', response);
+        Alert.alert("Notice upload successful!")
       }
       else {
         const response = await createFacilityPost({ facilityId: facilityInfo.id, content: noticeContent, imageUri: noticeImage });
-        console.log('Review uploaded successfully:', response);
+        console.log('Notice uploaded successfully:', response);
+        Alert.alert("Notice upload successful!")
       }
       toggleUpload();
+      setModerate(false);
       navigation.replace("MyPage");
     } catch (error) {
-      console.log(error.message);
+      if (error && error === 499) {
+        setModerate(false);
+        Alert.alert("Error", "Review upload fail due to harmful content");
+      } else {
+        setModerate(false);
+        console.log(error.message);
+        Alert.alert("Notice upload failed. Please try again");
+      }
+
     }
   }
 
@@ -346,8 +391,50 @@ const MyPage = () => {
     return null;
   };
 
+  {/* -----------------GUEST User---------------------- */ }
+  if (!userType) {
+    return (
+      <SafeAreaView style={GlobalStyles.background}>
+        <View style={GlobalStyles.content}>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              marginTop: -27,
+              paddingBottom: 10,
+            }}>
+            <Text style={GlobalStyles.h1}>My Page</Text>
+            <TouchableOpacity onPress={() => {
+              navigation.navigate("Settings", {
+                userName: userInfo.account_id,
+                userProfile: userProfile,
+                userEmail: userInfo.email
+              });
+            }}>
+              <Image
+                style={GlobalStyles.topIcon}
+                source={require('../assets/icons/setting.png')}
+              />
+            </TouchableOpacity>
+          </View>
+          <View
+            style={{
+              flex: 1,
+              justifyContent: 'center',
+              alignItems: 'center',
+              marginTop: 10,
+            }}>
+            <Image source={require('../assets/logos/coloredLogo.png')} style={{ height: 80, width: 80 }} />
+            <Text style={{ ...GlobalStyles.h4, textAlign: 'center', padding: 20 }}>Please Login for more</Text>
+          </View>
+        </View>
+      </SafeAreaView>
+    )
+  }
+
   return (
     <>
+
       {/* -----------------KAIST User---------------------- */}
       {(userType == 1) && (
         <SafeAreaView style={GlobalStyles.background}>
@@ -649,8 +736,9 @@ const MyPage = () => {
                           try {
                             setValue(item.id);
                             setFacilityInfo(item);
-                            const facilityInfoSubData = await fetchFacilityInfoSub(item);
-                            setFacilityInfoSub(facilityInfoSubData);
+                            setFacilityInfoSub();
+                            await fetchFacilityInfoSub(item);
+                            console.log("facilityinfosub is: ", facilityInfoSub);
                             setIsFocus(false);
                           } catch (error) {
                             console.error('Error fetching facility info:', error);
@@ -659,7 +747,7 @@ const MyPage = () => {
                       />
                     </View>
                     <TouchableOpacity onPress={() => {
-                      navigation.navigate("FacilityInformation", { authorId: USERID, email: userInfo.email })
+                      navigation.navigate("FacilityInformation", { authorId: USERID })
                     }}>
                       <Text style={{ ...GlobalStyles.body3, fontSize: FontSize.size_xl, width: 20 }}>+</Text>
                     </TouchableOpacity>
@@ -724,10 +812,18 @@ const MyPage = () => {
                           />
                           <Text style={{ ...GlobalStyles.body2, paddingHorizontal: 5 }}>{facilityInfo?.phone}</Text>
                         </View>
+                        <View style={{ flexDirection: 'row' }}>
+                          <Image
+                            style={GlobalStyles.icon}
+                            source={require('../assets/icons/url.png')}
+                          />
+                          <Text style={{ ...GlobalStyles.body2, textTransform: 'none', paddingHorizontal: 5 }}>{facilityInfo?.url}</Text>
+                        </View>
                       </View>
                       <View style={{ flexDirection: 'row', paddingTop: 5, width: '100%', paddingBottom: 20 }}>
                         {facilityInfo?.preferences?.map(item => (
                           <Hashtag
+                            key={item.id}
                             tag={item}
                           />
                         ))}
@@ -763,6 +859,7 @@ const MyPage = () => {
                                 menuDescription={item.description}
                                 menuPrice={item.price}
                                 menuImage={item.img_uri}
+                                menuQuantity={item.quantity}
                               />
                             )}
                           </>
@@ -771,11 +868,16 @@ const MyPage = () => {
 
                       <View style={{ width: '100%' }}>
                         <Text style={GlobalStyles.h2}>Stamps</Text>
-                        <Stamp
-                          stamp={facilityInfoSub?.stamp}
-                          stampImage={facilityInfoSub?.stampImage}
-                          number={facilityInfoSub?.stamp?.length}
-                        />
+                        {!facilityInfoSub?.stamp ? (
+                          <Text style={{ textAlign: 'center' }}>Stamp not created</Text>
+                        ) : (
+                          <Stamp
+                            stamp={facilityInfoSub?.stamp}
+                            stampImage={facilityInfoSub?.stampImage ? { uri: facilityInfoSub?.stampImage } : ""}
+                            number={facilityInfoSub?.stamp?.length}
+                          />
+                        )}
+
                       </View>
                     </>
                   )}
@@ -827,6 +929,16 @@ const MyPage = () => {
                 </View>
               </View>
             </TouchableWithoutFeedback>
+          )}
+          {moderate && (
+            <View style={styles.overlay}>
+              <View style={styles.background}>
+                <View style={styles.loadingContainer}>
+                  <ActivityIndicator size="large" color={Color.orange_700} />
+                  <Text>Moderating...</Text>
+                </View>
+              </View>
+            </View>
           )}
         </>
       )
@@ -1061,6 +1173,11 @@ const styles = StyleSheet.create({
   inputSection: {
     width: '100%',
     paddingVertical: 10,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 

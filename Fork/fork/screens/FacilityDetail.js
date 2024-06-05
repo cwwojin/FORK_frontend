@@ -9,6 +9,7 @@ import {
   TextInput,
   StyleSheet,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import ToggleSwitch from 'toggle-switch-react-native';
@@ -31,7 +32,10 @@ import stampImage from '../assets/icons/stamp.png';
 import longImagePlaceholder from '../assets/placeholders/long_image.png';
 import {
   addFavorite, deleteFavorite, fetchImage, getFacilityByID, getTopHashtags, getFacilityNotices, getFacilityPreferences, getFacilityStamp,
-  getFacilityStampRuleByID, getReviewByQuery, isFacilityBookmarked, USERID, createReview
+  getFacilityStampRuleByID, getReviewByQuery, isFacilityBookmarked, USERID, createReview,
+  getSummaryReview,
+  USERTYPE,
+  getMyFacilities
 } from './api';
 import { getAllTranslations, getLanguageToken } from '../LanguageUtils';
 
@@ -46,21 +50,24 @@ const FacilityDetail = () => {
   const [facilityInfo, setFacilityInfo] = useState({});
   const [reviewList, setReviewList] = useState('');
   const [stampRule, setStampRule] = useState([]);
-  const [stampLogo, setStampLogo] = useState(stampImage);
+  const [stampLogo, setStampLogo] = useState("");
   const [myStamp, setMyStamp] = useState(0);
   const [preferences, setPreferences] = useState('');
   const [bookmarked, setBookmarked] = useState(false);
   const [timeData, setTimeData] = useState([]);
   const [profileImage, setProfileImage] = useState(longImagePlaceholder);
   const [isLoading, setIsLoading] = useState(true);
+  const [summaryReview, setSummaryReview] = useState("");
   const [notices, setNotices] = useState([]);
   const [topHashtags, setTopHashtags] = useState([]);
+  const [owner, setOwner] = useState(false);
 
   useEffect(() => {
     const fetchFacility = async (facilityID) => {
       try {
         const data = await getFacilityByID(facilityID);
         setFacilityInfo(data);
+        console.log(data);
 
         const newtimeData = [
           { index: 1, day: 'Monday', openTime: '', closeTime: '' },
@@ -93,7 +100,17 @@ const FacilityDetail = () => {
       try {
         const data = await getReviewByQuery('', facilityID, '', '');
         setReviewList(data);
+        console.log(data);
         setIsLoading(false);
+      } catch (error) {
+        console.log(error.message);
+      }
+    };
+    const fetchSummaryReview = async (facilityID) => {
+      try {
+        const data = await getSummaryReview(facilityID);
+        setSummaryReview(data);
+        console.log(data);
       } catch (error) {
         console.log(error.message);
       }
@@ -118,7 +135,7 @@ const FacilityDetail = () => {
         const newMyStamp = await getFacilityStamp(facilityID);
 
         if (newMyStamp != '') {
-          setMyStamp(newMyStamp.cnt);
+          setMyStamp(newMyStamp[0].cnt);
         } else {
           setMyStamp(0);
         }
@@ -130,6 +147,18 @@ const FacilityDetail = () => {
       try {
         const preference = await getFacilityPreferences(facilityID);
         setPreferences(preference);
+      } catch (error) {
+        console.log(error.message);
+      }
+    };
+    const isMyFacility = async (facilityID) => {
+      try {
+        const facilities = await getMyFacilities();
+        const facilityExists = facilities.some(facility => facility.id === facilityID);
+
+        if (facilityExists) {
+          setOwner(true);
+        };
       } catch (error) {
         console.log(error.message);
       }
@@ -161,11 +190,13 @@ const FacilityDetail = () => {
     };
     fetchFacility(facilityID);
     fetchReviews(facilityID);
+    fetchSummaryReview(facilityID);
     fetchStamp(facilityID);
     fetchPreferences(facilityID);
     isBookmarked(facilityID);
     fetchNotices(facilityID);
     fetchTopHashtags(facilityID);
+    isMyFacility(facilityID);
   }, []);
 
   const navigation = useNavigation();
@@ -184,28 +215,39 @@ const FacilityDetail = () => {
   const [tabState, setTabState] = useState("Menu");
   const [reviewFilter, setReviewFilter] = useState(false);
   const [writeReview, setWriteReview] = useState(false);
+  const [hashtagFilter, setHashtagFilter] = useState();
 
   const [reviewScore, setReviewScore] = useState(0);
   const [reviewImage, setReviewImage] = useState('');
   const [reviewContent, setReviewContent] = useState('');
   const [hashtag, setHashtag] = useState('');
   const [inputHashtag, setInputHashtag] = useState([]);
+  const [moderating, setModerating] = useState(false);
 
   const toggleTimeVisibility = () => {
     setTimeVisible(!isTimeVisible);
   };
 
   const toggleBookmarked = () => {
-    if (bookmarked) {
-      deleteFavorite(facilityID);
+    if (USERTYPE == 1) {
+      if (bookmarked) {
+        deleteFavorite(facilityID);
+      } else {
+        addFavorite(facilityID);
+      }
+      setBookmarked(!bookmarked);
     } else {
-      addFavorite(facilityID);
+      Alert.alert("Please Login");
     }
-    setBookmarked(!bookmarked);
+
   };
 
   const toggleStamp = () => {
-    setStamp(!stamp);
+    if (USERTYPE == 1) {
+      setStamp(!stamp);
+    } else {
+      Alert.alert("Please Login");
+    }
   }
 
   const switchTabMenu = () => {
@@ -223,24 +265,40 @@ const FacilityDetail = () => {
   }
 
   const toggleWriteReview = () => {
-    setWriteReview(!writeReview);
+    if (USERTYPE == 1) {
+      setWriteReview(!writeReview);
+    } else {
+      Alert.alert("Please Login");
+    }
   }
 
   const handleCreateReview = async () => {
     console.log(facilityID, reviewScore, reviewContent, inputHashtag, reviewImage);
+    setModerating(true);
     try {
       if (reviewImage == '') {
-        const response = await createReview({ facilityId: facilityID, score: reviewScore, content: reviewContent, hashtags: inputHashtag });
+        const response = await createReview({ facilityId: facilityID, score: reviewScore, content: reviewContent, hashtags: inputHashtag?.map(item => (item.tag)) });
         console.log('Review uploaded successfully:', response);
       }
       else {
-        const response = await createReview({ facilityId: facilityID, score: reviewScore, content: reviewContent, hashtags: inputHashtag, imageUri: reviewImage });
+        const response = await createReview({ facilityId: facilityID, score: reviewScore, content: reviewContent, hashtags: inputHashtag?.map(item => (item.tag)), imageUri: reviewImage });
         console.log('Review uploaded successfully:', response);
       }
       toggleWriteReview();
+      setModerating(false)
+      Alert.alert("Review uploaded successfully")
       navigation.replace("FacilityDetail", { facilityID });
     } catch (error) {
+      if (error && error === 499) {
+        setModerating(false);
+        Alert.alert("Error", "Review upload fail due to harmful content");
+      } else {
+        setModerating(false);
+        Alert.alert("Error", "Review upload failed. Please try again.")
+      }
+
       console.log(error.message);
+
     }
   }
 
@@ -304,12 +362,30 @@ const FacilityDetail = () => {
   };
 
   const pushHashtag = () => {
-    setInputHashtag([...inputHashtag, hashtag]);
+    setInputHashtag([...inputHashtag, { id: inputHashtag.length + 1, tag: hashtag }]);
     setHashtag('');
-    console.log(inputHashtag);
-  }
+  };
 
-  const summaryReview = translations.summary;
+  const deleteHashtag = (id) => {
+    setInputHashtag(inputHashtag.filter(item => item.id !== id));
+  };
+
+  const confirmDeleteHashtag = (id) => {
+    Alert.alert(
+      "Delete Hashtag",
+      "Do you want to delete this hashtag?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel"
+        },
+        {
+          text: "OK",
+          onPress: () => deleteHashtag(id)
+        }
+      ]
+    );
+  };
 
   return (
     <SafeAreaView style={GlobalStyles.background}>
@@ -376,6 +452,13 @@ const FacilityDetail = () => {
             </View>
             <View style={{ flexDirection: 'row' }}>
               <Image
+                style={styles.icon}
+                source={require('../assets/icons/url.png')}
+              />
+              <Text style={{ ...GlobalStyles.body2, textTransform: 'none' }}>{facilityInfo.url}</Text>
+            </View>
+            <View style={{ flexDirection: 'row' }}>
+              <Image
                 style={{ ...GlobalStyles.icon, marginRight: 5 }}
                 source={require('../assets/icons/star.png')}
               />
@@ -391,7 +474,7 @@ const FacilityDetail = () => {
                 paddingBottom: 15,
               }}>
               {preferences && preferences.map(item => (
-                <Hashtag tag={item} />
+                <Hashtag key={item.id} tag={item} />
               ))}
             </View>
           </View>
@@ -462,12 +545,13 @@ const FacilityDetail = () => {
                 menuDescription={item.description}
                 menuPrice={item.price}
                 menuImage={item.img_uri}
+                menuQuantity={item.quantity}
               />
             ))}
             {(tabState == "Review" && isLoading) && (
               <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#0000ff" />
-                <Text>{translations.loadingReviews}</Text>
+                <ActivityIndicator size="large" color={Color.orange_700} />
+                <Text>Loading reviews...</Text>
               </View>
             )}
             {(tabState == "Review") && (
@@ -486,7 +570,7 @@ const FacilityDetail = () => {
                   />
                 </View>
                 <View style={{ alignItems: 'center', paddingVertical: 20 }}>
-                  {/* <Text style={GlobalStyles.body}>{summaryReview}</Text> */}
+                  <Text style={{ ...GlobalStyles.body, padding: '5%', textAlign: 'center' }}>{summaryReview.summary}</Text>
                   <View
                     style={{
                       flexDirection: 'row',
@@ -497,7 +581,15 @@ const FacilityDetail = () => {
                     }}>
                     {topHashtags
                       .map(item => (
-                        <Hashtag tag={item} />
+                        <TouchableOpacity onPress={() => {
+                          if (hashtagFilter != item.id) {
+                            setHashtagFilter(item.id);
+                          } else {
+                            setHashtagFilter();
+                          }
+                        }}>
+                          <Hashtag key={item.id} tag={item} tintColor={(hashtagFilter == item.id) ? Color.orange_100 : ""} />
+                        </TouchableOpacity>
                       ))
                     }
                   </View>
@@ -513,6 +605,7 @@ const FacilityDetail = () => {
 
                 {reviewList && reviewList
                   .filter(item => !reviewFilter || (reviewFilter && item.img_uri)) // Apply filter conditionally based on reviewFilter state
+                  .filter(item => !hashtagFilter || item.hashtags.some(hashtag => hashtag.id === hashtagFilter))
                   .map(item => (
                     <Review
                       key={item.id} // Make sure to provide a unique key prop
@@ -540,12 +633,16 @@ const FacilityDetail = () => {
                 noticeDate={item.post_date}
                 noticeImage={item.img_uri}
                 noticeContent={item.title + '\n' + item.content}
+                facilityID={facilityID}
+                postId={item.id}
+                owner={owner}
+                navigation={navigation}
               />
             ))}
           </View>
         </ScrollView>
       </View >
-      {(tabState == 'Review') && (
+      {(tabState == 'Review') && (USERTYPE == 1) && (
         <TouchableOpacity onPress={toggleWriteReview}>
           <Image
             source={require('../assets/icons/write_review.png')}
@@ -605,7 +702,9 @@ const FacilityDetail = () => {
                       width: '100%',
                     }}>
                     {inputHashtag && inputHashtag.map(item => (
-                      <Hashtag tag={item} />
+                      <TouchableOpacity key={item.id} onPress={() => confirmDeleteHashtag(item.id)}>
+                        <Hashtag tag={item.tag} />
+                      </TouchableOpacity>
                     ))}
                   </View>
                   <View style={styles.hashtagHolder}>
@@ -632,7 +731,16 @@ const FacilityDetail = () => {
               </View>
             </ScrollView>
           </View>
-
+          {moderating && (
+            <View style={styles.overlay}>
+              <View style={styles.background}>
+                <View style={styles.loadingContainer}>
+                  <ActivityIndicator size="large" color={Color.orange_700} />
+                  <Text>Moderating...</Text>
+                </View>
+              </View>
+            </View>
+          )}
         </View>
       )}
       {stamp && (
@@ -652,15 +760,15 @@ const FacilityDetail = () => {
                 <>
                   <View style={{ width: '80%', aspectRatio: 1, padding: 30 }}>
                     <QRCode
-                      size={'100%'}
+                      size={180}
                       style={{ maxWidth: "100%", width: "100%" }}
-                      value={USERID}
+                      value={Number(USERID)}
                     />
                   </View>
                   <Stamp
                     number={myStamp}
                     stamp={stampRule}
-                    stampImage={stampLogo}
+                    stampImage={stampLogo ? { uri: stampLogo } : ""}
                   />
                 </>
               }
