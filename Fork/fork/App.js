@@ -37,6 +37,7 @@ import EditProfile from './screens/EditProfile.js';
 import FacilityInformationEdit from './screens/FacilityInformationEdit.js';
 import EditMenu from './screens/EditMenu.js';
 import EditReview from './screens/EditReview.js';
+import { initializeUserState } from './screens/api';
 {/*import Maps from './screens/Maps';*/ }
 
 const requestLocationPermission = async () => {
@@ -54,6 +55,13 @@ const App = () => {
   const [isReady, setIsReady] = useState(false);
   const [language, setLanguage] = useState('en');
 
+  useEffect(() => {
+    const initialize = async () => {
+      await initializeUserState();
+    };
+    initialize();
+  }, []);
+  
   useEffect(() => {
     const loadLanguagePreference = async () => {
       const storedLanguage = await AsyncStorage.getItem('user-language');

@@ -1,4 +1,5 @@
 import FacilityDetail from "./FacilityDetail";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const BASE_URL = 'https://taqjpw7a54.execute-api.ap-southeast-2.amazonaws.com/stage-dev/dev/api';
 
@@ -10,14 +11,42 @@ const FORK_URL = `${API_ENDPOINT}/dev/`
 
 // S3 endpoint
 const S3_ENDPOINT = `${API_ENDPOINT}/s3`
+// Keys for AsyncStorage
+const USER_TOKEN_KEY = 'USER_TOKEN';
+const USER_ID_KEY = 'USER_ID';
+const USER_PREFERENCE_KEY = 'USER_PREFERENCE';
+const USER_TYPE_KEY = 'USER_TYPE';
 
 // export let USERBOOKMARKED = "";
 export let USERTOKEN = 'guest';
-export let USERREFRESHTOKEN = 'guest';
-export let USERID = 3;
+//export let USERREFRESHTOKEN = 'guest';
+export let USERID = null;
 export let USERPREFERENCE = [];
 export let USERTYPE = '';
 
+// --------------STORAGE----------------- 
+
+// => Store user data in AsyncStorage
+const storeUserData = async (key, value) => {
+    try {
+        await AsyncStorage.setItem(key, JSON.stringify(value));
+    } catch (error) {
+        console.error('Error storing user data:', error);
+    }
+};
+
+// => Retrieve user data from AsyncStorage
+const retrieveUserData = async (key, defaultValue) => {
+    try {
+        const value = await AsyncStorage.getItem(key);
+        if (value !== null) {
+            return JSON.parse(value);
+        }
+    } catch (error) {
+        console.error('Error retrieving user data:', error);
+    }
+    return defaultValue;
+};
 // --------------LOGIN----------------- 
 
 export const handleLogin = async (username, password) => {
@@ -38,26 +67,34 @@ export const handleLogin = async (username, password) => {
         });
         if (response.status === 200) {
             const jsonResponse = await response.json();
-            console.log("response when LOGIN : " + JSON.stringify(jsonResponse.data, null, 2));
+
             USERTOKEN = jsonResponse.data.token;
             //USERREFRESHTOKEN = jsonResponse.data.refreshToken;
             USERID = jsonResponse.data.user.id;
             USERPREFERENCE = await getUserPreferences(USERID);
             USERBOOKMARKED = await getUserFavorites(USERID);
             USERTYPE = jsonResponse.data.user.userType;
+
+            await storeUserData(USER_TOKEN_KEY, USERTOKEN);
+            await storeUserData(USER_ID_KEY, USERID);
+            await storeUserData(USER_PREFERENCE_KEY, USERPREFERENCE);
+            await storeUserData(USER_TYPE_KEY, USERTYPE);
+
             console.log("USERID : " + USERID);
             console.log("USERTOKEN : " + USERTOKEN);
             //console.log("USERREFRESHTOKEN : " + USERREFRESHTOKEN);
             console.log("USERPREFERENCE : " + JSON.stringify(USERPREFERENCE, null, 2));
             console.log("USERBOOKMARKED : " + JSON.stringify(USERBOOKMARKED, null, 2));
+
             return true;
         } else {
-            
-            console.log('Login Failed', 'Invalid credentials or insufficient permissions.' + response.status);
+            console.log('Login Failed', 'Invalid credentials or insufficient permissions.');
             return false;
         }
     } catch (error) {
         console.log(error);
+        USERTOKEN = 'guest';
+        await storeUserData(USER_TOKEN_KEY, USERTOKEN);
         return false;
     }
 };
@@ -68,8 +105,17 @@ export const handleLogOut = async () => {
     USERID = "";
     USERPREFERENCE = [];
     USERTYPE = '';
+    await AsyncStorage.multiRemove([USER_TOKEN_KEY, USER_ID_KEY, USER_PREFERENCE_KEY, USER_TYPE_KEY]);
     return true;
 
+};
+
+// Retrieve values from AsyncStorage on app start
+export const initializeUserState = async () => {
+    USERTOKEN = await retrieveUserData(USER_TOKEN_KEY, 'guest');
+    USERID = await retrieveUserData(USER_ID_KEY, null);
+    USERPREFERENCE = await retrieveUserData(USER_PREFERENCE_KEY, []);
+    USERTYPE = await retrieveUserData(USER_TYPE_KEY, '');
 };
 
 export const deleteUser = async () => {

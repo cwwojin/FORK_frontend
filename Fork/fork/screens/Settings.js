@@ -154,6 +154,8 @@ import { GlobalStyles, Color, Border, FontSize } from '../GlobalStyles';
 import { deleteUser, handleLogOut, sendBugReport } from './api';
 import { setLanguageToken, getLanguageToken, getAllTranslations } from '../LanguageUtils';
 import { USERTOKEN } from './api';
+import * as Location from 'expo-location';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const initialTranslations = {
   settings: 'Settings',
@@ -189,8 +191,15 @@ const Settings = () => {
   const [report, setReport] = useState(false);
   const [reportContent, setReportContent] = useState('');
 
-  const toggleAccessLocation = () => {
-    setAccessLocation(!accessLocation);
+  const fetchLocationPermission = async () => {
+    const storedPermission = await AsyncStorage.getItem('locationPermission');
+    setAccessLocation(storedPermission === 'true');
+  };
+
+  const toggleAccessLocation = async () => {
+    const newAccessLocation = !accessLocation;
+    setAccessLocation(newAccessLocation);
+    await AsyncStorage.setItem('locationPermission', JSON.stringify(newAccessLocation));
   };
 
   const fetchTranslations = async (lang) => {
@@ -207,6 +216,13 @@ const Settings = () => {
       await fetchTranslations(savedLanguage);
     };
     initializeLanguage();
+    initializeLanguage();
+    fetchLocationPermission();
+
+    const unsubscribe = navigation.addListener('focus', () => {
+      fetchLocationPermission();
+    });
+    return unsubscribe;
   }, []);
 
   const toggleLanguage = async () => {
@@ -235,29 +251,29 @@ const Settings = () => {
 
   const deleteAccount = () => {
     Alert.alert(
-      "Delete Account",
-      "Do you really want to delete your account?",
+      translations.deleteAccount,
+      translations.permissionDelete,
       [
         {
-          text: "Yes",
+          text: translations.yes,
           onPress: async () => {
             try {
               const response = await deleteUser();
               if (response) {
                 console.log('Account Deleted Successfully: ', response);
-                Alert.alert("Account Deleted Successfully");
+                Alert.alert(translations.deleteSuccess);
                 navigation.goBack();
                 navigation.replace("SignUpLogIn");
               } else {
-                Alert.alert("Account deletion failed. Please try again");
+                Alert.alert(translations.deleteFail);
               }
             } catch (error) {
-              Alert.alert("Account deletion failed. Please try again");
+              Alert.alert(translations.deleteFail);
             }
           }
         },
         {
-          text: "No",
+          text: translations.no,
           onPress: () => { },
           style: "cancel"
         },
@@ -267,7 +283,7 @@ const Settings = () => {
   };
 
   const sendReport = () => {
-    Alert.alert("Report Sent");
+    Alert.alert(translations.reportSent);
     sendBugReport(reportContent);
     toggleReport();
     setReportContent('');

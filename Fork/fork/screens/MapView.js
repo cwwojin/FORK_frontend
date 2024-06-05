@@ -12,6 +12,7 @@ import { FacilityDetails } from './MapViewFunctions';
 import { isOpenNow } from './MapViewFunctions';
 import * as Location from 'expo-location';
 import { getLanguageToken, getAllTranslations } from '../LanguageUtils';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const MapView = () => {
   const navigation = useNavigation();
@@ -98,7 +99,7 @@ const MapView = () => {
     });
   };
 
-  const handleLocate = async () => {
+  const handleLocate1 = async () => {
     if (isUserMarkerVisible) {
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
@@ -122,9 +123,36 @@ const MapView = () => {
       webViewRef.current.postMessage(JSON.stringify(removeMarkerData));
     }
   };
+  const handleLocate = async () => {
+    const locationPermission = await AsyncStorage.getItem('locationPermission');
+    console.log("value in Map: "+ locationPermission);
+    if (locationPermission === 'true') {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert(translations.permissionDenied);
+        return;
+      }
+      console.log(translations.permissionGranted);
+      let location = await Location.getCurrentPositionAsync({});
+      const { latitude, longitude } = location.coords;
+      
+      const locationData = {
+        type: 'addUserMarker',
+        lat: latitude,
+        lng: longitude
+      };
+      webViewRef.current.postMessage(JSON.stringify(locationData));
+    } else {
+      Alert.alert(translations.permissionDenied);
+      const removeMarkerData = {
+        type: 'removeUserMarker'
+      };
+      webViewRef.current.postMessage(JSON.stringify(removeMarkerData));
+    }
+  };
 
   const handleTogglePreferences = () => {
-    console.log("In handleTogglePreferences");
+    //("In handleTogglePreferences");
     const newActiveState = !userPreferencesActive;
     setUserPreferencesActive(newActiveState);
     if (newActiveState) {
@@ -511,17 +539,17 @@ const MapView = () => {
       }
 
       if (selectedCuisines.length > 0 || selectedDietaryPreferences.length > 0) {
-        console.log("selectedCuisines.length" + selectedCuisines);
+        //console.log("selectedCuisines.length" + selectedCuisines);
         //console.log("selectedCuisines" + selectedCuisines);
         //console.log("selectedDiets.length" + selectedDietaryPreferences.length);
         facilities = facilities.filter(facility => {
           const validPreferences = facility.preferences ? facility.preferences.filter(pref => pref) : [];
-          console.log("validPreferences" + validPreferences)
+          //console.log("validPreferences" + validPreferences)
           const facilityCuisines = validPreferences.filter(pref => pref.type === 0).map(pref => pref.id);
-          console.log("facilityCuisines : " + facilityCuisines);
+          //console.log("facilityCuisines : " + facilityCuisines);
           const facilityDiets = validPreferences.filter(pref => pref.type === 1).map(pref => pref.id);
           //console.log(facility.name + " => Diet type : " + facilityDiets);
-          console.log("selectedCuisines" + selectedCuisines);
+          //console.log("selectedCuisines" + selectedCuisines);
           const hasSelectedCuisine = selectedCuisines.some(cuisine => 
             facilityCuisines.includes(cuisine));
           //console.log("hasSelectedCuisine" + hasSelectedCuisine);
@@ -540,7 +568,7 @@ const MapView = () => {
           return acc;
         }
       }, []);
-      console.log("facilities : " + JSON.stringify(uniqueFacilities, null, 2));
+      //console.log("facilities : " + JSON.stringify(uniqueFacilities, null, 2));
       //console.log(neLat + " " + neLng + " " + swLat + " " + swLng);
 
       if (webViewRef.current && uniqueFacilities.length > 0) {
@@ -569,6 +597,7 @@ const MapView = () => {
     const data = JSON.parse(event.nativeEvent.data);
     if (data.type === 'markerVisibilityChanged') {
       isUserMarkerVisible = data.isVisible;
+      console.log("heere");
       handleLocate();
 
     }
@@ -591,7 +620,7 @@ const MapView = () => {
       //console.log('Updated Location:', data.lat, data.lon);
     }
     if (data.type === 'debug') {
-      console.log('DEBUG', data.message);
+      //console.log('DEBUG', data.message);
     }
     if (data.type === 'togglePreferences') {
       //console.log("received togglePreferences data type");
@@ -606,7 +635,7 @@ const MapView = () => {
   const handleShowOnlyOpenToggle = () => {
     const newShowOnlyOpen = !showOnlyOpen;
     setShowOnlyOpen(newShowOnlyOpen);
-    console.log("handleShowOnlyOpenToggle triggered:", { searchQuery, newShowOnlyOpen });
+    //console.log("handleShowOnlyOpenToggle triggered:", { searchQuery, newShowOnlyOpen });
     if (searchQuery) {
       fetchAndUpdateFacilities(searchQuery, neLat, neLng, swLat, swLng);
     } else {
