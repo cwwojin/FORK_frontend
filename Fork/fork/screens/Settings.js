@@ -153,6 +153,7 @@ import { useTranslator } from 'react-native-translator';
 import { GlobalStyles, Color, Border, FontSize } from '../GlobalStyles';
 import { deleteUser, handleLogOut, sendBugReport } from './api';
 import { setLanguageToken, getLanguageToken, getAllTranslations } from '../LanguageUtils';
+import { USERTOKEN } from './api';
 
 const initialTranslations = {
   settings: 'Settings',
@@ -343,7 +344,7 @@ const Settings = () => {
                 source={require('../assets/icons/logout.png')}
                 style={styles.icon}
               />
-              <Text style={GlobalStyles.body}>{USERTOKEN ? translations.logout : translations.login}</Text>
+              <Text style={GlobalStyles.body}>{(USERTOKEN != 'guest') ? translations.logout : translations.login}</Text>
             </View>
           </TouchableOpacity>
           <TouchableOpacity style={styles.container} onPress={deleteAccount}>

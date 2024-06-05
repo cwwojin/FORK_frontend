@@ -10,6 +10,7 @@ const translations = {
     shareMyLocation: 'Share My Location',
     language: 'Language',
     logout: 'Logout',
+    login: 'Login',
     deleteAccount: 'Delete Account',
     reportAnIssue: 'Report an Issue',
     description: 'Description',
