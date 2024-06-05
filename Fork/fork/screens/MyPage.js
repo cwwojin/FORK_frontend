@@ -836,7 +836,7 @@ const MyPage = () => {
                           {facilityInfo?.preferences?.map(item => (
                             <Hashtag
                               key={item.id}
-                              tag={item}
+                              tag={item.name}
                             />
                           ))}
                         </View>
