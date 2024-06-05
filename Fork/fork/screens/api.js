@@ -13,6 +13,7 @@ const S3_ENDPOINT = `${API_ENDPOINT}/s3`
 
 // export let USERBOOKMARKED = "";
 export let USERTOKEN = 'guest';
+export let USERREFRESHTOKEN = 'guest';
 export let USERID = 3;
 export let USERPREFERENCE = [];
 export let USERTYPE = '';
@@ -31,25 +32,28 @@ export const handleLogin = async (username, password) => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': USERTOKEN
+                'Authorization': 'guest'
             },
             body: JSON.stringify(requestBody)
         });
         if (response.status === 200) {
             const jsonResponse = await response.json();
+            console.log("response when LOGIN : " + JSON.stringify(jsonResponse.data, null, 2));
             USERTOKEN = jsonResponse.data.token;
+            //USERREFRESHTOKEN = jsonResponse.data.refreshToken;
             USERID = jsonResponse.data.user.id;
             USERPREFERENCE = await getUserPreferences(USERID);
             USERBOOKMARKED = await getUserFavorites(USERID);
             USERTYPE = jsonResponse.data.user.userType;
             console.log("USERID : " + USERID);
             console.log("USERTOKEN : " + USERTOKEN);
+            //console.log("USERREFRESHTOKEN : " + USERREFRESHTOKEN);
             console.log("USERPREFERENCE : " + JSON.stringify(USERPREFERENCE, null, 2));
             console.log("USERBOOKMARKED : " + JSON.stringify(USERBOOKMARKED, null, 2));
-            console.log("USERTYPE : " + USERTYPE);
             return true;
         } else {
-            console.log('Login Failed', 'Invalid credentials or insufficient permissions.');
+            
+            console.log('Login Failed', 'Invalid credentials or insufficient permissions.' + response.status);
             return false;
         }
     } catch (error) {

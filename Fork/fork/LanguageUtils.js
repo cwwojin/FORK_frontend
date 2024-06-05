@@ -153,6 +153,7 @@ const translations = {
       writeReviews: 'Write Reviews',
       loadingReviews: 'Loading reviews...',
       summary: 'Clean, kind and tasty',
+      translate: 'Translate',
 },
   ko: {
     settings: '설정',
@@ -305,6 +306,7 @@ const translations = {
       writeReviews: '리뷰 작성',
       loadingReviews: '리뷰를 불러오는 중...',
       summary: '깨끗하고 친절하며 맛있다',
+      translate: '번역하다',
   },
   // Add more languages here
 };

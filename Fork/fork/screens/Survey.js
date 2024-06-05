@@ -83,7 +83,8 @@ const Survey = ({ navigation }) => {
             onPress={() => handleSelectCuisine(item.id)}
           >
             <Image source={item.icon} style={styles.icon} />
-            <Text>{translations.pref[item.name]}</Text>
+            <Text>{item.name}</Text>
+            {/* <Text>{translations.pref[item.name]}</Text> */}
           </TouchableOpacity>
         ))}
       </View>
@@ -103,7 +104,8 @@ const Survey = ({ navigation }) => {
                 (item.id === 16 || item.id === 17) && styles.doubleIcon
               ]}
             />
-            <Text>{translations.pref[item.name]}</Text>
+            <Text>{item.name}</Text>
+            {/* <Text>{translations.pref[item.name]}</Text> */}
           </TouchableOpacity>
         ))}
       </View>

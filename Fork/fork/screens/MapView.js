@@ -240,7 +240,7 @@ const MapView = () => {
       <button class="button" onclick="zoomOut()">-</button>
       <button class="button" id="locateButton" onclick="toggleLocate()">📍</button>
       <button class="button" id="preferencesButton" onclick="togglePreferences()">P</button>
-      <button class="button" id="bookmarkedButton" onclick="toggleBookmarked()">B</button>
+      <button class="button" id="bookmarkedButton" onclick="toggleBookmarked()">F</button>
     </div>
     <div id="map"></div>
     <script>

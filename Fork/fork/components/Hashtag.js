@@ -40,19 +40,19 @@ const Hashtag = ({ tag }) => {
       // Find the corresponding name from the preferences array
       const tagName = preferences[tag].name;
       // Assign the tagName to the tag variable
-      tag = translations.pref[tagName];
+      tag = tagName;
     }
 
 
   return (
     <View style={{
-      ...styles.hashtagHolder, backgroundColor: tintColor ? tintColor : Color.yellow_100,
+      ...styles.hashtagHolder, backgroundColor: Color.yellow_100,
    }}>
       <Text
         style={GlobalStyles.hashtag}
         numberOfLines={1}
         ellipsizeMode="tail">
-        {tag?.name ? tag?.name : tag}
+        {tag?.name ? translations.pref[tag?.name] : tag}
       </Text>
     </View>
   );

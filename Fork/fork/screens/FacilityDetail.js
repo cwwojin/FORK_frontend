@@ -474,7 +474,7 @@ const FacilityDetail = () => {
                 paddingBottom: 15,
               }}>
               {preferences && preferences.map(item => (
-                <Hashtag key={item.id} tag={item} />
+                <Hashtag key={item.id} tag={translations.pref[item.name]} />
               ))}
             </View>
           </View>

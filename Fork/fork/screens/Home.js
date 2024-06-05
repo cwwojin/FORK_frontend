@@ -61,23 +61,23 @@ const Home = () => {
   };
 
   useEffect(() => {
-    console.log("userpreference", USERPREFERENCE);
+    //console.log("userpreference", USERPREFERENCE);
 
     const fetchTrending = async () => {
       try {
         const data = await getTrendingFacilities();
         setTrending(data);
       } catch (error) {
-        console.log(error.message);
+        //console.log(error.message);
       }
     };
     const fetchNewest = async () => {
       try {
         const data = await getNewestFacilities();
-        console.log(data);
+        //console.log(data);
         setNewest(data);
       } catch (error) {
-        console.log(error.message);
+        //console.log(error.message);
       }
     };
     const fetchPreferences = async () => {
@@ -92,9 +92,9 @@ const Home = () => {
         setSuggestions(suggestedFacilities);
         setPreference(indices);
 
-        console.log("suggesting", suggestedFacilities);
+        //console.log("suggesting", suggestedFacilities);
       } catch (error) {
-        console.log(error.message);
+        //console.log(error.message);
       }
     };
     fetchTrending();

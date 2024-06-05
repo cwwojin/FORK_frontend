@@ -7,6 +7,7 @@ import Translator, {
 } from 'react-native-translator';
 import { deletePost } from '../screens/api.js';
 import { useNavigation } from 'react-router-dom';
+import { getAllTranslations, getLanguageToken } from '../LanguageUtils';
 
 const Notice = ({
   facilityImage,
@@ -19,6 +20,18 @@ const Notice = ({
   owner,
   navigation,
 }) => {
+
+  
+  const [translations, setTranslations] = useState({});
+
+  useEffect(() => {
+    const fetchTranslations = async () => {
+      const fetchedTranslations = await getAllTranslations();
+      setTranslations(fetchedTranslations);
+    };
+    fetchTranslations();
+  }, []);
+  
 
   if (facilityImage == undefined) {
     facilityImage = require('../assets/placeholders/User.png');
@@ -45,12 +58,16 @@ const Notice = ({
 
   const { translate } = useTranslator();
   const [result, setResult] = useState(noticeContent);
-
+  
   const onTranslate = async () => {
     try {
-      const _result = await translate('en', 'kr', noticeContent, {
+      const currentLanguage = await getLanguageToken();
+      console.log("currentLanguage" + currentLanguage);
+      const targetLanguage = currentLanguage === 'kr' ? 'kr' : 'en';
+      const _result = await translate('kr', 'en', noticeContent, {
         timeout: 5000,
       });
+      console.log('result'+ result);
       setResult(_result);
     } catch (error) {
       Alert.alert('Translate error!');
@@ -93,7 +110,7 @@ const Notice = ({
         }}>
         <TouchableOpacity onPress={onTranslate}>
           <Text style={{ ...GlobalStyles.body2, marginRight: 12 }}>
-            Translate
+            {translations.translate}
           </Text>
         </TouchableOpacity>
         {owner && (<TouchableOpacity
