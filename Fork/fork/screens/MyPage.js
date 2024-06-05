@@ -394,41 +394,50 @@ const MyPage = () => {
   {/* -----------------GUEST User---------------------- */ }
   if (!userType) {
     return (
-      <SafeAreaView style={GlobalStyles.background}>
-        <View style={GlobalStyles.content}>
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              marginTop: -27,
-              paddingBottom: 10,
-            }}>
-            <Text style={GlobalStyles.h1}>My Page</Text>
-            <TouchableOpacity onPress={() => {
-              navigation.navigate("Settings", {
-                userName: userInfo.account_id,
-                userProfile: userProfile,
-                userEmail: userInfo.email
-              });
-            }}>
-              <Image
-                style={GlobalStyles.topIcon}
-                source={require('../assets/icons/setting.png')}
-              />
-            </TouchableOpacity>
+      <>
+        <SafeAreaView style={GlobalStyles.background}>
+          <View style={GlobalStyles.content}>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                marginTop: -27,
+                paddingBottom: 10,
+              }}>
+              <Text style={GlobalStyles.h1}>My Page</Text>
+              <TouchableOpacity onPress={() => {
+                navigation.navigate("Settings", {
+                  userName: userInfo.account_id,
+                  userProfile: userProfile,
+                  userEmail: userInfo.email
+                });
+              }}>
+                <Image
+                  style={GlobalStyles.topIcon}
+                  source={require('../assets/icons/setting.png')}
+                />
+              </TouchableOpacity>
+            </View>
+            <View
+              style={{
+                flex: 1,
+                justifyContent: 'center',
+                alignItems: 'center',
+                marginTop: 10,
+              }}>
+              <Image source={require('../assets/logos/coloredLogo.png')} style={{ height: 80, width: 80 }} />
+              <Text style={{ ...GlobalStyles.h4, textAlign: 'center', padding: 20 }}>Please Login for more</Text>
+            </View>
           </View>
-          <View
-            style={{
-              flex: 1,
-              justifyContent: 'center',
-              alignItems: 'center',
-              marginTop: 10,
-            }}>
-            <Image source={require('../assets/logos/coloredLogo.png')} style={{ height: 80, width: 80 }} />
-            <Text style={{ ...GlobalStyles.h4, textAlign: 'center', padding: 20 }}>Please Login for more</Text>
-          </View>
-        </View>
-      </SafeAreaView>
+        </SafeAreaView>
+        <NavigationBar
+          homeb={false}
+          mapb={false}
+          favoritesb={false}
+          myPageb={true}
+          navigation={navigation}
+        />
+      </>
     )
   }
 

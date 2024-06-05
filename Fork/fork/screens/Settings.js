@@ -153,6 +153,7 @@ import { useTranslator } from 'react-native-translator';
 import { GlobalStyles, Color, Border, FontSize } from '../GlobalStyles';
 import { deleteUser, handleLogOut, sendBugReport } from './api';
 import { setLanguageToken, getLanguageToken, getAllTranslations } from '../LanguageUtils';
+import { USERTOKEN } from './api';
 
 const initialTranslations = {
   settings: 'Settings',
@@ -187,10 +188,6 @@ const Settings = () => {
   const [loading, setLoading] = useState(false);
   const [report, setReport] = useState(false);
   const [reportContent, setReportContent] = useState('');
-
-  const togglePushNotification = () => {
-    setPushNotification(!pushNotification);
-  };
 
   const toggleAccessLocation = () => {
     setAccessLocation(!accessLocation);
@@ -303,22 +300,6 @@ const Settings = () => {
 
         <View style={{ width: '100%', paddingVertical: 5 }}>
           <Text style={GlobalStyles.h2}>{translations.general}</Text>
-          <View style={styles.container} onPress={togglePushNotification}>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Image
-                source={require('../assets/icons/notification.png')}
-                style={styles.icon}
-              />
-              <Text style={GlobalStyles.body}>{translations.allowPushNotifications}</Text>
-            </View>
-            <ToggleSwitch
-              isOn={pushNotification}
-              onColor={Color.orange_700}
-              offColor={Color.lightGrey}
-              size="small"
-              onToggle={togglePushNotification}
-            />
-          </View>
           <View style={styles.container} onPress={toggleAccessLocation}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <Image
@@ -363,7 +344,7 @@ const Settings = () => {
                 source={require('../assets/icons/logout.png')}
                 style={styles.icon}
               />
-              <Text style={GlobalStyles.body}>{USERTOKEN ? translations.logout : translations.login}</Text>
+              <Text style={GlobalStyles.body}>{(USERTOKEN != 'guest') ? translations.logout : translations.login}</Text>
             </View>
           </TouchableOpacity>
           <TouchableOpacity style={styles.container} onPress={deleteAccount}>
