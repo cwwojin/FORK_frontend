@@ -35,6 +35,7 @@ import QRScanner from './screens/QRScanner.js';
 import GiveStamp from './screens/GiveStamp.js';
 import EditProfile from './screens/EditProfile.js';
 import FacilityInformationEdit from './screens/FacilityInformationEdit.js';
+import FacilityInformationCreate from './screens/FacilityInformationCreate.js';
 import EditMenu from './screens/EditMenu.js';
 import EditReview from './screens/EditReview.js';
 import { initializeUserState } from './screens/api';
@@ -127,6 +128,7 @@ const App = () => {
               <Stack.Screen name="GiveStamp" component={GiveStamp} />
               <Stack.Screen name="EditProfile" component={EditProfile} />
               <Stack.Screen name="FacilityInformationEdit" component={FacilityInformationEdit} />
+              <Stack.Screen name="FacilityInformationCreate" component={FacilityInformationCreate} />
               <Stack.Screen name="EditMenu" component={EditMenu} />
               <Stack.Screen name="EditReview" component={EditReview} />
               {/* Register the FavoritesScreen */}

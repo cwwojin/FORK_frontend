@@ -759,7 +759,7 @@ const MyPage = () => {
                         />
                       </View>
                       <TouchableOpacity onPress={() => {
-                        navigation.navigate("FacilityInformation", { authorId: USERID })
+                        navigation.navigate("FacilityInformationCreate", { authorId: USERID })
                       }}>
                         <Text style={{ ...GlobalStyles.body3, fontSize: FontSize.size_xl, width: 20 }}>+</Text>
                       </TouchableOpacity>
