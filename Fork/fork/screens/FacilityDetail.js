@@ -237,7 +237,7 @@ const FacilityDetail = () => {
       }
       setBookmarked(!bookmarked);
     } else {
-      Alert.alert("Please Login");
+      Alert.alert("Only for KAIST User");
     }
 
   };
@@ -246,7 +246,7 @@ const FacilityDetail = () => {
     if (USERTYPE == 1) {
       setStamp(!stamp);
     } else {
-      Alert.alert("Please Login");
+      Alert.alert("Only for KAIST User");
     }
   }
 
@@ -268,7 +268,7 @@ const FacilityDetail = () => {
     if (USERTYPE == 1) {
       setWriteReview(!writeReview);
     } else {
-      Alert.alert("Please Login");
+      Alert.alert("Only for KAIST User");
     }
   }
 
