@@ -111,7 +111,7 @@ const Home = () => {
           <Image
             style={GlobalStyles.longImage}
             contentFit="cover"
-            source={require('../assets/placeholders/long_image.png')}
+            source={require('../assets/logos/advertisement2.png')}
           />
 
           <Text style={GlobalStyles.h2}>{translations.trending}</Text>

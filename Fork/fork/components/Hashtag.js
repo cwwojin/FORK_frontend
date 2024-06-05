@@ -36,9 +36,9 @@ const Hashtag = ({ tag }) => {
   ];
 
     // Check if tag is an integer within the range of 0 to 17
-    if (Number.isInteger(tag) && tag >= 0 && tag <= 17) {
+    if (Number.isInteger(tag) && tag >= 1 && tag <= 17) {
       // Find the corresponding name from the preferences array
-      const tagName = preferences[tag].name;
+      const tagName = preferences[tag-1].name;
       // Assign the tagName to the tag variable
       tag = tagName;
     }

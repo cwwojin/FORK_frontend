@@ -93,7 +93,7 @@ const DayHoursInput = ({ day, hours, setHours }) => {
 
 const API_KEY = '609b3e6da632a6e07f4cc1bd8a5fa05c';
 
-const FacilityInformation = ({navigation}) => {
+const FacilityInformationCreate = ({navigation}) => {
   const route = useRoute();
   const authorId = route.params.authorId;
   const email = route.params.email;
@@ -257,7 +257,8 @@ const FacilityInformation = ({navigation}) => {
       //console.log("images : "+JSON.stringify(images, null, 2));
       const response = await registerFacility(facilityData, images);
       console.log('Facility registration request sent successfully:', JSON.stringify(response.data, null, 2));
-      navigation.navigate("PushNotification");  
+      navigation.goBack();
+      navigation.replace("MyPage");  
     } catch (error) {
       Alert.alert('Error', 'Failed to send facility registration request. Please try again.');
       console.error('Error sending facility registration request:', error);
@@ -736,4 +737,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default FacilityInformation;
+export default FacilityInformationCreate;

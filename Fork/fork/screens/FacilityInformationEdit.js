@@ -85,9 +85,9 @@ const FacilityInformationEdit = ({ navigation }) => {
   //const authorId = route.params.authorId;
   //const email = route.params.email;
 
-  const { facilityINFO } = route.params;
+  const { facilityINFO, userEmail } = route.params;
   const authorId = USERID;
-  const email = facilityINFO.email;
+  const email = facilityINFO.email ? facilityINFO.email : userEmail;
 
   const [facilityInfo, setFacilityInfo] = useState({
     menuItems: [],
