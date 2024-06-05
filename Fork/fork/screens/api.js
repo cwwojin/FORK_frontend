@@ -58,6 +58,41 @@ export const handleLogin = async (username, password) => {
     }
 };
 
+export const handleLogOut = async () => {
+    USERBOOKMARKED = "";
+    USERTOKEN = "guest";
+    USERID = "";
+    USERPREFERENCE = [];
+    USERTYPE = '';
+    return true;
+
+};
+
+export const deleteUser = async () => {
+    try {
+        const url = `${BASE_URL}/users/delete/${USERID}`;
+        const response = await fetch(url, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': USERTOKEN
+            },
+        });
+        if (response.status === 200) {
+            const jsonResponse = await response.json();
+            console.log("Delete user successful :", jsonResponse);
+            handleLogOut();
+            return true;
+        } else {
+            const jsonResponse = await response.text();
+            console.log('Delete User Failed: ', jsonResponse);
+            throw new Error('Network response was not ok');
+        }
+    } catch (error) {
+        console.log(error);
+        return false;
+    }
+};
 
 export const resetPassword = async (userId) => {
     const url = `${FORK_URL}api/auth/reset-password`;
