@@ -111,6 +111,7 @@ const translations = {
 
       myFacility: 'MY FACILITY',
       name: 'Name',
+      englishName: 'English Name',
       serviceDescription: 'Service Description',
       websiteURL: 'Website URL',
       phoneNumber: 'Phone Number',

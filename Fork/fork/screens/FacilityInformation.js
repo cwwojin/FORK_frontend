@@ -95,10 +95,8 @@ const API_KEY = '609b3e6da632a6e07f4cc1bd8a5fa05c';
 
 const FacilityInformation = ({navigation}) => {
   const route = useRoute();
-  //const authorId = route.params.authorId;
-  //const email = route.params.email;
-  const authorId = 10;
-  const email = "ayahamane13@gmail.com";
+  const authorId = route.params.authorId;
+  const email = route.params.email;
 
   const [facilityInfo, setFacilityInfo] = useState({
     menuItems: [],
@@ -120,6 +118,7 @@ const FacilityInformation = ({navigation}) => {
 
   const [facilityImageUri, setFacilityImageUri] = useState('');
   const [name, setName] = useState('');
+  const [englishName, setEnglishName] = useState('');
   const [location, setLocation] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [businessRegNo, setBusinessRegNo] = useState('');
@@ -202,6 +201,7 @@ const FacilityInformation = ({navigation}) => {
       title: name,
       content: {
         name,
+        englishName,
         type: "",
         businessId: businessRegNo,
         phone: phoneNumber,
@@ -384,6 +384,15 @@ const FacilityInformation = ({navigation}) => {
             onChangeText={setName}
             value={name}
             placeholder={translations.name}
+          />
+          <Image source={require("../assets/icons/facility.png")} style={GlobalStyles.inputIcon} />
+        </View>
+        <View style={GlobalStyles.inputWrapper1}>
+          <TextInput
+            style={GlobalStyles.registrationInput1}
+            onChangeText={setEnglishName}
+            value={englishName}
+            placeholder={translations.englishName}
           />
           <Image source={require("../assets/icons/facility.png")} style={GlobalStyles.inputIcon} />
         </View>

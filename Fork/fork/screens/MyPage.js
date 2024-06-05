@@ -47,7 +47,7 @@ import {
 const MyPage = () => {
   //Get Informations of facilities
 
-  const [userType, setUserType] = useState('');
+  const [userType, setUserType] = useState(USERTYPE);
   const [userInfo, setUserInfo] = useState('');
   const [userProfile, setUserProfile] = useState(userImage);
   const [userFavorite, setUserFavorite] = useState([]);
@@ -394,7 +394,8 @@ const MyPage = () => {
   };
 
   {/* -----------------GUEST User---------------------- */ }
-  if (!userType) {
+  if (USERTYPE !== 0 && USERTYPE !== 1 && USERTYPE !== 2) {
+    console.log("whyhwhywhyhw", USERTYPE)
     return (
       <>
         <SafeAreaView style={GlobalStyles.background}>
@@ -441,218 +442,13 @@ const MyPage = () => {
         />
       </>
     )
-  }
+  } else {
 
-  return (
-    <>
+    return (
+      <>
 
-      {/* -----------------KAIST User---------------------- */}
-      {(userType == 1) && (
-        <SafeAreaView style={GlobalStyles.background}>
-          <ScrollView showsVerticalScrollIndicator={false}>
-            <View style={GlobalStyles.content}>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  marginTop: -27,
-                  paddingBottom: 10,
-                }}>
-                <Text style={GlobalStyles.h1}>{translations.myPage}</Text>
-                <TouchableOpacity onPress={() => {
-                  navigation.navigate("Settings", {
-                    userName: userInfo.account_id,
-                    userProfile: userProfile,
-                    userEmail: userInfo.email
-                  });
-                }}>
-                  <Image
-                    style={GlobalStyles.topIcon}
-                    source={require('../assets/icons/setting.png')}
-                  />
-                </TouchableOpacity>
-              </View>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  width: '100%',
-                  justifyContent: 'flex-start',
-                  marginTop: 10,
-                }}>
-                <Image
-                  style={{ ...GlobalStyles.profileImage, marginRight: 20 }}
-                  source={Number.isInteger(userProfile) ? userProfile : { uri: userProfile }}
-                />
-                <View style={{ justifyContent: 'center' }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Text style={{ ...GlobalStyles.body, marginRight: 15 }}>
-                      {userInfo.account_id}
-                    </Text>
-                    <TouchableOpacity onPress={() => (navigation.navigate("EditProfile", { userInfo }))}>
-                      <Text style={GlobalStyles.body2}>{translations.edit}</Text>
-                    </TouchableOpacity>
-                  </View>
-                  <Text style={{ ...GlobalStyles.body2, textTransform: 'none' }}>
-                    {userInfo.email}
-                  </Text>
-                </View>
-              </View>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  width: '100%',
-                  justifyContent: 'flex-start',
-                  flexWrap: 'wrap',
-                  marginTop: 10,
-                }}>
-                {USERPREFERENCE && USERPREFERENCE.map(item => (
-                  <Hashtag tag={translations.pref[item.name]} />
-                ))}
-              </View>
-
-              <View
-                style={{
-                  flexDirection: 'row',
-                  width: '100%',
-                  justifyContent: 'space-between',
-                  marginTop: 10,
-                  alignItems: 'center',
-                }}>
-                <Text
-                  style={{
-                    ...GlobalStyles.h2,
-                    width: 'flexwrap',
-                    justifyContent: 'center',
-                  }}>
-                  {translations.favorites}
-                </Text>
-                <TouchableOpacity
-                  onPress={() => {
-                    navigation.navigate('Favorites');
-                  }}>
-                  <Image
-                    style={GlobalStyles.icon}
-                    source={require('../assets/icons/navigate_right.png')}
-                  />
-                </TouchableOpacity>
-              </View>
-              <View style={{ ...GlobalStyles.scroll, height: 210 }}>
-                <ScrollView
-                  horizontal
-                  style={GlobalStyles.scroll}
-                  showsHorizontalScrollIndicator={false}>
-                  {userFavorite?.map(item => (
-                    <TouchableOpacity
-                      key={item.id}
-                      onPress={() => {
-                        navigation.navigate("FacilityDetail", { facilityID: item.id });
-                      }}
-                    >
-                      <SquareFacility
-                        facilityImage={item.profile_img_uri}
-                        facilityName={item.name}
-                        facilityAddress={item.english_address}
-                        facilityScore={item.avg_score}
-                      />
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              </View>
-
-              <View
-                style={{
-                  flexDirection: 'row',
-                  width: '100%',
-                  justifyContent: 'space-between',
-                  marginTop: 10,
-                  alignItems: 'center',
-                }}>
-                <Text
-                  style={{
-                    ...GlobalStyles.h2,
-                    width: 'flexwrap',
-                    justifyContent: 'center',
-                  }}>
-                  {translations.myStamps}
-                </Text>
-                <TouchableOpacity
-                  onPress={() => {
-                    navigation.navigate('MyStamps');
-                  }}>
-                  <Image
-                    style={GlobalStyles.icon}
-                    source={require('../assets/icons/navigate_right.png')}
-                  />
-                </TouchableOpacity>
-              </View>
-              <ScrollView
-                horizontal
-                style={GlobalStyles.scroll}
-                showsHorizontalScrollIndicator={false}>
-                {userStamp?.map(item => (
-                  <TouchableOpacity
-                    onPress={() => {
-                      navigation.navigate("FacilityDetail", { facilityID: item.facility_id });
-                    }}
-                  >
-                    <UserList UserImage={userStampFacility[item.facility_id]?.image} UserName={userStampFacility[item.facility_id]?.name} />
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-
-              <View
-                style={{
-                  flexDirection: 'row',
-                  width: '100%',
-                  justifyContent: 'space-between',
-                  marginTop: 10,
-                  alignItems: 'center',
-                }}>
-                <Text
-                  style={{
-                    ...GlobalStyles.h2,
-                    width: 'flexwrap',
-                    justifyContent: 'center',
-                  }}>
-                  {translations.myReviews}
-                </Text>
-                <TouchableOpacity
-                  onPress={() => {
-                    navigation.navigate('MyReviews');
-                  }}>
-                  <Image
-                    style={GlobalStyles.icon}
-                    source={require('../assets/icons/navigate_right.png')}
-                  />
-                </TouchableOpacity>
-              </View>
-              <View style={{ ...GlobalStyles.scroll, height: 210 }}>
-                <ScrollView
-                  horizontal
-                  style={GlobalStyles.scroll}
-                  showsHorizontalScrollIndicator={false}>
-                  {userReview?.map(item => (
-                    <TouchableOpacity onPress={() => {
-                      navigation.navigate("FacilityDetail", { facilityID: item.facility_id });
-                    }}>
-                      <SquareFacility
-                        facilityImage={item.img_uri}
-                        facilityAddress={item.content}
-                        facilityScore={item.score}
-                        facilityName={userReviewFacility[item.id]}
-                      />
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              </View>
-            </View>
-          </ScrollView>
-        </SafeAreaView>
-      )}
-
-      {/* -----------------Facility User---------------------- */}
-      {(userType == 2) && (
-        <>
+        {/* -----------------KAIST User---------------------- */}
+        {(userType == 1) && (
           <SafeAreaView style={GlobalStyles.background}>
             <ScrollView showsVerticalScrollIndicator={false}>
               <View style={GlobalStyles.content}>
@@ -702,363 +498,63 @@ const MyPage = () => {
                     </Text>
                   </View>
                 </View>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    width: '100%',
+                    justifyContent: 'flex-start',
+                    flexWrap: 'wrap',
+                    marginTop: 10,
+                  }}>
+                  {USERPREFERENCE && USERPREFERENCE.map(item => (
+                    <Hashtag tag={translations.pref[item.name]} />
+                  ))}
+                </View>
 
                 <View
                   style={{
+                    flexDirection: 'row',
                     width: '100%',
+                    justifyContent: 'space-between',
+                    marginTop: 10,
+                    alignItems: 'center',
                   }}>
                   <Text
                     style={{
                       ...GlobalStyles.h2,
+                      width: 'flexwrap',
+                      justifyContent: 'center',
                     }}>
-                    {translations.registrationRequest}
+                    {translations.favorites}
                   </Text>
-                  {myFacilityRegistrations?.map(item => (
-                    <Request
-                      facilityName={item.content.name}
-                      facilityImage={item.content.profileImgUri}
-                      facilityAddress={item.content.address.englishAddress}
-                      state={'Pending'}
-                    />
-                  ))}
-                </View>
-
-                <View style={{ width: '100%', justifyContent: 'flex-start' }}>
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingRight: 20 }}>
-                    <View style={styles.container}>
-                      {renderLabel()}
-                      <Dropdown
-                        style={[styles.dropdown, isFocus && { borderColor: Color.orange_700 }]}
-                        placeholderStyle={styles.placeholderStyle}
-                        selectedTextStyle={styles.selectedTextStyle}
-                        inputSearchStyle={styles.inputSearchStyle}
-                        iconStyle={styles.iconStyle}
-                        data={myFacilities}
-                        search
-                        maxHeight={300}
-                        labelField="name"
-                        valueField="id"
-                        placeholder={(!isFocus) ? (translations.selectFacility) : "..."}
-                        searchPlaceholder={translations.search}
-                        value={value}
-                        onFocus={() => setIsFocus(true)}
-                        onBlur={() => setIsFocus(false)}
-                        onChange={async (item) => {
-                          try {
-                            setValue(item.id);
-                            setFacilityInfo(item);
-                            setFacilityInfoSub();
-                            await fetchFacilityInfoSub(item);
-                            console.log("facilityinfosub is: ", facilityInfoSub);
-                            setIsFocus(false);
-                          } catch (error) {
-                            console.error('Error fetching facility info:', error);
-                          }
-                        }}
-                      />
-                    </View>
-                    <TouchableOpacity onPress={() => {
-                      navigation.navigate("FacilityInformation", { authorId: USERID })
+                  <TouchableOpacity
+                    onPress={() => {
+                      navigation.navigate('Favorites');
                     }}>
-                      <Text style={{ ...GlobalStyles.body3, fontSize: FontSize.size_xl, width: 20 }}>+</Text>
-                    </TouchableOpacity>
-                  </View>
-                  {facilityInfo && (
-                    <>
-                      <View style={{ width: '100%', flexDirection: 'row', justifyContent: 'space-between', paddingTop: 15 }}>
-                        <TouchableOpacity style={styles.facilityButton} onPress={toggleUpload}>
-                          <Image
-                            source={require('../assets/icons/upload.png')}
-                            style={styles.buttonIcon}
-                          />
-                          <Text style={styles.buttonText}>{translations.notice}</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.facilityButton} onPress={() => navigation.navigate('QRScanner', { facilityID: facilityInfo?.id })}>
-                          <Image
-                            source={require('../assets/icons/giveStamp.png')}
-                            style={styles.buttonIcon}
-                          />
-                          <Text style={styles.buttonText}>Stamp</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.facilityButton}
-                          onPress={() => {
-                            navigation.navigate('FacilityDetail', { facilityID: facilityInfo?.id });
-                          }}>
-                          <Image
-                            source={require('../assets/icons/toFacility.png')}
-                            style={styles.buttonIcon}
-                          />
-                          <Text style={styles.buttonText}>{translations.facility}</Text>
-                        </TouchableOpacity>
-                      </View>
-                      <View style={{ width: '100%' }}>
-                        <TouchableOpacity style={{ paddingTop: 15, alignSelf: 'flex-end' }} onPress={() => (navigation.navigate("FacilityInformationEdit", { facilityINFO: facilityInfo, userEmail: userInfo.email }))}>
-                          <Text style={GlobalStyles.body3}>{translations.edit}</Text>
-                        </TouchableOpacity>
-                        <Image
-                          source={facilityInfoSub?.profileImage ? facilityInfoSub?.profileImage : longImagePlaceholder}
-                          style={{ ...GlobalStyles.longImage, margin: 0, marginTop: 15 }}
-                        />
-                        <View style={{ width: '100%', flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 15, paddingHorizontal: 5 }}>
-                          <Text style={GlobalStyles.body}>{facilityInfo?.name}</Text>
-                          <View style={{ flexDirection: 'row' }}>
-                            <Image
-                              source={require('../assets/icons/star.png')}
-                              style={GlobalStyles.icon}
-                            />
-                            <Text style={GlobalStyles.body2}>{Math.round(facilityInfo?.avg_score * 10) / 10}</Text>
-                          </View>
-                        </View>
-                        <View style={{ flexDirection: 'row', paddingVertical: 5 }}>
-                          <Image
-                            source={require('../assets/icons/location.png')}
-                            style={GlobalStyles.icon}
-                          />
-                          <Text style={{ ...GlobalStyles.body2, paddingHorizontal: 5 }}>{facilityInfo?.english_address}</Text>
-                        </View>
-                        <View style={{ flexDirection: 'row', paddingVertical: 5 }}>
-                          <Image
-                            source={require('../assets/icons/phone.png')}
-                            style={GlobalStyles.icon}
-                          />
-                          <Text style={{ ...GlobalStyles.body2, paddingHorizontal: 5 }}>{facilityInfo?.phone}</Text>
-                        </View>
-                        <View style={{ flexDirection: 'row' }}>
-                          <Image
-                            style={GlobalStyles.icon}
-                            source={require('../assets/icons/url.png')}
-                          />
-                          <Text style={{ ...GlobalStyles.body2, textTransform: 'none', paddingHorizontal: 5 }}>{facilityInfo?.url}</Text>
-                        </View>
-                      </View>
-                      <View style={{ flexDirection: 'row', paddingTop: 5, width: '100%', paddingBottom: 20 }}>
-                        {facilityInfo?.preferences?.map(item => (
-                          <Hashtag
-                            key={item.id}
-                            tag={item}
-                          />
-                        ))}
-                      </View>
-
-                      <View
-                        style={{
-                          borderBottomColor: Color.lightGrey,
-                          borderBottomWidth: 1,
-                          marginBottom: 10,
-                        }}
-                      />
-
-                      <View style={{ flexDirection: 'row', width: '100%' }}>
-                        <Image
-                          style={styles.timeIcon}
-                          source={require('../assets/icons/hour.png')}
-                        />
-                        <View>
-                          {facilityInfoSub?.timeData?.map(item => (
-                            <Text key={item.day} style={{ ...GlobalStyles.body2, color: Color.darkgray, paddingVertical: 2 }}>{item.day.substring(0, 3)} : {item.openTime} - {item.closeTime}</Text>
-                          ))}
-                        </View>
-                      </View>
-
-                      <View style={{ width: '100%' }}>
-                        <Text style={GlobalStyles.h2}>Menu</Text>
-                        {facilityInfo?.menus?.map(item => (
-                          <>
-                            {item && (
-                              <Menu
-                                menuName={item.name}
-                                menuDescription={item.description}
-                                menuPrice={item.price}
-                                menuImage={item.img_uri}
-                                menuQuantity={item.quantity}
-                              />
-                            )}
-                          </>
-                        ))}
-                      </View>
-
-                      <View style={{ width: '100%' }}>
-                        <Text style={GlobalStyles.h2}>Stamps</Text>
-                        {!facilityInfoSub?.stamp ? (
-                          <Text style={{ textAlign: 'center' }}>Stamp not created</Text>
-                        ) : (
-                          <Stamp
-                            stamp={facilityInfoSub?.stamp}
-                            stampImage={facilityInfoSub?.stampImage ? { uri: facilityInfoSub?.stampImage } : ""}
-                            number={facilityInfoSub?.stamp?.length}
-                          />
-                        )}
-
-                      </View>
-                    </>
-                  )}
-                </View>
-
-              </View>
-            </ScrollView>
-          </SafeAreaView>
-          {upload && (
-            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-              <View style={styles.overlay}>
-                <View style={styles.background}>
-                  <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
-                    <Text style={GlobalStyles.h2}>{translations.uploadNotice}</Text>
-                    <TouchableOpacity style={{ ...GlobalStyles.topIcon, marginRight: 0 }} onPress={toggleUpload}>
-                      <Image
-                        source={require('../assets/icons/navigate_close.png')}
-                      />
-                    </TouchableOpacity>
-                  </View>
-                  <View style={{ width: '100%', alignItems: 'center', paddingVertical: 10 }}>
-                    <Text style={GlobalStyles.h3}>{translations.noticeImage}</Text>
-                    <TouchableOpacity style={{ width: '100%', justifyContent: 'center' }} onPress={saveNoticeImage}>
-                      {noticeImage ? (
-                        <Image source={Number.isInteger(noticeImage) ? noticeImage : { uri: noticeImage }} style={{ width: '100%', height: 140, borderRadius: Border.br_sm }} />
-                      ) : (
-                        <Image source={require('../assets/placeholders/long_image.png')} style={{ width: '100%', height: 140, borderRadius: Border.br_sm }} />
-                      )}
-                    </TouchableOpacity>
-                    <View style={styles.inputSection}>
-                      <Text style={GlobalStyles.h3}>{translations.description}</Text>
-                      <View style={GlobalStyles.inputWrapper3}>
-                        <TextInput
-                          style={GlobalStyles.registrationInput2}
-                          onChangeText={setNoticeContent}
-                          value={noticeContent}
-                          placeholder="Review Content"
-                          multiline={true}
-                          numberOfLines={5}
-                        />
-                      </View>
-                    </View>
-                    <View style={{ width: '100%', justifyContent: 'flex-end', flexDirection: 'row', paddingTop: 20 }}>
-                      <TouchableOpacity onPress={sendNotice}>
-                        <Text style={GlobalStyles.h4}>{translations.send}</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                </View>
-              </View>
-            </TouchableWithoutFeedback>
-          )}
-          {moderate && (
-            <View style={styles.overlay}>
-              <View style={styles.background}>
-                <View style={styles.loadingContainer}>
-                  <ActivityIndicator size="large" color={Color.orange_700} />
-                  <Text>Moderating...</Text>
-                </View>
-              </View>
-            </View>
-          )}
-        </>
-      )
-      }
-
-      {/* -----------------Admin User---------------------- */}
-      {
-        (userType == 0) && (
-          <SafeAreaView style={GlobalStyles.background}>
-            <ScrollView showsVerticalScrollIndicator={false}>
-              <View style={GlobalStyles.content}>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    marginTop: -27,
-                    paddingBottom: 10,
-                  }}>
-                  <Text style={GlobalStyles.h1}>{translations.myPage}</Text>
-                  <TouchableOpacity onPress={() => {
-                    navigation.navigate("Settings", {
-                      userName: userInfo.account_id,
-                      userProfile: userProfile,
-                      userEmail: userInfo.email
-                    });
-                  }}>
                     <Image
-                      style={GlobalStyles.topIcon}
-                      source={require('../assets/icons/setting.png')}
+                      style={GlobalStyles.icon}
+                      source={require('../assets/icons/navigate_right.png')}
                     />
                   </TouchableOpacity>
                 </View>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    width: '100%',
-                    justifyContent: 'flex-start',
-                    marginTop: 10,
-                  }}>
-                  <Image
-                    style={{ ...GlobalStyles.profileImage, marginRight: 20 }}
-                    source={Number.isInteger(userProfile) ? userProfile : { uri: userProfile }}
-                  />
-                  <View style={{ justifyContent: 'center' }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                      <Text style={{ ...GlobalStyles.body, marginRight: 15 }}>
-                        {userInfo.account_id}
-                      </Text>
-                      <TouchableOpacity onPress={() => (navigation.navigate("EditProfile", { userInfo }))}>
-                        <Text style={GlobalStyles.body2}>{translations.edit}</Text>
-                      </TouchableOpacity>
-                    </View>
-                    <Text style={{ ...GlobalStyles.body2, textTransform: 'none' }}>
-                      {userInfo.email}
-                    </Text>
-                  </View>
-                </View>
-
-                <View
-                  style={{
-                    width: '100%',
-                    paddingVertical: 5,
-                  }}>
-                  <Text
-                    style={GlobalStyles.h2}>
-                    {translations.reviewReports}
-                  </Text>
-                  {reviewReports
-                    .map(item => (
-                      <Review
-                        key={item.id} // Make sure to provide a unique key prop
-                        reviewId={item.review_id}
-                        userID={item.review.author_id}
-                        reviewDate={item.created_at}
-                        reviewScore={0}
-                        reviewImage={item.review.img_uri}
-                        reviewContent={item.content}
-                        reviewHashtags={[]}
-                        edit={false}
-                        admin={true}
-                        reviewreport={item.id}
-                        navigation={navigation}
-                      />
-                    ))
-                  }
-                </View>
-
-                <View
-                  style={{
-                    width: '100%',
-                    paddingVertical: 10,
-                  }}>
-                  <Text
-                    style={GlobalStyles.h2}>
-                    {translations.facilityRegistration}
-                  </Text>
+                <View style={{ ...GlobalStyles.scroll, height: 210 }}>
                   <ScrollView
                     horizontal
-                    style={{
-                      ...GlobalStyles.scroll,
-                      paddingBottom: 20,
-                      paddingTop: 5,
-                    }}
+                    style={GlobalStyles.scroll}
                     showsHorizontalScrollIndicator={false}>
-                    {facilityRegistrations.map(item => (
-                      <TouchableOpacity onPress={() => {
-                        navigation.navigate("FacilityRegistrationRequest", { author_id: item.author_id, facilityInfo: item.content, requestID: item.id });
-                      }}>
-                        <UserList UserImage={userImage} UserName={item.content.name} />
+                    {userFavorite?.map(item => (
+                      <TouchableOpacity
+                        key={item.id}
+                        onPress={() => {
+                          navigation.navigate("FacilityDetail", { facilityID: item.id });
+                        }}
+                      >
+                        <SquareFacility
+                          facilityImage={item.profile_img_uri}
+                          facilityName={item.name}
+                          facilityAddress={item.english_address}
+                          facilityScore={item.avg_score}
+                        />
                       </TouchableOpacity>
                     ))}
                   </ScrollView>
@@ -1066,39 +562,545 @@ const MyPage = () => {
 
                 <View
                   style={{
+                    flexDirection: 'row',
                     width: '100%',
-                    paddingVertical: 5,
+                    justifyContent: 'space-between',
+                    marginTop: 10,
+                    alignItems: 'center',
                   }}>
                   <Text
-                    style={GlobalStyles.h2}>
-                    {translations.bugReports}
+                    style={{
+                      ...GlobalStyles.h2,
+                      width: 'flexwrap',
+                      justifyContent: 'center',
+                    }}>
+                    {translations.myStamps}
                   </Text>
-                  {bugReports.map(item => (
-                    <Report
-                      userID={item.author_id}
-                      reportDate={item.created_at}
-                      reportContent={item.content}
-                      reportID={item.id}
-                      navigation={navigation}
+                  <TouchableOpacity
+                    onPress={() => {
+                      navigation.navigate('MyStamps');
+                    }}>
+                    <Image
+                      style={GlobalStyles.icon}
+                      source={require('../assets/icons/navigate_right.png')}
                     />
+                  </TouchableOpacity>
+                </View>
+                <ScrollView
+                  horizontal
+                  style={GlobalStyles.scroll}
+                  showsHorizontalScrollIndicator={false}>
+                  {userStamp?.map(item => (
+                    <TouchableOpacity
+                      onPress={() => {
+                        navigation.navigate("FacilityDetail", { facilityID: item.facility_id });
+                      }}
+                    >
+                      <UserList UserImage={userStampFacility[item.facility_id]?.image} UserName={userStampFacility[item.facility_id]?.name} />
+                    </TouchableOpacity>
                   ))}
+                </ScrollView>
 
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    width: '100%',
+                    justifyContent: 'space-between',
+                    marginTop: 10,
+                    alignItems: 'center',
+                  }}>
+                  <Text
+                    style={{
+                      ...GlobalStyles.h2,
+                      width: 'flexwrap',
+                      justifyContent: 'center',
+                    }}>
+                    {translations.myReviews}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => {
+                      navigation.navigate('MyReviews');
+                    }}>
+                    <Image
+                      style={GlobalStyles.icon}
+                      source={require('../assets/icons/navigate_right.png')}
+                    />
+                  </TouchableOpacity>
+                </View>
+                <View style={{ ...GlobalStyles.scroll, height: 210 }}>
+                  <ScrollView
+                    horizontal
+                    style={GlobalStyles.scroll}
+                    showsHorizontalScrollIndicator={false}>
+                    {userReview?.map(item => (
+                      <TouchableOpacity onPress={() => {
+                        navigation.navigate("FacilityDetail", { facilityID: item.facility_id });
+                      }}>
+                        <SquareFacility
+                          facilityImage={item.img_uri}
+                          facilityAddress={item.content}
+                          facilityScore={item.score}
+                          facilityName={userReviewFacility[item.id]}
+                        />
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
                 </View>
               </View>
             </ScrollView>
           </SafeAreaView>
+        )}
+
+        {/* -----------------Facility User---------------------- */}
+        {(userType == 2) && (
+          <>
+            <SafeAreaView style={GlobalStyles.background}>
+              <ScrollView showsVerticalScrollIndicator={false}>
+                <View style={GlobalStyles.content}>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      marginTop: -27,
+                      paddingBottom: 10,
+                    }}>
+                    <Text style={GlobalStyles.h1}>{translations.myPage}</Text>
+                    <TouchableOpacity onPress={() => {
+                      navigation.navigate("Settings", {
+                        userName: userInfo.account_id,
+                        userProfile: userProfile,
+                        userEmail: userInfo.email
+                      });
+                    }}>
+                      <Image
+                        style={GlobalStyles.topIcon}
+                        source={require('../assets/icons/setting.png')}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      width: '100%',
+                      justifyContent: 'flex-start',
+                      marginTop: 10,
+                    }}>
+                    <Image
+                      style={{ ...GlobalStyles.profileImage, marginRight: 20 }}
+                      source={Number.isInteger(userProfile) ? userProfile : { uri: userProfile }}
+                    />
+                    <View style={{ justifyContent: 'center' }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <Text style={{ ...GlobalStyles.body, marginRight: 15 }}>
+                          {userInfo.account_id}
+                        </Text>
+                        <TouchableOpacity onPress={() => (navigation.navigate("EditProfile", { userInfo }))}>
+                          <Text style={GlobalStyles.body2}>{translations.edit}</Text>
+                        </TouchableOpacity>
+                      </View>
+                      <Text style={{ ...GlobalStyles.body2, textTransform: 'none' }}>
+                        {userInfo.email}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <View
+                    style={{
+                      width: '100%',
+                    }}>
+                    <Text
+                      style={{
+                        ...GlobalStyles.h2,
+                      }}>
+                      {translations.registrationRequest}
+                    </Text>
+                    {myFacilityRegistrations?.map(item => (
+                      <Request
+                        facilityName={item.content.name}
+                        facilityImage={item.content.profileImgUri}
+                        facilityAddress={item.content.address.englishAddress}
+                        state={'Pending'}
+                      />
+                    ))}
+                  </View>
+
+                  <View style={{ width: '100%', justifyContent: 'flex-start' }}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingRight: 20 }}>
+                      <View style={styles.container}>
+                        {renderLabel()}
+                        <Dropdown
+                          style={[styles.dropdown, isFocus && { borderColor: Color.orange_700 }]}
+                          placeholderStyle={styles.placeholderStyle}
+                          selectedTextStyle={styles.selectedTextStyle}
+                          inputSearchStyle={styles.inputSearchStyle}
+                          iconStyle={styles.iconStyle}
+                          data={myFacilities}
+                          search
+                          maxHeight={300}
+                          labelField="name"
+                          valueField="id"
+                          placeholder={(!isFocus) ? (translations.selectFacility) : "..."}
+                          searchPlaceholder={translations.search}
+                          value={value}
+                          onFocus={() => setIsFocus(true)}
+                          onBlur={() => setIsFocus(false)}
+                          onChange={async (item) => {
+                            try {
+                              setValue(item.id);
+                              setFacilityInfo(item);
+                              setFacilityInfoSub();
+                              await fetchFacilityInfoSub(item);
+                              console.log("facilityinfosub is: ", facilityInfoSub);
+                              setIsFocus(false);
+                            } catch (error) {
+                              console.error('Error fetching facility info:', error);
+                            }
+                          }}
+                        />
+                      </View>
+                      <TouchableOpacity onPress={() => {
+                        navigation.navigate("FacilityInformation", { authorId: USERID })
+                      }}>
+                        <Text style={{ ...GlobalStyles.body3, fontSize: FontSize.size_xl, width: 20 }}>+</Text>
+                      </TouchableOpacity>
+                    </View>
+                    {facilityInfo && (
+                      <>
+                        <View style={{ width: '100%', flexDirection: 'row', justifyContent: 'space-between', paddingTop: 15 }}>
+                          <TouchableOpacity style={styles.facilityButton} onPress={toggleUpload}>
+                            <Image
+                              source={require('../assets/icons/upload.png')}
+                              style={styles.buttonIcon}
+                            />
+                            <Text style={styles.buttonText}>{translations.notice}</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity style={styles.facilityButton} onPress={() => navigation.navigate('QRScanner', { facilityID: facilityInfo?.id })}>
+                            <Image
+                              source={require('../assets/icons/giveStamp.png')}
+                              style={styles.buttonIcon}
+                            />
+                            <Text style={styles.buttonText}>Stamp</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity style={styles.facilityButton}
+                            onPress={() => {
+                              navigation.navigate('FacilityDetail', { facilityID: facilityInfo?.id });
+                            }}>
+                            <Image
+                              source={require('../assets/icons/toFacility.png')}
+                              style={styles.buttonIcon}
+                            />
+                            <Text style={styles.buttonText}>{translations.facility}</Text>
+                          </TouchableOpacity>
+                        </View>
+                        <View style={{ width: '100%' }}>
+                          <TouchableOpacity style={{ paddingTop: 15, alignSelf: 'flex-end' }} onPress={() => (navigation.navigate("FacilityInformationEdit", { facilityINFO: facilityInfo, userEmail: userInfo.email }))}>
+                            <Text style={GlobalStyles.body3}>{translations.edit}</Text>
+                          </TouchableOpacity>
+                          <Image
+                            source={facilityInfoSub?.profileImage ? facilityInfoSub?.profileImage : longImagePlaceholder}
+                            style={{ ...GlobalStyles.longImage, margin: 0, marginTop: 15 }}
+                          />
+                          <View style={{ width: '100%', flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 15, paddingHorizontal: 5 }}>
+                            <Text style={GlobalStyles.body}>{facilityInfo?.name}</Text>
+                            <View style={{ flexDirection: 'row' }}>
+                              <Image
+                                source={require('../assets/icons/star.png')}
+                                style={GlobalStyles.icon}
+                              />
+                              <Text style={GlobalStyles.body2}>{Math.round(facilityInfo?.avg_score * 10) / 10}</Text>
+                            </View>
+                          </View>
+                          <View style={{ flexDirection: 'row', paddingVertical: 5 }}>
+                            <Image
+                              source={require('../assets/icons/location.png')}
+                              style={GlobalStyles.icon}
+                            />
+                            <Text style={{ ...GlobalStyles.body2, paddingHorizontal: 5 }}>{facilityInfo?.english_address}</Text>
+                          </View>
+                          <View style={{ flexDirection: 'row', paddingVertical: 5 }}>
+                            <Image
+                              source={require('../assets/icons/phone.png')}
+                              style={GlobalStyles.icon}
+                            />
+                            <Text style={{ ...GlobalStyles.body2, paddingHorizontal: 5 }}>{facilityInfo?.phone}</Text>
+                          </View>
+                          <View style={{ flexDirection: 'row' }}>
+                            <Image
+                              style={GlobalStyles.icon}
+                              source={require('../assets/icons/url.png')}
+                            />
+                            <Text style={{ ...GlobalStyles.body2, textTransform: 'none', paddingHorizontal: 5 }}>{facilityInfo?.url}</Text>
+                          </View>
+                        </View>
+                        <View style={{ flexDirection: 'row', paddingTop: 5, width: '100%', paddingBottom: 20 }}>
+                          {facilityInfo?.preferences?.map(item => (
+                            <Hashtag
+                              key={item.id}
+                              tag={item}
+                            />
+                          ))}
+                        </View>
+
+                        <View
+                          style={{
+                            borderBottomColor: Color.lightGrey,
+                            borderBottomWidth: 1,
+                            marginBottom: 10,
+                          }}
+                        />
+
+                        <View style={{ flexDirection: 'row', width: '100%' }}>
+                          <Image
+                            style={styles.timeIcon}
+                            source={require('../assets/icons/hour.png')}
+                          />
+                          <View>
+                            {facilityInfoSub?.timeData?.map(item => (
+                              <Text key={item.day} style={{ ...GlobalStyles.body2, color: Color.darkgray, paddingVertical: 2 }}>{item.day.substring(0, 3)} : {item.openTime} - {item.closeTime}</Text>
+                            ))}
+                          </View>
+                        </View>
+
+                        <View style={{ width: '100%' }}>
+                          <Text style={GlobalStyles.h2}>Menu</Text>
+                          {facilityInfo?.menus?.map(item => (
+                            <>
+                              {item && (
+                                <Menu
+                                  menuName={item.name}
+                                  menuDescription={item.description}
+                                  menuPrice={item.price}
+                                  menuImage={item.img_uri}
+                                  menuQuantity={item.quantity}
+                                />
+                              )}
+                            </>
+                          ))}
+                        </View>
+
+                        <View style={{ width: '100%' }}>
+                          <Text style={GlobalStyles.h2}>Stamps</Text>
+                          {!facilityInfoSub?.stamp ? (
+                            <Text style={{ textAlign: 'center' }}>Stamp not created</Text>
+                          ) : (
+                            <Stamp
+                              stamp={facilityInfoSub?.stamp}
+                              stampImage={facilityInfoSub?.stampImage ? { uri: facilityInfoSub?.stampImage } : ""}
+                              number={facilityInfoSub?.stamp?.length}
+                            />
+                          )}
+
+                        </View>
+                      </>
+                    )}
+                  </View>
+
+                </View>
+              </ScrollView>
+            </SafeAreaView>
+            {upload && (
+              <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                <View style={styles.overlay}>
+                  <View style={styles.background}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+                      <Text style={GlobalStyles.h2}>{translations.uploadNotice}</Text>
+                      <TouchableOpacity style={{ ...GlobalStyles.topIcon, marginRight: 0 }} onPress={toggleUpload}>
+                        <Image
+                          source={require('../assets/icons/navigate_close.png')}
+                        />
+                      </TouchableOpacity>
+                    </View>
+                    <View style={{ width: '100%', alignItems: 'center', paddingVertical: 10 }}>
+                      <Text style={GlobalStyles.h3}>{translations.noticeImage}</Text>
+                      <TouchableOpacity style={{ width: '100%', justifyContent: 'center' }} onPress={saveNoticeImage}>
+                        {noticeImage ? (
+                          <Image source={Number.isInteger(noticeImage) ? noticeImage : { uri: noticeImage }} style={{ width: '100%', height: 140, borderRadius: Border.br_sm }} />
+                        ) : (
+                          <Image source={require('../assets/placeholders/long_image.png')} style={{ width: '100%', height: 140, borderRadius: Border.br_sm }} />
+                        )}
+                      </TouchableOpacity>
+                      <View style={styles.inputSection}>
+                        <Text style={GlobalStyles.h3}>{translations.description}</Text>
+                        <View style={GlobalStyles.inputWrapper3}>
+                          <TextInput
+                            style={GlobalStyles.registrationInput2}
+                            onChangeText={setNoticeContent}
+                            value={noticeContent}
+                            placeholder="Review Content"
+                            multiline={true}
+                            numberOfLines={5}
+                          />
+                        </View>
+                      </View>
+                      <View style={{ width: '100%', justifyContent: 'flex-end', flexDirection: 'row', paddingTop: 20 }}>
+                        <TouchableOpacity onPress={sendNotice}>
+                          <Text style={GlobalStyles.h4}>{translations.send}</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  </View>
+                </View>
+              </TouchableWithoutFeedback>
+            )}
+            {moderate && (
+              <View style={styles.overlay}>
+                <View style={styles.background}>
+                  <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color={Color.orange_700} />
+                    <Text>Moderating...</Text>
+                  </View>
+                </View>
+              </View>
+            )}
+          </>
         )
-      }
-      <NavigationBar
-        homeb={false}
-        mapb={false}
-        favoritesb={false}
-        myPageb={true}
-        navigation={navigation}
-      />
-    </>
-  )
-};
+        }
+
+        {/* -----------------Admin User---------------------- */}
+        {
+          (userType == 0) && (
+            <SafeAreaView style={GlobalStyles.background}>
+              <ScrollView showsVerticalScrollIndicator={false}>
+                <View style={GlobalStyles.content}>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      marginTop: -27,
+                      paddingBottom: 10,
+                    }}>
+                    <Text style={GlobalStyles.h1}>{translations.myPage}</Text>
+                    <TouchableOpacity onPress={() => {
+                      navigation.navigate("Settings", {
+                        userName: userInfo.account_id,
+                        userProfile: userProfile,
+                        userEmail: userInfo.email
+                      });
+                    }}>
+                      <Image
+                        style={GlobalStyles.topIcon}
+                        source={require('../assets/icons/setting.png')}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      width: '100%',
+                      justifyContent: 'flex-start',
+                      marginTop: 10,
+                    }}>
+                    <Image
+                      style={{ ...GlobalStyles.profileImage, marginRight: 20 }}
+                      source={Number.isInteger(userProfile) ? userProfile : { uri: userProfile }}
+                    />
+                    <View style={{ justifyContent: 'center' }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <Text style={{ ...GlobalStyles.body, marginRight: 15 }}>
+                          {userInfo.account_id}
+                        </Text>
+                        <TouchableOpacity onPress={() => (navigation.navigate("EditProfile", { userInfo }))}>
+                          <Text style={GlobalStyles.body2}>{translations.edit}</Text>
+                        </TouchableOpacity>
+                      </View>
+                      <Text style={{ ...GlobalStyles.body2, textTransform: 'none' }}>
+                        {userInfo.email}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <View
+                    style={{
+                      width: '100%',
+                      paddingVertical: 5,
+                    }}>
+                    <Text
+                      style={GlobalStyles.h2}>
+                      {translations.reviewReports}
+                    </Text>
+                    {reviewReports
+                      .map(item => (
+                        <Review
+                          key={item.id} // Make sure to provide a unique key prop
+                          reviewId={item.review_id}
+                          userID={item.review.author_id}
+                          reviewDate={item.created_at}
+                          reviewScore={0}
+                          reviewImage={item.review.img_uri}
+                          reviewContent={item.content}
+                          reviewHashtags={[]}
+                          edit={false}
+                          admin={true}
+                          reviewreport={item.id}
+                          navigation={navigation}
+                        />
+                      ))
+                    }
+                  </View>
+
+                  <View
+                    style={{
+                      width: '100%',
+                      paddingVertical: 10,
+                    }}>
+                    <Text
+                      style={GlobalStyles.h2}>
+                      {translations.facilityRegistration}
+                    </Text>
+                    <ScrollView
+                      horizontal
+                      style={{
+                        ...GlobalStyles.scroll,
+                        paddingBottom: 20,
+                        paddingTop: 5,
+                      }}
+                      showsHorizontalScrollIndicator={false}>
+                      {facilityRegistrations.map(item => (
+                        <TouchableOpacity onPress={() => {
+                          navigation.navigate("FacilityRegistrationRequest", { author_id: item.author_id, facilityInfo: item.content, requestID: item.id });
+                        }}>
+                          <UserList UserImage={userImage} UserName={item.content.name} />
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
+                  </View>
+
+                  <View
+                    style={{
+                      width: '100%',
+                      paddingVertical: 5,
+                    }}>
+                    <Text
+                      style={GlobalStyles.h2}>
+                      {translations.bugReports}
+                    </Text>
+                    {bugReports.map(item => (
+                      <Report
+                        userID={item.author_id}
+                        reportDate={item.created_at}
+                        reportContent={item.content}
+                        reportID={item.id}
+                        navigation={navigation}
+                      />
+                    ))}
+
+                  </View>
+                </View>
+              </ScrollView>
+            </SafeAreaView>
+          )
+        }
+        <NavigationBar
+          homeb={false}
+          mapb={false}
+          favoritesb={false}
+          myPageb={true}
+          navigation={navigation}
+        />
+      </>
+    )
+  };
+}
 
 const styles = StyleSheet.create({
   container: {

@@ -241,6 +241,13 @@ const FacilityRegistrationRequest = () => {
             </View>
             <View style={{ flexDirection: 'row', paddingVertical: 5 }}>
               <Image
+                source={require('../assets/icons/facility.png')}
+                style={GlobalStyles.icon}
+              />
+              <Text style={{ ...GlobalStyles.body2, paddingHorizontal: 5 }}>{facilityInfo.englishName}</Text>
+            </View>
+            <View style={{ flexDirection: 'row', paddingVertical: 5 }}>
+              <Image
                 source={require('../assets/icons/location.png')}
                 style={GlobalStyles.icon}
               />
