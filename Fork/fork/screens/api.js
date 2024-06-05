@@ -1222,7 +1222,6 @@ export const deleteReview = async (reviewId) => {
 };
 
 export const createReview = async ({ facilityId, score, content, hashtags, imageUri }) => {
-    console.log("ddddddddddddddd", hashtags);
     try {
         const formData = new FormData();
 
@@ -1230,12 +1229,7 @@ export const createReview = async ({ facilityId, score, content, hashtags, image
         formData.append('facilityId', facilityId);
         formData.append('score', score);
         formData.append('content', content);
-        if (hashtags.length != 0) {
-            console.log("eeeeeeeeeeeee");
-            formData.append('hashtags', JSON.stringify(hashtags));
-        } else {
-            formData.append('hashtags', JSON.stringify([]));
-        };
+        formData.append('hashtags', JSON.stringify(hashtags));
 
         if (imageUri) {
             formData.append('image', {
