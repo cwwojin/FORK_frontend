@@ -38,6 +38,9 @@ import {
   getMyFacilities
 } from './api';
 import { getAllTranslations, getLanguageToken } from '../LanguageUtils';
+import Translator, {
+  useTranslator,
+} from 'react-native-translator';
 
 const FacilityDetail = () => {
 
@@ -63,6 +66,9 @@ const FacilityDetail = () => {
   const [owner, setOwner] = useState(false);
   const navigation = useNavigation();
   const [translations, setTranslations] = useState({});
+  const [language, setLanguage] = useState('en');
+  const [translatedDescription, setTranslatedDescription] = useState();
+  const { translate } = useTranslator();
 
   useEffect(() => {
     const fetchTranslations = async () => {
@@ -72,15 +78,37 @@ const FacilityDetail = () => {
     fetchTranslations();
   }, []);
 
-  const [language, setLanguage] = useState('en');
-
   useEffect(() => {
-      const initializeLanguage = async () => {
-        const savedLanguage = await getLanguageToken();
-        setLanguage(savedLanguage);
-      };
-      initializeLanguage();
-  }, [language]);
+    const initializeLanguage = async () => {
+      const savedLanguage = await getLanguageToken();
+      setLanguage(savedLanguage);
+    };
+
+    const fetchFacilityData = async () => {
+      try {
+        const data = await getFacilityByID(facilityID);
+        setFacilityInfo(data);
+
+        if (data.profile_img_uri) {
+          const imageUrl = await fetchImage(data.profile_img_uri);
+          setProfileImage(imageUrl);
+        }
+
+        if (language !== 'ko') {
+          const translatedDesc = await translate('ko', language, data.description);
+          setTranslatedDescription(translatedDesc);
+        } else {
+          setTranslatedDescription(data.description);
+        }
+      } catch (error) {
+        console.log(error.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initializeLanguage().then(fetchFacilityData);
+  }, [facilityID, language]);
   
   useEffect(() => {
     const fetchFacility = async (facilityID) => {
@@ -91,13 +119,13 @@ const FacilityDetail = () => {
         console.log(data);
 
         const newtimeData = [
-          { index: 1, day: 'Monday', openTime: '', closeTime: '' },
-          { index: 2, day: 'Tuesday', openTime: '', closeTime: '' },
-          { index: 3, day: 'Wednesday', openTime: '', closeTime: '' },
-          { index: 4, day: 'Thursday', openTime: '', closeTime: '' },
-          { index: 5, day: 'Friday', openTime: '', closeTime: '' },
-          { index: 6, day: 'Saturday', openTime: '', closeTime: '' },
-          { index: 0, day: 'Sunday', openTime: '', closeTime: '' },
+          { index: 1, day: 'Monday', dayS: translations.monday, openTime: '', closeTime: '' },
+          { index: 2, day: 'Tuesday', dayS: translations.tuesday, openTime: '', closeTime: '' },
+          { index: 3, day: 'Wednesday', dayS: translations.wednesday, openTime: '', closeTime: '' },
+          { index: 4, day: 'Thursday', dayS: translations.thursday, openTime: '', closeTime: '' },
+          { index: 5, day: 'Friday', dayS: translations.friday, openTime: '', closeTime: '' },
+          { index: 6, day: 'Saturday', dayS: translations.saturday, openTime: '', closeTime: '' },
+          { index: 0, day: 'Sunday', dayS: translations.sunday, openTime: '', closeTime: '' },
 
         ];
         data.opening_hours.forEach(({ day, open_time, close_time }) => {
@@ -218,7 +246,7 @@ const FacilityDetail = () => {
     fetchNotices(facilityID);
     fetchTopHashtags(facilityID);
     isMyFacility(facilityID);
-  }, []);
+  }, [translations]);
 
   
 
@@ -458,6 +486,13 @@ const FacilityDetail = () => {
             <View style={{ flexDirection: 'row' }}>
               <Image
                 style={styles.icon}
+                source={require("../assets/icons/facility.png")}
+              />
+              <Text style={{ ...GlobalStyles.body2, textTransform: 'none' }}>{translatedDescription}</Text>
+            </View>
+            <View style={{ flexDirection: 'row' }}>
+              <Image
+                style={styles.icon}
                 source={require('../assets/icons/phone.png')}
               />
               <Text style={GlobalStyles.body2}>{facilityInfo.phone}</Text>
@@ -507,7 +542,7 @@ const FacilityDetail = () => {
               />
               <View>
                 {!isTimeVisible && getCurrentDayTimeData().map(item => (
-                  <Text key={item.day} style={{ ...GlobalStyles.body2, color: Color.black, paddingVertical: 2 }}>{item.day.substring(0, 3)} : {item.openTime} - {item.closeTime}</Text>))}
+                  <Text key={item.day} style={{ ...GlobalStyles.body2, color: Color.black, paddingVertical: 2 }}>{item.day?.substring(0, 3)} : {item.openTime} - {item.closeTime}</Text>))}
                 {isTimeVisible && timeData.map(item => (
                   <Text key={item.day} style={{ ...GlobalStyles.body2, color: new Date().toLocaleDateString('en-KR', { weekday: 'long' }) === item.day ? Color.black : Color.darkgray, paddingVertical: 2 }}>{item.day.substring(0, 3)} : {item.openTime} - {item.closeTime}</Text>))}
               </View>
