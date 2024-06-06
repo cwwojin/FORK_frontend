@@ -128,7 +128,7 @@ const FacilityDetail = () => {
           { index: 0, day: 'Sunday', dayS: translations.sunday, openTime: '', closeTime: '' },
 
         ];
-        data.opening_hours.forEach(({ day, open_time, close_time }) => {
+        data.opening_hours.forEach(({ day, dayS, open_time, close_time }) => {
           const item = newtimeData.find(entry => entry.index === day);
           if (item) {
             item.openTime = open_time.slice(0, 5);  // Remove seconds
@@ -542,9 +542,9 @@ const FacilityDetail = () => {
               />
               <View>
                 {!isTimeVisible && getCurrentDayTimeData().map(item => (
-                  <Text key={item.day} style={{ ...GlobalStyles.body2, color: Color.black, paddingVertical: 2 }}>{item.day?.substring(0, 3)} : {item.openTime} - {item.closeTime}</Text>))}
+                  <Text key={item.day} style={{ ...GlobalStyles.body2, color: Color.black, paddingVertical: 2 }}>{item.dayS} : {item.openTime} - {item.closeTime}</Text>))}
                 {isTimeVisible && timeData.map(item => (
-                  <Text key={item.day} style={{ ...GlobalStyles.body2, color: new Date().toLocaleDateString('en-KR', { weekday: 'long' }) === item.day ? Color.black : Color.darkgray, paddingVertical: 2 }}>{item.day.substring(0, 3)} : {item.openTime} - {item.closeTime}</Text>))}
+                  <Text key={item.day} style={{ ...GlobalStyles.body2, color: new Date().toLocaleDateString('en-KR', { weekday: 'long' }) === item.day ? Color.black : Color.darkgray, paddingVertical: 2 }}>{item.dayS} : {item.openTime} - {item.closeTime}</Text>))}
               </View>
             </View>
             {!isTimeVisible && (
