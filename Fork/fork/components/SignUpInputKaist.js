@@ -30,7 +30,7 @@ const SignUpInputKaist = () => {
       try {
           const data = await registerUser(username, password, 1, email);
           console.log("Kaist user registration data:", data);
-          navigation.navigate("VerifyEmail", { username: username });
+          navigation.navigate("VerifyEmail", { username: username, password: password });
       } catch (error) {
         console.error('Error in handleRegister for KAIST user : ', error);
       }

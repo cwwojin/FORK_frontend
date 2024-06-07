@@ -7,8 +7,8 @@ import { getAllTranslations, getLanguageToken } from '../LanguageUtils';
 
 const Survey = ({ navigation }) => {
   const route = useRoute();
-  // const id  = route.params.id;
-  const id = 9;
+  const id  = route.params.id;
+  // const id = 9;
   const [translations, setTranslations] = useState({});
 
   useEffect(() => {

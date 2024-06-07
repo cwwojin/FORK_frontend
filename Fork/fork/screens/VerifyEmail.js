@@ -1,15 +1,16 @@
-import React, { useCallback, useState, useEffect }  from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Image, TouchableOpacity, SafeAreaView, Alert } from 'react-native';
-import {LinearGradient}  from 'expo-linear-gradient';
-import { Border, Color, GlobalStyles } from "../GlobalStyles.js"; 
+import { LinearGradient } from 'expo-linear-gradient';
+import { Border, Color, GlobalStyles } from "../GlobalStyles.js";
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { verifyEmail, resendVerifyEmail } from './api.js';
+import { verifyEmail, resendVerifyEmail, handleLogin } from './api.js';
 import { getAllTranslations, getLanguageToken } from '../LanguageUtils';
 
-const VerifyEmail = ({navigation}) => {
+const VerifyEmail = ({ navigation }) => {
   const route = useRoute();
-  //const username  = route.params.username;
-  const username = 2;
+  const username = route.params.username;
+  const password = route.params.password;
+  // const username = 2;
   const [verificationCode, setVerificationCode] = useState('');
 
   const [translations, setTranslations] = useState({});
@@ -34,16 +35,20 @@ const VerifyEmail = ({navigation}) => {
     }
   };
 
-  
+
   const handleVerification = async () => {
     try {
-        const data = await verifyEmail(username, verificationCode);
-        if (data && data.status == "success") { 
-          console.log("Email verification data:", data);
+      const data = await verifyEmail(username, verificationCode);
+      if (data && data.status == "success") {
+        console.log("Email verification data:", data);
+        if (handleLogin(username, password)) {
           navigation.navigate("Survey", { id: data.data.id });
         } else {
-          throw new Error('Verification failed. Please check your code and try again.');
+          throw new Error("LogIn failed. Please check again");
         }
+      } else {
+        throw new Error('Verification failed. Please check your code and try again.');
+      }
     } catch (error) {
       Alert.alert(translations.wrongVerificationCode, translations.tryAgainWithCorrectCode);
       navigation.navigate("VerifyEmail", { username: username })
@@ -63,11 +68,11 @@ const VerifyEmail = ({navigation}) => {
           <Text style={styles.text}>{translations.verificationCodePrompt}</Text>
           <View style={GlobalStyles.inputWrapper}>
             <TextInput
-                style={GlobalStyles.registrationInput}
-                onChangeText={setVerificationCode}
-                value={verificationCode}
-                placeholder={translations.verificationCodePlaceholder}
-                autoCapitalize="none"
+              style={GlobalStyles.registrationInput}
+              onChangeText={setVerificationCode}
+              value={verificationCode}
+              placeholder={translations.verificationCodePlaceholder}
+              autoCapitalize="none"
             />
             <Image source={require("../assets/icons/password.png")} style={GlobalStyles.passwordIcon} />
           </View>
@@ -75,7 +80,7 @@ const VerifyEmail = ({navigation}) => {
             <Text style={styles.resendText}>{translations.resendCode}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={GlobalStyles.confirmButton} onPress={handleVerification}>
-          <Text style={GlobalStyles.confirmButtonText}>{translations.confirm}</Text>
+            <Text style={GlobalStyles.confirmButtonText}>{translations.confirm}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -110,7 +115,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 15,
     fontWeight: 'bold',
-    marginBottom: 50, 
+    marginBottom: 50,
   },
   resendText: {
     color: Color.orange_700,

@@ -190,7 +190,7 @@ export const registerUser = async (userId, password, userType, email) => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': USERTOKEN
+                'Authorization': "guest"
             },
             body: JSON.stringify(requestBody)
         });
@@ -260,7 +260,7 @@ export const verifyEmail = async (userId, code) => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': USERTOKEN
+                'Authorization': "guest"
             },
             body: JSON.stringify(requestBody)
         });
