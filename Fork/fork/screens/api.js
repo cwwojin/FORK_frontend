@@ -17,7 +17,7 @@ const USER_ID_KEY = 'USER_ID';
 const USER_PREFERENCE_KEY = 'USER_PREFERENCE';
 const USER_TYPE_KEY = 'USER_TYPE';
 
-// export let USERBOOKMARKED = "";
+export let USERBOOKMARKED = "";
 export let USERTOKEN = 'guest';
 export let USERREFRESHTOKEN = 'guest';
 export let USERID = "";
@@ -209,6 +209,7 @@ export const registerUser = async (userId, password, userType, email) => {
 };
 
 export const registerFacility = async (facilityData, images) => {
+    console.log(facilityData);
     try {
         const url = `${FORK_URL}api/facilities/facility-requests`;
         const formData = new FormData();
@@ -222,19 +223,21 @@ export const registerFacility = async (facilityData, images) => {
             })
         });
 
-        formData.append('authorId', facilityData.authorId);
+        formData.append('authorId', USERID);
         formData.append('title', facilityData.title);
         formData.append('content', JSON.stringify(facilityData.content));
 
         const response = await fetch(url, {
             method: 'POST',
             headers: {
-                'Authorization': USERTOKEN 
+                'Authorization': USERTOKEN
             },
             body: formData
         });
 
         if (!response.ok) {
+            const responseData = await response.json();
+            console.log(responseData);
             throw new Error('Network response was not ok');
         }
 

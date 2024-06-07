@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, TextInput, StyleSheet, Text, TouchableOpacity, Image, Alert } from 'react-native';
 import { Border, Color, GlobalStyles } from "../GlobalStyles.js";
 import { useNavigation } from '@react-navigation/native';
-import { registerUser } from '../screens/api';
+import { handleLogin, registerUser } from '../screens/api';
 
 import { getAllTranslations, getLanguageToken } from '../LanguageUtils';
 
@@ -31,7 +31,11 @@ const SignUpInputFacility = () => {
       try {
           const data = await registerUser(username, password, 2, email);
           console.log("Facility user registration data:", data);
-          navigation.navigate("FacilityInformation", { authorId: data.data.id, email: data.data.email }); 
+          if (handleLogin(username, password)) {
+            navigation.navigate("FacilityInformation", { authorId: data.data.id, email: data.data.email }); 
+          } else {
+            console.error("login failed");
+          }
       } catch (error) {
         console.error('Error in handleRegister for Facility user : ', error);
       }
