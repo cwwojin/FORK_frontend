@@ -1,7 +1,7 @@
 import { Image, View, Text, StyleSheet } from 'react-native';
 import { Color, GlobalStyles } from '../GlobalStyles.js';
 import { useEffect, useState } from 'react';
-import { getFacilityByID, fetchImage, getFacilityStampRuleByID } from '../screens/api.js';
+import { getFacilityByID, fetchImage, getFacilityStampRuleByID, LOGIN } from '../screens/api.js';
 
 import userImage from '../assets/placeholders/User.png';
 import stampImagePlaceholder from '../assets/icons/stamp.png';
@@ -56,7 +56,7 @@ const Stamp = ({
 
   return (
     <>
-      {facilityID && (
+      {facilityID && !stampRule && (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <Image
             style={{ ...GlobalStyles.profileImage2, marginTop: 5, marginRight: 15 }}

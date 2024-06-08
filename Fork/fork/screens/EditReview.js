@@ -20,18 +20,8 @@ import * as ImageManipulator from 'expo-image-manipulator';
 
 import { GlobalStyles, Color, FontFamily, FontSize, Border } from '../GlobalStyles';
 import Hashtag from '../components/Hashtag';
-import Menu from '../components/Menu';
-import Review from '../components/Review';
-import Notice from '../components/Notice';
-import Stamp from '../components/Stamp';
-
-
-import stampImage from '../assets/icons/stamp.png';
-
-//To be deleted
-import longImagePlaceholder from '../assets/placeholders/long_image.png';
 import {
-  editReview
+  editReview, LOGIN
 } from './api';
 
 const EditReview = () => {
@@ -40,6 +30,9 @@ const EditReview = () => {
   const { reviewId, reviewConten, reviewImage, reviewHashtags, reviewScore, facilityID } = route.params;
 
   const navigation = useNavigation();
+  useEffect(() => {
+    if (!LOGIN) {navigation.replace("SignUpLogIn")};
+  }, LOGIN);
 
   const [reviewContent, setReviewContent] = useState(reviewConten);
   const [hashtag, setHashtag] = useState("");

@@ -33,7 +33,6 @@ const Menu = ({
           setMenuImages(imageUrl);
         }
         const currentLanguage = await getLanguageToken();
-        console.log("currentLanguage" + currentLanguage);
     
         const targetLanguage = currentLanguage === 'kr' ? 'en' : 'kr';
         let translatedMenuData = {

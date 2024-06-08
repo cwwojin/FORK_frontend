@@ -17,7 +17,7 @@ import * as ImageManipulator from 'expo-image-manipulator';
 
 import { GlobalStyles, Color, FontSize } from '../GlobalStyles';
 import Review from '../components/Review';
-import { fetchImage, USERPREFERENCE, addUserPreference2, deleteUserPreference, updateUserProfile, uploadUserProfileImage } from './api';
+import { fetchImage, USERPREFERENCE, addUserPreference2, deleteUserPreference, updateUserProfile, uploadUserProfileImage, LOGIN } from './api';
 import { getAllTranslations, getLanguageToken } from '../LanguageUtils';
 
 
@@ -27,6 +27,10 @@ const EditProfiles = () => {
 
   const navigation = useNavigation();
   const route = useRoute();
+
+  useEffect(() => {
+    if (!LOGIN) {navigation.replace("SignUpLogIn")};
+  }, LOGIN);
 
   const { userInfo } = route.params;
 

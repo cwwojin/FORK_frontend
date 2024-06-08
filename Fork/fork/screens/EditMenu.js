@@ -15,13 +15,17 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { GlobalStyles, Color, Border, FontSize } from '../GlobalStyles';
-import { createFacilityMenu, sendBugReport, updateFacilityMenu, uploadMenuImage } from './api';
+import { createFacilityMenu, sendBugReport, updateFacilityMenu, uploadMenuImage, LOGIN } from './api';
 
 import placeholderImage from '../assets/placeholders/long_image.png';
 
 const EditMenu = () => {
   const navigation = useNavigation();
   const route = useRoute();
+
+  useEffect(() => {
+    if (!LOGIN) {navigation.replace("SignUpLogIn")};
+  }, LOGIN);
 
   const { facilityID, menu, facilityInfo } = route.params;
 

@@ -2,7 +2,7 @@ import React, { useCallback, useState, useEffect } from 'react';
 import { ScrollView, View, Text, TouchableOpacity, StyleSheet, Image, Alert, SafeAreaView, ActivityIndicator } from 'react-native';
 import { Border, Color, GlobalStyles } from "../GlobalStyles.js";
 import { useRoute, useNavigation } from '@react-navigation/native';
-import { acceptFacilityRegistrations, fetchImage, getUserByID, declineFacilityRegistrations } from './api.js';
+import { acceptFacilityRegistrations, fetchImage, getUserByID, declineFacilityRegistrations, LOGIN } from './api.js';
 
 import Menu from '../components/Menu.js';
 import Stamp from '../components/Stamp.js';

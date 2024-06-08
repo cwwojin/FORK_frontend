@@ -1,13 +1,15 @@
+import { useNavigation } from "react-router-dom";
 import FacilityDetail from "./FacilityDetail";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Alert } from "react-native";
 
-const BASE_URL = 'https://taqjpw7a54.execute-api.ap-southeast-2.amazonaws.com/stage-dev/prod/api';
+const BASE_URL = 'https://taqjpw7a54.execute-api.ap-southeast-2.amazonaws.com/stage-dev/dev/api';
 
 // This is the base-url that leads to all backend & S3
 const API_ENDPOINT = "https://taqjpw7a54.execute-api.ap-southeast-2.amazonaws.com/stage-dev";
 
 // Backend API endpoint
-const FORK_URL = `${API_ENDPOINT}/prod/`
+const FORK_URL = `${API_ENDPOINT}/dev/`
 
 // S3 endpoint
 const S3_ENDPOINT = `${API_ENDPOINT}/s3`
@@ -16,6 +18,7 @@ const USER_TOKEN_KEY = 'USER_TOKEN';
 const USER_ID_KEY = 'USER_ID';
 const USER_PREFERENCE_KEY = 'USER_PREFERENCE';
 const USER_TYPE_KEY = 'USER_TYPE';
+const USER_REFRESH_TOKEN_KEY = 'USER_REFRESH_TOKEN';
 
 export let USERBOOKMARKED = "";
 export let USERTOKEN = 'guest';
@@ -23,6 +26,95 @@ export let USERREFRESHTOKEN = 'guest';
 export let USERID = "";
 export let USERPREFERENCE = [];
 export let USERTYPE = '';
+
+export let LOGIN = false;
+
+export const changeLoginState = () => {
+    LOGIN = true;
+}
+
+// --------------FETCH IMAGE-----------------
+
+export const fetchImage = async (uri) => {
+    const url = new URL(uri);
+    const result = {
+        Bucket: url.hostname,
+        Key: url.pathname.startsWith('/') ? url.pathname.slice(1) : url.pathname
+    }
+    const parsedKey = result.Key.replaceAll("/", "%2F");
+    const requestFilePath = `${result.Bucket}/${parsedKey}`;
+    const resultUrl = `${S3_ENDPOINT}/${requestFilePath}`;
+    try {
+        const response = await fetch(resultUrl, {
+            method: 'GET',
+            headers: {
+                Accept: 'image/png',
+            },
+        });
+
+        if (!response.ok) {
+            const result = await response.json();
+            console.log(result);
+            throw new Error('Network response was not ok');
+        }
+
+        const blob = await response.blob();
+        const imageUrl = URL.createObjectURL(blob);
+        return imageUrl;
+    } catch (error) {
+        console.error('Error fetching image:', error);
+    }
+}
+
+
+
+// --------------HANDLE ERROR-----------------
+
+const handleError = async (status) => {
+    console.log("handling");
+
+    if (status == 401) {
+        console.log("refreshing token");
+        try {
+            const url = `${BASE_URL}/auth/refresh`;
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Authorization': USERTOKEN,
+                    'Refresh': USERREFRESHTOKEN,
+                },
+            });
+            if (response.status === 200) {
+                const jsonResponse = await response.json();
+                console.log("Refereshing token successful :", jsonResponse);
+                USERTOKEN = jsonResponse.data.token;
+                await storeUserData(USER_TOKEN_KEY, USERTOKEN);
+
+                console.log("USERTOKEN : " + USERTOKEN);
+                return true;
+            } else {
+                Alert.alert("Login Time Expired", "Please Login Again");
+                const jsonResponse = await response.text();
+                console.log('Refresh token Failed: ', jsonResponse);
+                await AsyncStorage.multiRemove([USER_TOKEN_KEY, USER_ID_KEY, USER_PREFERENCE_KEY, USER_TYPE_KEY, USER_REFRESH_TOKEN_KEY]);
+
+                USERBOOKMARKED = "";
+                USERTOKEN = "guest";
+                USERREFRESHTOKEN = "guest";
+                USERID = "";
+                USERPREFERENCE = [];
+                USERTYPE = '';
+                LOGIN = false;
+                return false;
+            }
+        } catch (error) {
+            console.error('Error refreshing token:', error);
+        }
+    } else {
+        console.log("other error");
+        return false;
+    }
+}
 
 // --------------STORAGE----------------- 
 
@@ -80,12 +172,15 @@ export const handleLogin = async (username, password) => {
             await storeUserData(USER_ID_KEY, USERID);
             await storeUserData(USER_PREFERENCE_KEY, USERPREFERENCE);
             await storeUserData(USER_TYPE_KEY, USERTYPE);
+            await storeUserData(USER_REFRESH_TOKEN_KEY, USERREFRESHTOKEN);
 
             console.log("USERID : " + USERID);
             console.log("USERTOKEN : " + USERTOKEN);
             console.log("USERREFRESHTOKEN : " + USERREFRESHTOKEN);
             console.log("USERPREFERENCE : " + JSON.stringify(USERPREFERENCE, null, 2));
             console.log("USERBOOKMARKED : " + JSON.stringify(USERBOOKMARKED, null, 2));
+
+            LOGIN = true;
 
             return true;
         } else {
@@ -101,22 +196,71 @@ export const handleLogin = async (username, password) => {
 };
 
 export const handleLogOut = async () => {
-    USERBOOKMARKED = "";
-    USERTOKEN = "guest";
-    USERID = "";
-    USERPREFERENCE = [];
-    USERTYPE = '';
-    await AsyncStorage.multiRemove([USER_TOKEN_KEY, USER_ID_KEY, USER_PREFERENCE_KEY, USER_TYPE_KEY]);
-    return true;
+    console.log("USERTOKEN: ", USERTOKEN);
+
+
+    await AsyncStorage.multiRemove([USER_TOKEN_KEY, USER_ID_KEY, USER_PREFERENCE_KEY, USER_TYPE_KEY, USER_REFRESH_TOKEN_KEY]);
+    console.log("USERTOKEN: ", USERTOKEN);
+
+    try {
+        const url = `${BASE_URL}/auth/logout`;
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': USERTOKEN
+            },
+        });
+
+        if (response.status === 200) {
+            const jsonResponse = await response.json();
+            console.log("Logout successful :", jsonResponse);
+            USERBOOKMARKED = "";
+            USERTOKEN = "guest";
+            USERREFRESHTOKEN = "guest";
+            USERID = "";
+            USERPREFERENCE = [];
+            USERTYPE = '';
+            LOGIN = false;
+            return true;
+        } else {
+            if (await handleError(response.status)) {
+                const final = await handleLogOut();
+                return final;
+            } else {
+                const jsonResponse = await response.text();
+                console.log('Logout Failed: ', jsonResponse);
+                console.log("USERTOKEN:", USERTOKEN);
+                throw new Error('Network response was not ok');
+            }
+        }
+    } catch (error) {
+        console.log(error);
+        return false;
+    }
 
 };
 
 // Retrieve values from AsyncStorage on app start
 export const initializeUserState = async () => {
+    // USERTOKEN = 'guest';
+    // USERID = '';
+    // USERPREFERENCE =[];
+    // USERTYPE = '';
+    // USERREFRESHTOKEN = 'guest';
+    // LOGIN = false;
     USERTOKEN = await retrieveUserData(USER_TOKEN_KEY, 'guest');
-    USERID = await retrieveUserData(USER_ID_KEY, null);
+    if (USERTOKEN == 'guest') {
+        console.log("logged out");
+        LOGIN = false;
+    } else {
+        console.log("logged in");
+        LOGIN = true;
+    }
+    USERID = await retrieveUserData(USER_ID_KEY, '');
     USERPREFERENCE = await retrieveUserData(USER_PREFERENCE_KEY, []);
     USERTYPE = await retrieveUserData(USER_TYPE_KEY, '');
+    USERREFRESHTOKEN = await retrieveUserData(USER_REFRESH_TOKEN_KEY, 'guest');
 };
 
 export const deleteUser = async () => {
@@ -135,9 +279,14 @@ export const deleteUser = async () => {
             handleLogOut();
             return true;
         } else {
-            const jsonResponse = await response.text();
-            console.log('Delete User Failed: ', jsonResponse);
-            throw new Error('Network response was not ok');
+            if (await handleError(response.status)) {
+                const final = await deleteUser();
+                return final;
+            } else {
+                const jsonResponse = await response.text();
+                console.log('Delete User Failed: ', jsonResponse);
+                throw new Error('Network response was not ok');
+            }
         }
     } catch (error) {
         console.log(error);
@@ -166,11 +315,17 @@ export const resetPassword = async (userId) => {
 
 
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            if (await handleError(response.status)) {
+                const final = await resetPassword(userId);
+                return final;
+            } else {
+                throw new Error('Network response was not ok');
+            }
+        } else {
+            const data = await response.json();
+            return data;
         }
 
-        const data = await response.json();
-        return data;
     } catch (error) {
         console.error('Error resetting password:', error);
         throw error;
@@ -195,13 +350,20 @@ export const registerUser = async (userId, password, userType, email) => {
             body: JSON.stringify(requestBody)
         });
         if (!response.ok) {
-            const errorResponse = await response.json();
-            console.error('Error response from server:', errorResponse);
-            throw new Error('Network response was not ok');
+            if (await handleError(response.status)) {
+                const final = await registerUser(userId, password, userType, email);
+                return final;
+
+            } else {
+                const errorResponse = await response.json();
+                console.error('Error response from server:', errorResponse);
+                throw new Error('Network response was not ok');
+            }
+        } else {
+            const data = await response.json();
+            console.log("User registered successfully: " + JSON.stringify(data, null, 2));
+            return data;
         }
-        const data = await response.json();
-        console.log("User registered successfully: " + JSON.stringify(data, null, 2));
-        return data;
     } catch (error) {
         console.error('Error registering user:', error);
         throw error;
@@ -236,14 +398,20 @@ export const registerFacility = async (facilityData, images) => {
         });
 
         if (!response.ok) {
-            const responseData = await response.json();
-            console.log(responseData);
-            throw new Error('Network response was not ok');
-        }
+            if (await handleError(response.status)) {
+                const final = await registerFacility(facilityData, images);
+                return final;
 
-        const responseData = await response.json();
-        console.log('Facility registration request sent successfully:', responseData);
-        return responseData;
+            } else {
+                const responseData = await response.json();
+                console.log(responseData);
+                throw new Error('Network response was not ok');
+            }
+        } else {
+            const responseData = await response.json();
+            console.log('Facility registration request sent successfully:', responseData);
+            return responseData;
+        }
     } catch (error) {
         console.error('Error registering facility:', error);
         throw error;
@@ -268,13 +436,20 @@ export const verifyEmail = async (userId, code) => {
             body: JSON.stringify(requestBody)
         });
         if (!response.ok) {
-            const errorResponse = await response.json();
-            console.error('Error response from server :', errorResponse);
-            //throw new Error('Network response was not ok');
+            if (await handleError(response.status)) {
+                const final = await verifyEmail(userId, code);
+                return final;
+
+            } else {
+                const errorResponse = await response.json();
+                console.error('Error response from server :', errorResponse);
+                //throw new Error('Network response was not ok');
+            }
+        } else {
+            const data = await response.json();
+            console.log("Email verified successfully : " + JSON.stringify(data, null, 2));
+            return data;
         }
-        const data = await response.json();
-        console.log("Email verified successfully : " + JSON.stringify(data, null, 2));
-        return data;
     } catch (error) {
         console.error('Error verifying email :', error);
         //throw error;
@@ -291,18 +466,26 @@ export const resendVerifyEmail = async (userId) => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': USERTOKEN
+                'Authorization': 'guest'
             },
             body: JSON.stringify(requestBody)
         });
         if (!response.ok) {
-            const errorResponse = await response.json();
-            console.error('Error response from server :', errorResponse);
-            //throw new Error('Network response was not ok');
+            if (await handleError(response.status)) {
+                const final = await resendVerifyEmail(userId);
+                return final;
+
+            } else {
+                const errorResponse = await response.json();
+                console.error('Error response from server :', errorResponse);
+                //throw new Error('Network response was not ok');
+            }
+        } else {
+            const data = await response.json();
+            console.log("Email resent successfully : " + JSON.stringify(data, null, 2));
+            return data;
         }
-        const data = await response.json();
-        console.log("Email resent successfully : " + JSON.stringify(data, null, 2));
-        return data;
+
     } catch (error) {
         console.error('Error resending email :', error);
         //throw error;
@@ -324,13 +507,21 @@ export const addUserPreference = async (userId, preferenceId) => {
             body: JSON.stringify(requestBody)
         });
         if (!response.ok) {
-            const errorResponse = await response.json();
-            console.error('Error response from server in addUserPreference:', errorResponse);
-            throw new Error(errorResponse.message || 'Network response in addUserPreference was not ok');
+            if (await handleError(response.status)) {
+                const final = await addUserPreference(userId, preferenceId);
+                return final;
+
+            } else {
+                const errorResponse = await response.json();
+                console.error('Error response from server in addUserPreference:', errorResponse);
+                throw new Error(errorResponse.message || 'Network response in addUserPreference was not ok');
+            }
+        } else {
+            const data = await response.json();
+            console.log("Preference added successfully:", JSON.stringify(data, null, 2));
+            return data;
         }
-        const data = await response.json();
-        console.log("Preference added successfully:", JSON.stringify(data, null, 2));
-        return data;
+
     } catch (error) {
         console.error('Error adding user preference:', error);
         throw error;
@@ -338,37 +529,6 @@ export const addUserPreference = async (userId, preferenceId) => {
 };
 
 
-export const fetchImage = async (uri) => {
-    const url = new URL(uri);
-    const result = {
-        Bucket: url.hostname,
-        Key: url.pathname.startsWith('/') ? url.pathname.slice(1) : url.pathname
-    }
-    const parsedKey = result.Key.replaceAll("/", "%2F");
-    const requestFilePath = `${result.Bucket}/${parsedKey}`;
-    const resultUrl = `${S3_ENDPOINT}/${requestFilePath}`;
-    try {
-        const response = await fetch(resultUrl, {
-            method: 'GET',
-            headers: {
-                Accept: 'image/png',
-            },
-        });
-
-        if (!response.ok) {
-            const result = await response.json();
-            console.log(result);
-            throw new Error('Network response was not ok');
-        }
-
-        const blob = await response.blob();
-        const imageUrl = URL.createObjectURL(blob);
-        console.log("fetched", imageUrl);
-        return imageUrl;
-    } catch (error) {
-        console.error('Error fetching image:', error);
-    }
-}
 
 export const getAllUsders = async () => {
     try {
@@ -380,10 +540,17 @@ export const getAllUsders = async () => {
             }
         });
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            if (await handleError(response.status)) {
+                const final = await getAllUsders();
+                return final;
+            } else {
+                throw new Error('Network response was not ok');
+            }
+        } else {
+            const data = await response.json(); // Parse the JSON from the response
+            return data;
         }
-        const data = await response.json(); // Parse the JSON from the response
-        return data;
+
     } catch (error) {
         console.error('Error fetching user:', error);
         throw error;
@@ -412,20 +579,30 @@ export const fetchFacilityWithName = async (facilityName, openNow = false, prefe
         });
 
         if (!response.ok) {
-            throw new Error('Network response was not ok in real fetchMethod');
+            if (await handleError(response.status)) {
+                const final = await fetchFacilityWithName(facilityName, openNow, preferences);
+                return final;
+
+            } else {
+                throw new Error('Network response was not ok in real fetchMethod');
+            }
+        } else {
+            const jsonResponse = await response.json();
+            //console.log("fetchFaciliyWithName facility data json response " + JSON.stringify(jsonResponse, null, 2))
+            const facilityData = jsonResponse.data;
+            //console.log("fetchFaciliyWithName facility data " +  JSON.stringify(facilityData, null, 2))
+            return facilityData;
         }
 
-        const jsonResponse = await response.json();
-        //console.log("fetchFaciliyWithName facility data json response " + JSON.stringify(jsonResponse, null, 2))
-        const facilityData = jsonResponse.data;
-        //console.log("fetchFaciliyWithName facility data " +  JSON.stringify(facilityData, null, 2))
-        return facilityData;
+
     } catch (error) {
         console.error('Error fetching facilities in real fetchMethod:', error);
         throw error;
     }
 };
 
+
+////No error handling
 export const fetchFacilitiesInBounds = async (northEastLat, northEastLng, southWestLat, southWestLng, favorite) => {
     //console.log( "USERID : " + USERID );
     //console.log( "USERPREFERENCE : " + JSON.stringify(USERPREFERENCE, null, 2));
@@ -492,10 +669,17 @@ export const getAllUsers = async () => {
             }
         });
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            if (await handleError(response.status)) {
+                const final = await getAllUsers();
+                return final;
+            } else {
+                throw new Error('Network response was not ok');
+            }
+        } else {
+            const data = await response.json(); // Parse the JSON from the response
+            return data;
         }
-        const data = await response.json(); // Parse the JSON from the response
-        return data;
+
     } catch (error) {
         console.error('Error fetching user:', error);
         throw error;
@@ -512,10 +696,17 @@ export const getUserByID = async (userID) => {
             }
         });
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            if (await handleError(response.status)) {
+                const final = await getUserByID(userID);
+                return final;
+            } else {
+                throw new Error('Network response was not ok');
+            }
+        } else {
+            const data = await response.json();
+            return data.data;
         }
-        const data = await response.json();
-        return data.data;
+
     } catch (error) {
         console.error('Error fetching use in getUserById:', error);
         throw error;
@@ -532,10 +723,17 @@ export const getUserPreferences = async () => {
             }
         });
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            if (await handleError(response.status)) {
+                const final = await getUserPreferences()
+                return final;
+            } else {
+                throw new Error('Network response was not ok');
+            }
+        } else {
+            const data = await response.json();
+            return data.data;
         }
-        const data = await response.json();
-        return data.data;
+
     } catch (error) {
         console.error('Error fetching user in getUserPreferences:', error);
         throw error;
@@ -552,10 +750,17 @@ export const getUserFavorites = async () => {
             }
         });
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            if (await handleError(response.status)) {
+                const final = await getUserFavorites();
+                return final;
+            } else {
+                throw new Error('Network response was not ok');
+            }
+        } else {
+            const data = await response.json();
+            return data.data;
         }
-        const data = await response.json();
-        return data.data;
+
     } catch (error) {
         console.error('Error fetching user:', error);
         throw error;
@@ -573,10 +778,17 @@ export const isFacilityBookmarked = async (facilityID) => {
             }
         });
         if (!response.ok) {
-            throw new Error('Network response was not ok got checking bookmarked');
+            if (await handleError(response.status)) {
+                const final = await isFacilityBookmarked(facilityID);
+                return final;
+            } else {
+                throw new Error('Network response was not ok got checking bookmarked');
+            }
+        } else {
+            const data = await response.json();
+            return data.data;
         }
-        const data = await response.json();
-        return data.data;
+
     } catch (error) {
         console.error('Error fetching stamp rule:', error);
         throw error;
@@ -595,11 +807,18 @@ export const addFavorite = async (facilityId) => {
         });
 
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            if (await handleError(response.status)) {
+                const final = await addFavorite(facilityId);
+                return final;
+            } else {
+                throw new Error('Network response was not ok');
+            }
+        } else {
+            const data = await response.json();
+            return data;
         }
 
-        const data = await response.json();
-        return data;
+
     } catch (error) {
         console.error('Error adding favorite:', error);
         throw error;
@@ -618,11 +837,18 @@ export const deleteFavorite = async (facilityId) => {
         });
 
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            if (await handleError(response.status)) {
+                const final = await deleteFavorite(facilityId);
+                return final;
+            } else {
+                throw new Error('Network response was not ok');
+            }
+        } else {
+            const data = await response.json();
+            return data;
         }
 
-        const data = await response.json();
-        return data;
+
     } catch (error) {
         console.error('Error adding favorite:', error);
         throw error;
@@ -640,10 +866,17 @@ export const getFavoritesNotices = async () => {
             }
         });
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            if (await handleError(response.status)) {
+                const final = await getFavoritesNotices();
+                return final;
+            } else {
+                throw new Error('Network response was not ok');
+            }
+        } else {
+            const data = await response.json();
+            return data.data;
         }
-        const data = await response.json();
-        return data.data;
+
     } catch (error) {
         console.error('Error fetching user:', error);
         throw error;
@@ -660,10 +893,17 @@ export const getMyFacilities = async () => {
             }
         });
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            if (await handleError(response.status)) {
+                const final = await getMyFacilities();
+                return final;
+            } else {
+                throw new Error('Network response was not ok');
+            }
+        } else {
+            const data = await response.json();
+            return data.data;
         }
-        const data = await response.json();
-        return data.data;
+
     } catch (error) {
         console.error('Error fetching user in getUserPreferences:', error);
         throw error;
@@ -758,13 +998,20 @@ export const uploadUserProfileImage = async (imageUri) => {
         });
 
         if (!response.ok) {
-            const errorData = await response.text();
-            throw new Error(`Error: ${errorData}`);
+            if (await handleError(response.status)) {
+                const final = await uploadUserProfileImage(imageUri);
+                return final;
+            } else {
+                const errorData = await response.text();
+                throw new Error(`Error: ${errorData}`);
+            }
+        } else {
+            const data = await response.json();
+            console.log(data);
+            return data;
         }
 
-        const data = await response.json();
-        console.log(data);
-        return data;
+
     } catch (error) {
         console.error('Error creating facility post:', error.Error);
         throw error;
@@ -781,12 +1028,19 @@ export const deleteFacility = async (facilityID) => {
             }
         });
         if (!response.ok) {
-            const result = await response.text();
-            console.log(result);
-            throw new Error('Network response was not ok');
+            if (await handleError(response.status)) {
+                const final = await deleteFacility(facilityID);
+                return final;
+            } else {
+                const result = await response.text();
+                console.log(result);
+                throw new Error('Network response was not ok');
+            }
+        } else {
+            const data = await response.json();
+            return data.data;
         }
-        const data = await response.json();
-        return data.data;
+
     } catch (error) {
         console.error('Error deleting facility:', error);
         throw error;
@@ -805,10 +1059,19 @@ export const getFacilityByID = async (facilityID) => {
             }
         });
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            if (await handleError(response.status)) {
+                const final = await getFacilityByID(facilityID);
+                return final;
+            } else {
+                const result = await response.text();
+                console.log(result);
+                throw new Error('Network response was not ok');
+            }
+        } else {
+            const data = await response.json();
+            return data.data;
         }
-        const data = await response.json();
-        return data.data;
+
     } catch (error) {
         console.error('Error fetching user:', error);
         throw error;
@@ -825,10 +1088,19 @@ export const getFacilityStampRuleByID = async (facilityID) => {
             }
         });
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            if (await handleError(response.status)) {
+                const final = await getFacilityStampRuleByID(facilityID);
+                return final;
+            } else {
+                const result = await response.text();
+                console.log(result);
+                throw new Error('Network response was not ok');
+            }
+        } else {
+            const data = await response.json();
+            return data.data;
         }
-        const data = await response.json();
-        return data.data;
+
     } catch (error) {
         console.error('Error fetching stamp rule:', error);
         throw error;
@@ -845,10 +1117,19 @@ export const getFacilityPreferences = async (facilityID) => {
             }
         });
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            if (await handleError(response.status)) {
+                const final = await getFacilityPreferences(facilityID);
+                return final;
+            } else {
+                const result = await response.text();
+                console.log(result);
+                throw new Error('Network response was not ok');
+            }
+        } else {
+            const data = await response.json();
+            return data.data;
         }
-        const data = await response.json();
-        return data.data;
+
     } catch (error) {
         console.error('Error fetching stamp rule:', error);
         throw error;
@@ -865,10 +1146,19 @@ export const getFacilityMenu = async (facilityID) => {
             }
         });
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            if (await handleError(response.status)) {
+                const final = await getFacilityMenu(facilityID);
+                return final;
+            } else {
+                const result = await response.text();
+                console.log(result);
+                throw new Error('Network response was not ok');
+            }
+        } else {
+            const data = await response.json();
+            return data.data;
         }
-        const data = await response.json();
-        return data.data;
+
     } catch (error) {
         console.error('Error fetching stamp rule:', error);
         throw error;
@@ -885,10 +1175,19 @@ export const getFacilityOpeningHour = async (facilityID) => {
             }
         });
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            if (await handleError(response.status)) {
+                const final = await getFacilityOpeningHour(facilityID);
+                return final;
+            } else {
+                const result = await response.text();
+                console.log(result);
+                throw new Error('Network response was not ok');
+            }
+        } else {
+            const data = await response.json();
+            return data.data;
         }
-        const data = await response.json();
-        return data.data;
+
     } catch (error) {
         console.error('Error fetching stamp rule:', error);
         throw error;
@@ -906,10 +1205,20 @@ export const getTrendingFacilities = async () => {
             }
         });
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            if (await handleError(response.status)) {
+                console.log("handled");
+                const final = await getTrendingFacilities();
+                return final;
+            } else {
+                const result = await response.text();
+                console.log(result);
+                throw new Error('Network response was not ok');
+            }
+        } else {
+            const data = await response.json();
+            return data.data;
         }
-        const data = await response.json();
-        return data.data;
+
     } catch (error) {
         console.error('Error fetching trending facilities:', error);
         throw error;
@@ -926,10 +1235,19 @@ export const getNewestFacilities = async () => {
             }
         });
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            if (await handleError(response.status)) {
+                const final = await getNewestFacilities();
+                return final;
+            } else {
+                const result = await response.text();
+                console.log(result);
+                throw new Error('Network response was not ok');
+            }
+        } else {
+            const data = await response.json();
+            return data.data;
         }
-        const data = await response.json();
-        return data.data;
+
     } catch (error) {
         console.error('Error fetching newest facilities:', error);
         throw error;
@@ -946,10 +1264,19 @@ export const getTrendingPreferenceFacilities = async (preference) => {
             }
         });
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            if (await handleError(response.status)) {
+                const final = await getTrendingPreferenceFacilities(preference);
+                return final;
+            } else {
+                const result = await response.text();
+                console.log(result);
+                throw new Error('Network response was not ok');
+            }
+        } else {
+            const data = await response.json();
+            return data.data;
         }
-        const data = await response.json();
-        return data.data;
+
     } catch (error) {
         console.error('Error fetching trending facilities:', error);
         throw error;
@@ -966,10 +1293,19 @@ export const getFacilityNotices = async (facilityID) => {
             }
         });
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            if (await handleError(response.status)) {
+                const final = await getFacilityNotices(facilityID);
+                return final;
+            } else {
+                const result = await response.text();
+                console.log(result);
+                throw new Error('Network response was not ok');
+            }
+        } else {
+            const data = await response.json();
+            return data.data;
         }
-        const data = await response.json();
-        return data.data;
+
     } catch (error) {
         console.error('Error fetching user:', error);
         throw error;
@@ -1002,14 +1338,21 @@ export const createFacilityPost = async ({ facilityId, content, imageUri }) => {
         });
 
         if (!response.ok) {
-            const errorData = await response.text();
-            console.log(`Error: ${errorData}`);
-            throw response.status;
+            if (await handleError(response.status)) {
+                const final = await createFacilityPost({ facilityId: facilityId, content: content, imageUri: imageUri });
+                return final;
+            } else {
+                const errorData = await response.text();
+                console.log(`Error: ${errorData}`);
+                throw response.status;
+            }
+        } else {
+            const data = await response.json();
+            console.log(data);
+            return data;
         }
 
-        const data = await response.json();
-        console.log(data);
-        return data;
+
     } catch (error) {
         console.error('Error creating facility post:', error);
         throw error;
@@ -1030,14 +1373,20 @@ export const editFacility = async ({ facilityID, facilityData }) => {
         });
 
         if (!response.ok) {
-            const responseData = await response.text();
-            console.log(responseData);
-            throw new Error('Network response was not ok: ', responseData);
+            if (await handleError(response.status)) {
+                const final = await editFacility({ facilityID: facilityID, facilityData: facilityData });
+                return final;
+            } else {
+                const result = await response.text();
+                console.log(result);
+                throw new Error('Network response was not ok');
+            }
+        } else {
+            const responseData = await response.json();
+            console.log('Facility edit request sent successfully:', responseData);
+            return responseData;
         }
 
-        const responseData = await response.json();
-        console.log('Facility edit request sent successfully:', responseData);
-        return responseData;
     } catch (error) {
         console.error('Error registering facility:', error);
         throw error;
@@ -1068,14 +1417,21 @@ export const uploadMenuImage = async ({ facilityId, menuId, imageUri }) => {
         });
 
         if (!response.ok) {
-            const responseData = await response.text();
-            console.log(responseData);
-            throw new Error('Network response was not ok');
+            if (await handleError(response.status)) {
+                const final = await uploadMenuImage({ facilityId: facilityId, menuId: menuId, imageUri: imageUri });
+                return final;
+            } else {
+                const result = await response.text();
+                console.log(result);
+                throw new Error('Network response was not ok');
+            }
+        } else {
+            const responseData = await response.json();
+            console.log('Menu image uploaded successfully:', responseData);
+            return responseData;
         }
 
-        const responseData = await response.json();
-        console.log('Menu image uploaded successfully:', responseData);
-        return responseData;
+
     } catch (error) {
         console.error('Error uploading menu image:', error);
         throw error;
@@ -1096,14 +1452,21 @@ export const updateFacilityMenu = async ({ facilityID, menuID, menuData }) => {
         });
 
         if (!response.ok) {
-            const responseData = await response.text();
-            console.log(responseData);
-            throw new Error('Network response was not ok: ', responseData);
+            if (await handleError(response.status)) {
+                const final = await updateFacilityMenu({ facilityID: facilityID, menuID: menuID, menuData: menuData });
+                return final;
+            } else {
+                const result = await response.text();
+                console.log(result);
+                throw new Error('Network response was not ok', result);
+            }
+        } else {
+            const responseData = await response.json();
+            console.log('Facility edit request sent successfully:', responseData);
+            return responseData;
         }
 
-        const responseData = await response.json();
-        console.log('Facility edit request sent successfully:', responseData);
-        return responseData;
+
     } catch (error) {
         console.error('Error registering facility:', error);
         throw error;
@@ -1124,14 +1487,21 @@ export const createFacilityMenu = async ({ facilityID, menuData }) => {
         });
 
         if (!response.ok) {
-            const responseData = await response.text();
-            console.log(responseData);
-            throw new Error('Network response was not ok: ', responseData);
+            if (await handleError(response.status)) {
+                const final = await createFacilityMenu({ facilityID: facilityID, menuData: menuData });
+                return final;
+            } else {
+                const result = await response.text();
+                console.log(result);
+                throw new Error('Network response was not ok', result);
+            }
+        } else {
+            const responseData = await response.json();
+            console.log('Facility edit request sent successfully:', responseData);
+            return responseData.data;
         }
 
-        const responseData = await response.json();
-        console.log('Facility edit request sent successfully:', responseData);
-        return responseData.data;
+
     } catch (error) {
         console.error('Error registering facility:', error);
         throw error;
@@ -1162,14 +1532,21 @@ export const uploadStampLogo = async ({ facilityID, imageUri }) => {
         });
 
         if (!response.ok) {
-            const responseData = await response.text();
-            console.log(responseData);
-            throw new Error('Network response was not ok: ', responseData);
+            if (await handleError(response.status)) {
+                const final = await uploadStampLogo({ facilityID: facilityID, imageUri: imageUri });
+                return final;
+            } else {
+                const result = await response.text();
+                console.log(result);
+                throw new Error('Network response was not ok', result);
+            }
+        } else {
+            const responseData = await response.json();
+            console.log('Facility edit request sent successfully:', responseData);
+            return responseData.data;
         }
 
-        const responseData = await response.json();
-        console.log('Facility edit request sent successfully:', responseData);
-        return responseData.data;
+
     } catch (error) {
         console.error('Error registering facility:', error);
         throw error;
@@ -1201,14 +1578,21 @@ export const uploadFacilityProfile = async ({ facilityID, imageUri }) => {
         });
 
         if (!response.ok) {
-            const responseData = await response.text();
-            console.log(responseData);
-            throw new Error('Network response was not ok: ', responseData);
+            if (await handleError(response.status)) {
+                const final = await uploadFacilityProfile({ facilityID: facilityID, imageUri: imageUri });
+                return final;
+            } else {
+                const result = await response.text();
+                console.log(result);
+                throw new Error('Network response was not ok', result);
+            }
+        } else {
+
+            const responseData = await response.json();
+            console.log('Facility edit request sent successfully:', responseData);
+            return responseData.data;
         }
 
-        const responseData = await response.json();
-        console.log('Facility edit request sent successfully:', responseData);
-        return responseData.data;
     } catch (error) {
         console.error('Error registering facility:', error);
         throw error;
@@ -1225,10 +1609,19 @@ export const deletePost = async ({ facilityID, postID }) => {
             }
         });
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            if (await handleError(response.status)) {
+                const final = await deletePost({ facilityID: facilityID, postID: postID });
+                return final;
+            } else {
+                const result = await response.text();
+                console.log(result);
+                throw new Error('Network response was not ok', result);
+            }
+        } else {
+            const data = await response.json();
+            return data.data;
         }
-        const data = await response.json();
-        return data.data;
+
     } catch (error) {
         console.error('Error fetching user:', error);
         throw error;
@@ -1260,11 +1653,20 @@ export const getReviewByQuery = async (userID, facilityId, hasImage, hashtags) =
         });
 
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            if (await handleError(response.status)) {
+                const final = await getReviewByQuery(userID, facilityId, hasImage, hashtags);
+                return final;
+            } else {
+                const result = await response.text();
+                console.log(result);
+                throw new Error('Network response was not ok', result);
+            }
+        } else {
+            const data = await response.json();
+            return data.data;
         }
 
-        const data = await response.json();
-        return data.data;
+
     } catch (error) {
         console.error('Error fetching reviews:', error);
     }
@@ -1280,10 +1682,19 @@ export const getTopHashtags = async (facilityID) => {
             }
         });
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            if (await handleError(response.status)) {
+                const final = await getTopHashtags(facilityID);
+                return final;
+            } else {
+                const result = await response.text();
+                console.log(result);
+                throw new Error('Network response was not ok', result);
+            }
+        } else {
+            const data = await response.json();
+            return data.data;
         }
-        const data = await response.json();
-        return data.data;
+
     } catch (error) {
         console.error('Error fetching facility stamp:', error);
         throw error;
@@ -1300,10 +1711,19 @@ export const deleteReview = async (reviewId) => {
             }
         });
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            if (await handleError(response.status)) {
+                const final = await deleteReview(reviewId);
+                return final;
+            } else {
+                const result = await response.text();
+                console.log(result);
+                throw new Error('Network response was not ok', result);
+            }
+        } else {
+            const data = await response.json();
+            return data.data;
         }
-        const data = await response.json();
-        return data.data;
+
     } catch (error) {
         console.error('Error fetching facility stamp:', error);
         throw error;
@@ -1338,15 +1758,20 @@ export const createReview = async ({ facilityId, score, content, hashtags, image
         });
 
         if (!response.ok) {
-            // Log the full response for debugging
-            const errorText = await response.text();
-            console.error('Error response from server:', errorText);
-            throw response.status;
+            if (await handleError(response.status)) {
+                const final = await createReview({ facilityId: facilityId, score: score, content: content, hashtags: hashtags, imageUri: imageUri });
+                return final;
+            } else {
+                // Log the full response for debugging
+                const errorText = await response.text();
+                console.error('Error response from server:', errorText);
+                throw response.status;
+            }
+        } else {
+            const data = await response.json();
+            console.log(data);
+            return data;
         }
-
-        const data = await response.json();
-        console.log(data);
-        return data;
     } catch (error) {
         console.error('Error uploading review:', error);
         throw error;
@@ -1370,14 +1795,21 @@ export const editReview = async ({ reviewId, content, hashtags }) => {
         });
 
         if (!response.ok) {
-            const errorData = await response.text();
-            console.log(`Error: ${errorData}`);
-            throw response.status;
+            if (await handleError(response.status)) {
+                const final = await editReview({ reviewId: reviewId, content: content, hashtags: hashtags });
+                return final;
+            } else {
+                const errorData = await response.text();
+                console.log(`Error: ${errorData}`);
+                throw response.status;
+            }
+        } else {
+            const data = await response.json();
+            console.log(data);
+            return data;
         }
 
-        const data = await response.json();
-        console.log(data);
-        return data;
+
     } catch (error) {
         console.error('Error uploading review:', error);
         throw error;
@@ -1397,10 +1829,19 @@ export const getFacilityStamp = async (facilityID) => {
             }
         });
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            if (await handleError(response.status)) {
+                const final = await getFacilityStamp(facilityID);
+                return final;
+            } else {
+                const result = await response.text();
+                console.log(result);
+                throw new Error('Network response was not ok', result);
+            }
+        } else {
+            const data = await response.json();
+            return data.data;
         }
-        const data = await response.json();
-        return data.data;
+
     } catch (error) {
         console.error('Error fetching facility stamp:', error);
         throw error;
@@ -1417,10 +1858,19 @@ export const getStampBook = async () => {
             }
         });
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            if (await handleError(response.status)) {
+                const final = await getStampBook();
+                return final;
+            } else {
+                const result = await response.text();
+                console.log(result);
+                throw new Error('Network response was not ok', result);
+            }
+        } else {
+            const data = await response.json();
+            return data.data;
         }
-        const data = await response.json();
-        return data.data;
+
     } catch (error) {
         console.error('Error fetching facility stamp:', error);
         throw error;
@@ -1445,12 +1895,19 @@ export const sendStampTransaction = async (userID, facilityID, type, amount) => 
             })
         });
         if (!response.ok) {
-            // throw new Error('Network response was not ok');
+            if (await handleError(response.status)) {
+                const final = await sendStampTransaction(userID, facilityID, type, amount);
+                return final;
+            } else {
+                const result = await response.text();
+                console.log(result);
+                throw new Error('Network response was not ok', result);
+            }
+        } else {
             const data = await response.json();
-            console.log(data);
+            return data.data;
         }
-        const data = await response.json();
-        return data.data;
+
     } catch (error) {
         console.error('Error sending stamp transaction:', error);
         throw error;
@@ -1467,10 +1924,19 @@ export const deleteFacilityMenu = async ({ facilityID, menuID }) => {
             }
         });
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            if (await handleError(response.status)) {
+                const final = await deleteFacilityMenu({ facilityID: facilityID, menuID: menuID });
+                return final;
+            } else {
+                const result = await response.text();
+                console.log(result);
+                throw new Error('Network response was not ok', result);
+            }
+        } else {
+            const data = await response.json();
+            return data.data;
         }
-        const data = await response.json();
-        return data.data;
+
     } catch (error) {
         console.error('Error deleting facility menu:', error);
         throw error;
@@ -1487,10 +1953,19 @@ export const getSummaryReview = async (facilityID) => {
             }
         });
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            if (await handleError(response.status)) {
+                const final = await getSummaryReview(facilityID);
+                return final;
+            } else {
+                const result = await response.text();
+                console.log(result);
+                throw new Error('Network response was not ok', result);
+            }
+        } else {
+            const data = await response.json();
+            return data.data;
         }
-        const data = await response.json();
-        return data.data;
+
     } catch (error) {
         console.error('Error fetching facility registrations:', error);
         throw error;
@@ -1509,10 +1984,19 @@ export const getFacilityRegistrations = async () => {
             }
         });
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            if (await handleError(response.status)) {
+                const final = await getFacilityRegistrations();
+                return final;
+            } else {
+                const result = await response.text();
+                console.log(result);
+                throw new Error('Network response was not ok', result);
+            }
+        } else {
+            const data = await response.json();
+            return data.data;
         }
-        const data = await response.json();
-        return data.data;
+
     } catch (error) {
         console.error('Error fetching facility registrations:', error);
         throw error;
@@ -1529,10 +2013,19 @@ export const getMyFacilityRegistrations = async () => {
             }
         });
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            if (await handleError(response.status)) {
+                const final = await getMyFacilityRegistrations();
+                return final;
+            } else {
+                const result = await response.text();
+                console.log(result);
+                throw new Error('Network response was not ok', result);
+            }
+        } else {
+            const data = await response.json();
+            return data.data;
         }
-        const data = await response.json();
-        return data.data;
+
     } catch (error) {
         console.error('Error fetching facility registrations:', error);
         throw error;
@@ -1552,12 +2045,19 @@ export const acceptFacilityRegistrations = async (requestID) => {
             })
         });
         if (!response.ok) {
+            if (await handleError(response.status)) {
+                const final = await acceptFacilityRegistrations(requestID);
+                return final;
+            } else {
+                const result = await response.text();
+                console.log(result);
+                throw new Error('Network response was not ok', result);
+            }
+        } else {
             const data = await response.json();
-            console.log(data);
-            throw new Error('Network response was not ok');
+            return data.data;
         }
-        const data = await response.json();
-        return data.data;
+
     } catch (error) {
         console.error('Error accepting facility registrations:', error);
         throw error;
@@ -1577,10 +2077,19 @@ export const declineFacilityRegistrations = async (requestID) => {
             })
         });
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            if (await handleError(response.status)) {
+                const final = await declineFacilityRegistrations(requestID);
+                return final;
+            } else {
+                const result = await response.text();
+                console.log(result);
+                throw new Error('Network response was not ok', result);
+            }
+        } else {
+            const data = await response.json();
+            return data.data;
         }
-        const data = await response.json();
-        return data.data;
+
     } catch (error) {
         console.error('Error declining facility registrations:', error);
         throw error;
@@ -1597,10 +2106,19 @@ export const getReports = async (type) => {
             }
         });
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            if (await handleError(response.status)) {
+                const final = await getReports(type);
+                return final;
+            } else {
+                const result = await response.text();
+                console.log(result);
+                throw new Error('Network response was not ok', result);
+            }
+        } else {
+            const data = await response.json();
+            return data.data;
         }
-        const data = await response.json();
-        return data.data;
+
     } catch (error) {
         console.error('Error fetching facility registrations:', error);
         throw error;
@@ -1625,10 +2143,19 @@ export const sendReviewReport = async ({ content, reviewId }) => {
         const result = await response.json();
         console.log(result);
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            if (await handleError(response.status)) {
+                const final = await sendReviewReport({ content: content, reviewId: reviewId })
+                return final;
+            } else {
+                const result = await response.text();
+                console.log(result);
+                throw new Error('Network response was not ok', result);
+            }
+        } else {
+            const data = await response.json();
+            return data.data;
         }
-        const data = await response.json();
-        return data.data;
+
     } catch (error) {
         console.error('Error sending review report:', error);
         throw error;
@@ -1652,10 +2179,19 @@ export const sendBugReport = async ({ content }) => {
         const result = await response.json();
         console.log(content);
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            if (await handleError(response.status)) {
+                const final = await sendBugReport({ content: content })
+                return final;
+            } else {
+                const result = await response.text();
+                console.log(result);
+                throw new Error('Network response was not ok', result);
+            }
+        } else {
+            const data = await response.json();
+            return data.data;
         }
-        const data = await response.json();
-        return data.data;
+
     } catch (error) {
         console.error('Error sending bug report:', error);
         throw error;
@@ -1672,10 +2208,19 @@ export const deleteReport = async (reportId) => {
             }
         });
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            if (await handleError(response.status)) {
+                const final = await deleteReport(reportId);
+                return final;
+            } else {
+                const result = await response.text();
+                console.log(result);
+                throw new Error('Network response was not ok', result);
+            }
+        } else {
+            const data = await response.json();
+            return data.data;
         }
-        const data = await response.json();
-        return data.data;
+
     } catch (error) {
         console.error('Error deleting review:', error);
         throw error;

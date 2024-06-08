@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Text, View, SafeAreaView, ScrollView } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { GlobalStyles, Color } from '../GlobalStyles';
-import { USERID, getUserFavorites, fetchImage, getFavoritesNotices } from './api';
+import { USERID, getUserFavorites, fetchImage, getFavoritesNotices, LOGIN } from './api';
 
 import UserList from '../components/UserList';
 import Notice from '../components/Notice';
@@ -52,6 +52,7 @@ const Favorites = () => {
         }
         setFavoritesImageList(newfavoritesImage);
         setMyFavorites(data);
+        fetchNotices();
 
       } catch (error) {
         console.log(error.message);
@@ -68,10 +69,13 @@ const Favorites = () => {
     };
 
     fetchFavorites();
-    fetchNotices();
   }, []);
 
   const navigation = useNavigation();
+
+  useEffect(() => {
+    if (!LOGIN) {navigation.replace("SignUpLogIn")};
+  }, LOGIN);
 
   return (
     <SafeAreaView style={GlobalStyles.background}>

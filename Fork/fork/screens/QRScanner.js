@@ -4,6 +4,7 @@ import { BarCodeScanner } from 'expo-barcode-scanner';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Border, Color, FontSize, GlobalStyles } from '../GlobalStyles';
+import { LOGIN } from './api';
 
 const QRScanner = () => {
   const [hasPermission, setHasPermission] = useState(null);
@@ -12,6 +13,11 @@ const QRScanner = () => {
 
 
   const navigation = useNavigation();
+
+  useEffect(() => {
+    if (!LOGIN) {navigation.replace("SignUpLogIn")};
+  }, LOGIN);
+
   const route = useRoute();
   const { facilityID } = route.params;
 

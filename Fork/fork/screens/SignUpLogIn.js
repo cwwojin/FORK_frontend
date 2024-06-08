@@ -3,6 +3,7 @@ import { View, Text, Button, StyleSheet, Image, TouchableOpacity, SafeAreaView }
 import {LinearGradient}  from 'expo-linear-gradient';
 import { Border, Color, GlobalStyles } from "../GlobalStyles.js";
 import { getAllTranslations, getLanguageToken } from '../LanguageUtils';
+import { USERTOKEN, LOGIN, changeLoginState } from './api.js';
 
 const SignUpLogIn = ({ navigation }) => {
 
@@ -13,6 +14,11 @@ const SignUpLogIn = ({ navigation }) => {
   });
 
   useEffect(() => {
+    console.log(USERTOKEN);
+    console.log(LOGIN);
+    if (USERTOKEN != 'guest') {
+      navigation.replace("Home");
+    } 
     const fetchTranslations = async () => {
       const fetchedTranslations = await getAllTranslations();
       setTranslations(fetchedTranslations);
@@ -29,7 +35,8 @@ const SignUpLogIn = ({ navigation }) => {
   }, [navigation]);
 
   const onStartWithoutAccount = useCallback(() => {
-    navigation.navigate("Home"); 
+    changeLoginState();
+    navigation.replace("Home"); 
   }, [navigation]);
 
   return (

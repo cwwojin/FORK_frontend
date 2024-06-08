@@ -13,7 +13,7 @@ import { useEffect, useState } from 'react';
 
 import { GlobalStyles, Color } from '../GlobalStyles';
 import Review from '../components/Review';
-import { getReviewByQuery, getFacilityByID, USERID } from './api';
+import { getReviewByQuery, getFacilityByID, USERID, LOGIN } from './api';
 import { getAllTranslations, getLanguageToken } from '../LanguageUtils';
 
 
@@ -22,6 +22,11 @@ const MyReviews = () => {
   //All the reviews [facility_img, facility_name, score(int), date(string), review_img, review_content, hashtags(Array)]
 
   const navigation = useNavigation();
+
+  useEffect(() => {
+    if (!LOGIN) {navigation.replace("SignUpLogIn")};
+  }, LOGIN);
+
   const [translations, setTranslations] = useState({});
 
   useEffect(() => {

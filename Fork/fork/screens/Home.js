@@ -17,12 +17,17 @@ import { FacilityDetails } from './MapViewFunctions';
 
 //To be deleted
 import longImagePlaceholder from '../assets/placeholders/long_image.png';
-import { getNewestFacilities, getTrendingFacilities, fetchImage, USERPREFERENCE, getTrendingPreferenceFacilities } from './api';
+import { getNewestFacilities, getTrendingFacilities, LOGIN, USERPREFERENCE, getTrendingPreferenceFacilities } from './api';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { getLanguageToken, getAllTranslations } from '../LanguageUtils';
 
 
 const Home = () => {
+
+  useEffect(() => {
+    if (!LOGIN) {navigation.replace("SignUpLogIn")};
+  }, LOGIN);
+
   //Get Informations of facilities
   //img url for ad, Top 5 trending facilities [img_url, name, score, address], Top 5 new failities, Recommendation of 2 restaurants
   const [trending, setTrending] = useState([]);
@@ -67,6 +72,8 @@ const Home = () => {
       try {
         const data = await getTrendingFacilities();
         setTrending(data);
+        fetchNewest();
+        fetchPreferences();
       } catch (error) {
         //console.log(error.message);
       }
@@ -98,11 +105,14 @@ const Home = () => {
       }
     };
     fetchTrending();
-    fetchNewest();
-    fetchPreferences();
+
   }, []);
 
   const navigation = useNavigation();
+
+  useEffect(() => {
+    if (!LOGIN) {navigation.replace("SignUpLogIn")};
+  }, LOGIN);
 
   return (
     <SafeAreaView style={GlobalStyles.background}>
@@ -120,7 +130,7 @@ const Home = () => {
               horizontal
               style={GlobalStyles.scroll}
               showsHorizontalScrollIndicator={false}>
-              {trending.map(item => (
+              {trending && trending.map(item => (
                 <TouchableOpacity onPress={() => {
                   navigation.navigate("FacilityDetail", { facilityID: item.id });
                 }}>
@@ -141,7 +151,7 @@ const Home = () => {
               horizontal
               style={GlobalStyles.scroll}
               showsHorizontalScrollIndicator={false}>
-              {newest.map(item => (
+              {newest && newest.map(item => (
                 <TouchableOpacity onPress={() => {
                   navigation.navigate("FacilityDetail", { facilityID: item.id });
                 }}>

@@ -35,7 +35,7 @@ import {
   getFacilityStampRuleByID, getReviewByQuery, isFacilityBookmarked, USERID, createReview,
   getSummaryReview,
   USERTYPE,
-  getMyFacilities
+  getMyFacilities, LOGIN
 } from './api';
 import { getAllTranslations, getLanguageToken } from '../LanguageUtils';
 import Translator, {
@@ -47,8 +47,6 @@ const FacilityDetail = () => {
   const route = useRoute();
 
   const { facilityID } = route.params;
-  console.log('parameters:' +JSON.stringify(route.params, null, 2));
-
 
   const [facilityInfo, setFacilityInfo] = useState({});
   const [reviewList, setReviewList] = useState('');
@@ -69,6 +67,13 @@ const FacilityDetail = () => {
   const [language, setLanguage] = useState('en');
   const [translatedDescription, setTranslatedDescription] = useState();
   const { translate } = useTranslator();
+
+  useEffect(() => {
+    if (!LOGIN) {
+      navigation.goBack();
+      navigation.replace("SignUpLogIn")
+    };
+  }, LOGIN);
 
   useEffect(() => {
     const fetchTranslations = async () => {
@@ -116,7 +121,6 @@ const FacilityDetail = () => {
         const data = await getFacilityByID(facilityID);
         console.log("data: "+JSON.stringify(data, null, 2));
         setFacilityInfo(data);
-        console.log(data);
 
         const newtimeData = [
           { index: 1, day: 'Monday', dayS: translations.monday, openTime: '', closeTime: '' },
@@ -149,7 +153,6 @@ const FacilityDetail = () => {
       try {
         const data = await getReviewByQuery('', facilityID, '', '');
         setReviewList(data);
-        console.log("review list", data);
         setIsLoading(false);
       } catch (error) { 
         console.log(error.message);
@@ -159,7 +162,6 @@ const FacilityDetail = () => {
       try {
         const data = await getSummaryReview(facilityID);
         setSummaryReview(data);
-        console.log(data);
       } catch (error) {
         console.log(error.message);
       }
@@ -216,6 +218,14 @@ const FacilityDetail = () => {
       try {
         const bookmark = await isFacilityBookmarked(facilityID);
         setBookmarked(bookmark);
+        fetchNotices(facilityID);
+        fetchTopHashtags(facilityID);
+        isMyFacility(facilityID);
+        fetchFacility(facilityID);
+        fetchReviews(facilityID);
+        fetchSummaryReview(facilityID);
+        fetchStamp(facilityID);
+        fetchPreferences(facilityID);
       } catch (error) {
         console.log(error.message);
       }
@@ -232,20 +242,13 @@ const FacilityDetail = () => {
       try {
         const hashtags = await getTopHashtags(facilityID);
         setTopHashtags(hashtags);
-        console.log("hashtags: ", hashtags);
       } catch (error) {
         console.log(error.message);
       }
     };
-    fetchFacility(facilityID);
-    fetchReviews(facilityID);
-    fetchSummaryReview(facilityID);
-    fetchStamp(facilityID);
-    fetchPreferences(facilityID);
+
     isBookmarked(facilityID);
-    fetchNotices(facilityID);
-    fetchTopHashtags(facilityID);
-    isMyFacility(facilityID);
+
   }, [translations]);
 
   
@@ -377,10 +380,8 @@ const FacilityDetail = () => {
         aspect: [1, 1],
         quality: 1,
       });
-      console.log("Result object:", result);
       if (!result.canceled && result.assets && result.assets.length > 0) {
         const source = { uri: result.assets[0].uri };
-        console.log("source uri : " + source.uri);
 
         const uncompressedImage = await ImageManipulator.manipulateAsync(
           source.uri,
@@ -388,7 +389,6 @@ const FacilityDetail = () => {
           { compress: 1, format: ImageManipulator.SaveFormat.JPEG }
         );
 
-        console.log("Compressed image uri:", uncompressedImage.uri);
         setReviewImage(uncompressedImage.uri);
       }
     } catch (error) {
@@ -815,7 +815,7 @@ const FacilityDetail = () => {
                   <Stamp
                     number={myStamp}
                     stamp={stampRule}
-                    stampImage={stampLogo ? { uri: stampLogo } : ""}
+                    facilityID={facilityID}
                   />
                 </>
               }

@@ -5,7 +5,7 @@ import { getAllTranslations, getLanguageToken } from '../LanguageUtils';
 
 
 const Hashtag = ({ tag }) => {
-  const [translations, setTranslations] = useState({});
+  const [translations, setTranslations] = useState({pref: {}});
 
   useEffect(() => {
     const fetchTranslations = async () => {
@@ -40,7 +40,7 @@ const Hashtag = ({ tag }) => {
       // Find the corresponding name from the preferences array
       const tagName = preferences[tag-1].name;
       // Assign the tagName to the tag variable
-      tag = tagName;
+      tag = translations.pref[tagName];
     }
 
 

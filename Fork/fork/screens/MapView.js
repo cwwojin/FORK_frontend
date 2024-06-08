@@ -7,7 +7,7 @@ import SquareFacility from '../components/SqureFacility';
 import LongFacility from '../components/LongFacility';
 import NavigationBar from '../components/NavigationBar';
 import { WebView } from 'react-native-webview';
-import { fetchFacilityWithName, fetchFacilitiesInBounds, getParsedUserPreferences } from './api';
+import { fetchFacilityWithName, fetchFacilitiesInBounds, getParsedUserPreferences, LOGIN } from './api';
 import { FacilityDetails } from './MapViewFunctions';
 import { isOpenNow } from './MapViewFunctions';
 import * as Location from 'expo-location';
@@ -16,6 +16,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const MapView = () => {
   const navigation = useNavigation();
+
+  useEffect(() => {
+    if (!LOGIN) {navigation.replace("SignUpLogIn")};
+  }, LOGIN);
+
   const [searchQuery, setSearchQuery] = useState('');
   const webViewRef = useRef(null);
   const [webViewReady, setWebViewReady] = useState(false);

@@ -6,7 +6,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import axios from 'axios';
 import * as ImageManipulator from 'expo-image-manipulator';
-import { editFacility, USERID, getFacilityStampRuleByID, fetchImage, uploadMenuImage, deleteFacilityMenu, deleteFacility, getFacilityMenu, uploadStampLogo, uploadFacilityProfile } from './api';
+import { editFacility, USERID, getFacilityStampRuleByID, fetchImage, uploadMenuImage, deleteFacilityMenu, deleteFacility, getFacilityMenu, uploadStampLogo, uploadFacilityProfile, LOGIN } from './api';
 const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
 const dayToNumber = {
@@ -84,6 +84,10 @@ const FacilityInformationEdit = ({ navigation }) => {
   const route = useRoute();
   //const authorId = route.params.authorId;
   //const email = route.params.email;
+
+  useEffect(() => {
+    if (!LOGIN) {navigation.replace("SignUpLogIn")};
+  }, LOGIN);
 
   const { facilityINFO, userEmail } = route.params;
   const authorId = USERID;

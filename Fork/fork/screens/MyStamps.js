@@ -16,7 +16,7 @@ import { FontFamily, FontSize, Color, GlobalStyles } from '../GlobalStyles';
 import Stamp from '../components/Stamp';
 
 import userImage from '../assets/placeholders/User.png';
-import { getStampBook } from './api';
+import { getStampBook, LOGIN } from './api';
 import { getAllTranslations, getLanguageToken } from '../LanguageUtils';
 
 //To be deleted
@@ -24,6 +24,10 @@ import longImagePlaceholder from '../assets/placeholders/long_image.png';
 
 const MyStamps = () => {
   const navigation = useNavigation();
+
+  useEffect(() => {
+    if (!LOGIN) {navigation.replace("SignUpLogIn")};
+  }, LOGIN);
 
   const [userStamp, setUserStamp] = useState([]);
   const [loading, setLoading] = useState(true);

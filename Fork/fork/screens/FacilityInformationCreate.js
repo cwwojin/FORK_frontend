@@ -6,7 +6,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import axios from 'axios';
 import * as ImageManipulator from 'expo-image-manipulator';
-import { registerFacility } from './api';
+import { registerFacility, LOGIN } from './api';
 const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 import { getAllTranslations, getLanguageToken } from '../LanguageUtils';
 
@@ -97,6 +97,10 @@ const FacilityInformationCreate = ({navigation}) => {
   const route = useRoute();
   const authorId = route.params.authorId;
   const email = route.params.email;
+
+  useEffect(() => {
+    if (!LOGIN) {navigation.replace("SignUpLogIn")};
+  }, LOGIN);
 
   const [facilityInfo, setFacilityInfo] = useState({
     menuItems: [],

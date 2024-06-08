@@ -16,7 +16,7 @@ import NumericInput from 'react-native-numeric-input';
 
 import { GlobalStyles, Color } from '../GlobalStyles';
 import Review from '../components/Review';
-import { getReviewByQuery, getFacilityByID, USERID, sendStampTransaction } from './api';
+import { getReviewByQuery, getFacilityByID, USERID, sendStampTransaction, LOGIN } from './api';
 
 
 const GiveStamp = () => {
@@ -24,6 +24,11 @@ const GiveStamp = () => {
   //All the reviews [facility_img, facility_name, score(int), date(string), review_img, review_content, hashtags(Array)]
 
   const navigation = useNavigation();
+
+  useEffect(() => {
+    if (!LOGIN) {navigation.replace("SignUpLogIn")};
+  }, LOGIN);
+
   const route = useRoute();
   const { userID, facilityID } = route.params;
 

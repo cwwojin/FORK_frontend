@@ -153,7 +153,7 @@ import { useTranslator } from 'react-native-translator';
 import { GlobalStyles, Color, Border, FontSize } from '../GlobalStyles';
 import { deleteUser, handleLogOut, sendBugReport } from './api';
 import { setLanguageToken, getLanguageToken, getAllTranslations } from '../LanguageUtils';
-import { USERTOKEN } from './api';
+import { USERTOKEN, LOGIN } from './api';
 import * as Location from 'expo-location';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -174,6 +174,11 @@ const initialTranslations = {
 
 const Settings = () => {
   const navigation = useNavigation();
+
+  useEffect(() => {
+    if (!LOGIN) {navigation.replace("SignUpLogIn")};
+  }, LOGIN);
+
   const route = useRoute();
 
   const { userName, userProfile, userEmail } = route.params;
@@ -237,9 +242,9 @@ const Settings = () => {
     setReportContent('');
   };
 
-  const logout = () => {
+  const logout = async () => {
     if (USERTOKEN) {
-      handleLogOut();
+      await handleLogOut();
       navigation.goBack();
       navigation.replace("SignUpLogIn");
     } else {

@@ -41,11 +41,16 @@ import {
   USERID, USERPREFERENCE, fetchImage, getFacilityByID, getFacilityRegistrations, getMyFacilities, getMyFacilityRegistrations, getReports, getReviewByQuery,
   getStampBook, getUserByID, getUserFavorites, getFacilityStampRuleByID,
   createFacilityPost,
-  USERTYPE
+  USERTYPE,
+  LOGIN
 } from './api';
 
 const MyPage = () => {
   //Get Informations of facilities
+
+  useEffect(() => {
+    if (!LOGIN) {navigation.replace("SignUpLogIn")};
+  }, LOGIN);
 
   const [userType, setUserType] = useState(USERTYPE);
   const [userInfo, setUserInfo] = useState('');
@@ -374,7 +379,7 @@ const MyPage = () => {
         Alert.alert("Error", "Review upload fail due to harmful content");
       } else {
         setModerate(false);
-        console.log(error.message);
+        console.log(error);
         Alert.alert("Notice upload failed. Please try again");
       }
 
@@ -395,7 +400,6 @@ const MyPage = () => {
 
   {/* -----------------GUEST User---------------------- */ }
   if (USERTYPE !== 0 && USERTYPE !== 1 && USERTYPE !== 2) {
-    console.log("whyhwhywhyhw", USERTYPE)
     return (
       <>
         <SafeAreaView style={GlobalStyles.background}>
@@ -507,9 +511,10 @@ const MyPage = () => {
                     marginTop: 10,
                   }}>
                   {USERPREFERENCE && USERPREFERENCE.map(item => (
-                    <Hashtag tag={translations.pref[item.name]} />
+                    <Hashtag tag={item} />
                   ))}
                 </View>
+ 
 
                 <View
                   style={{
@@ -600,7 +605,6 @@ const MyPage = () => {
                     </TouchableOpacity>
                   ))}
                 </ScrollView>
-
                 <View
                   style={{
                     flexDirection: 'row',
