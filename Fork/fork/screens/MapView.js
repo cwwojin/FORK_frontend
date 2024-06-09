@@ -1,10 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback }  from 'react';
 import { StyleSheet, Text, View, Image, SafeAreaView, ScrollView, TextInput, Button, TouchableOpacity, Alert, Platform   } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { Color, GlobalStyles } from '../GlobalStyles';
 
-import SquareFacility from '../components/SqureFacility';
-import LongFacility from '../components/LongFacility';
 import NavigationBar from '../components/NavigationBar';
 import { WebView } from 'react-native-webview';
 import { fetchFacilityWithName, fetchFacilitiesInBounds, getParsedUserPreferences, LOGIN } from './api';

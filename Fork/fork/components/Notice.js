@@ -12,6 +12,7 @@ import { getAllTranslations, getLanguageToken } from '../LanguageUtils';
 const Notice = ({
   facilityImage,
   facilityName,
+  facilityEnglishName,
   noticeDate,
   noticeImage,
   noticeContent,
@@ -23,6 +24,8 @@ const Notice = ({
 
 
   const [translations, setTranslations] = useState({});
+  const [language, setLanguage] = useState('en');
+
 
   useEffect(() => {
     const fetchTranslations = async () => {
@@ -54,6 +57,12 @@ const Notice = ({
     if (noticeImage != "") {
       fetchNoticeImage();
     };
+    const fetchLanguage = async () => {
+      const currentLanguage = await getLanguageToken();
+      setLanguage(currentLanguage);
+      console.log("language: ", language);
+    }
+    fetchLanguage();
   }, []);
 
   const { translate } = useTranslator();
@@ -62,12 +71,10 @@ const Notice = ({
   const onTranslate = async () => {
     try {
       const currentLanguage = await getLanguageToken();
-      console.log("currentLanguage" + currentLanguage);
       const targetLanguage = currentLanguage === 'kr' ? 'en' : 'kr';
       const _result = await translate(targetLanguage, currentLanguage, noticeContent, {
         timeout: 5000,
       });
-      console.log('result' + result);
       setResult(_result);
     } catch (error) {
       Alert.alert('Translate error!');
@@ -141,7 +148,7 @@ const Notice = ({
             style={{ ...GlobalStyles.body, marginRight: 10 }}
             numberOfLines={1}
             ellipsizeMode="tail">
-            {facilityName}
+            {language === 'ko' ? facilityName : facilityEnglishName}
           </Text>
         </View>
         <Text

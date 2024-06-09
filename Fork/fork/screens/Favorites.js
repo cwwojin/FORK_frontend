@@ -45,9 +45,9 @@ const Favorites = () => {
         for (const item of data) {
           if (item.profile_img_uri) {
             const imageUrl = await fetchImage(item.profile_img_uri);
-            newfavoritesImage[item.id] = {image: imageUrl, name: item.name};
+            newfavoritesImage[item.id] = {image: imageUrl, name: item.name, english_name: item.english_name};
           } else {
-            newfavoritesImage[item.id] = {image: userImage, name: item.name};
+            newfavoritesImage[item.id] = {image: userImage, name: item.name, english_name: item.english_nam};
           }
         }
         setFavoritesImageList(newfavoritesImage);
@@ -125,6 +125,7 @@ const Favorites = () => {
                   <Notice
                     facilityImage={favoritesImageList[item.facility_id]?.image}
                     facilityName={favoritesImageList[item.facility_id]?.name}
+                    facilityEnglishName={favoritesImageList[item.facility_id]?.english_name}
                     noticeDate={item.post_date}
                     noticeImage={item.img_uri}
                     noticeContent={item.title + '\n' + item.content} // Corrected to '\n'

@@ -677,6 +677,7 @@ const FacilityDetail = () => {
               <Notice
                 facilityImage={profileImage}
                 facilityName={facilityInfo.name}
+                facilityEnglishName={facilityInfo.english_name}
                 noticeDate={item.post_date}
                 noticeImage={item.img_uri}
                 noticeContent={item.title + '\n' + item.content}
