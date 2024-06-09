@@ -391,7 +391,6 @@ const MyPage = () => {
     if (value || isFocus) {
       return (
         <Text style={[styles.label, isFocus && { color: Color.orange_700 }]}>
-          Dropdown label
         </Text>
       );
     }
@@ -731,7 +730,6 @@ const MyPage = () => {
                   <View style={{ width: '100%', justifyContent: 'flex-start' }}>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingRight: 20 }}>
                       <View style={styles.container}>
-                        {renderLabel()}
                         <Dropdown
                           style={[styles.dropdown, isFocus && { borderColor: Color.orange_700 }]}
                           placeholderStyle={styles.placeholderStyle}
