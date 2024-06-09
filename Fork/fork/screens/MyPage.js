@@ -73,7 +73,6 @@ const MyPage = () => {
   const [translations, setTranslations] = useState({});
 
   useEffect(() => {
-    console.log("?????????????", USERID, USERTYPE);
     const fetchTranslations = async () => {
       const fetchedTranslations = await getAllTranslations();
       setTranslations(fetchedTranslations);
@@ -178,6 +177,8 @@ const MyPage = () => {
       try {
         const data = await getFacilityRegistrations();
         setFacilityRegistrations(data);
+
+        console.log("facility registration: ", data);
       } catch (error) {
         console.log(error.message);
       }
@@ -1023,20 +1024,20 @@ const MyPage = () => {
                       style={GlobalStyles.h2}>
                       {translations.reviewReports}
                     </Text>
-                    {reviewReports
+                     {reviewReports != [] && reviewReports
                       .map(item => (
                         <Review
-                          key={item.id} // Make sure to provide a unique key prop
-                          reviewId={item.review_id}
-                          userID={item.review.author_id}
-                          reviewDate={item.created_at}
+                          key={item?.id} // Make sure to provide a unique key prop
+                          reviewId={item?.review_id}
+                          userID={item?.review?.author_id}
+                          reviewDate={item?.created_at}
                           reviewScore={0}
-                          reviewImage={item.review.img_uri}
-                          reviewContent={item.content}
+                          reviewImage={item?.review?.img_uri}
+                          reviewContent={item?.content}
                           reviewHashtags={[]}
                           edit={false}
                           admin={true}
-                          reviewreport={item.id}
+                          reviewreport={item?.id}
                           navigation={navigation}
                         />
                       ))
@@ -1060,9 +1061,9 @@ const MyPage = () => {
                         paddingTop: 5,
                       }}
                       showsHorizontalScrollIndicator={false}>
-                      {facilityRegistrations.map(item => (
+                      {facilityRegistrations != [] && facilityRegistrations.map(item => (
                         <TouchableOpacity onPress={() => {
-                          navigation.navigate("FacilityRegistrationRequest", { author_id: item.author_id, facilityInfo: item.content, requestID: item.id });
+                          navigation.navigate("FacilityRegistrationRequest", { author_id: item?.author_id, facilityInfo: item?.content, requestID: item?.id });
                         }}>
                           <UserList UserImage={userImage} UserName={item.content.name} UserEnglishName={item.content.name} />
                         </TouchableOpacity>
@@ -1079,12 +1080,12 @@ const MyPage = () => {
                       style={GlobalStyles.h2}>
                       {translations.bugReports}
                     </Text>
-                    {bugReports.map(item => (
+                    {bugReports != [] && bugReports.map(item => (
                       <Report
-                        userID={item.author_id}
-                        reportDate={item.created_at}
-                        reportContent={item.content}
-                        reportID={item.id}
+                        userID={item?.author_id}
+                        reportDate={item?.created_at}
+                        reportContent={item?.content}
+                        reportID={item?.id}
                         navigation={navigation}
                       />
                     ))}
