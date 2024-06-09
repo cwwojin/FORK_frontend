@@ -5,6 +5,7 @@ import Translator, {
   useTranslator,
 } from 'react-native-translator';
 import { useNavigation } from 'react-router-dom';
+import { getLanguageToken } from '../LanguageUtils.js';
 
 import Hashtag from './Hashtag';
 import { deleteReport, sendReviewReport, fetchImage, getUserByID, deleteReview } from '../screens/api.js';
@@ -112,12 +113,14 @@ const Review = ({
   const onTranslate = async () => {
     try {
       setLoading(true);
-      const _result = await translate('en', 'kr', reviewContent, {
+      const currentLanguage = await getLanguageToken();
+      const targetLanguage = currentLanguage === 'kr' ? 'en' : 'kr';
+      const _result = await translate(targetLanguage, currentLanguage, reviewContent, {
         timeout: 5000,
       });
       setResult(_result);
     } catch (error) {
-      Alert.alert('Translate error!');
+      Alert.alert('Translate error!', "Already set to current language");
       console.error('Translation error:', error);
     } finally {
       setLoading(false);
