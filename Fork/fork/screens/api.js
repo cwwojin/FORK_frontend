@@ -3,13 +3,13 @@ import FacilityDetail from "./FacilityDetail";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Alert } from "react-native";
 
-const BASE_URL = 'https://taqjpw7a54.execute-api.ap-southeast-2.amazonaws.com/stage-dev/dev/api';
+const BASE_URL = 'https://taqjpw7a54.execute-api.ap-southeast-2.amazonaws.com/stage-dev/prod/api';
 
 // This is the base-url that leads to all backend & S3
 const API_ENDPOINT = "https://taqjpw7a54.execute-api.ap-southeast-2.amazonaws.com/stage-dev";
 
 // Backend API endpoint
-const FORK_URL = `${API_ENDPOINT}/dev/`
+const FORK_URL = `${API_ENDPOINT}/prod/`
 
 // S3 endpoint
 const S3_ENDPOINT = `${API_ENDPOINT}/s3`
@@ -195,6 +195,19 @@ export const handleLogin = async (username, password) => {
     }
 };
 
+export const handleLogOutMemory = async () => {
+    await AsyncStorage.multiRemove([USER_TOKEN_KEY, USER_ID_KEY, USER_PREFERENCE_KEY, USER_TYPE_KEY, USER_REFRESH_TOKEN_KEY]);
+    console.log("USERTOKEN: ", USERTOKEN);
+
+    USERBOOKMARKED = "";
+    USERTOKEN = "guest";
+    USERREFRESHTOKEN = "guest";
+    USERID = "";
+    USERPREFERENCE = [];
+    USERTYPE = '';
+    LOGIN = false;
+}
+
 export const handleLogOut = async () => {
     console.log("USERTOKEN: ", USERTOKEN);
 
@@ -276,7 +289,7 @@ export const deleteUser = async () => {
         if (response.status === 200) {
             const jsonResponse = await response.json();
             console.log("Delete user successful :", jsonResponse);
-            handleLogOut();
+            handleLogOutMemory();
             return true;
         } else {
             if (await handleError(response.status)) {
@@ -687,6 +700,7 @@ export const getAllUsers = async () => {
 };
 
 export const getUserByID = async (userID) => {
+
     try {
         const response = await fetch(`${BASE_URL}/users/${encodeURIComponent(userID)}`, {
             method: 'GET',
