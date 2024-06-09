@@ -9,7 +9,7 @@ const BASE_URL = 'https://taqjpw7a54.execute-api.ap-southeast-2.amazonaws.com/st
 const API_ENDPOINT = "https://taqjpw7a54.execute-api.ap-southeast-2.amazonaws.com/stage-dev";
 
 // Backend API endpoint
-const FORK_URL = `${API_ENDPOINT}/dev/`
+const FORK_URL = `${API_ENDPOINT}/prod/`
 
 // S3 endpoint
 const S3_ENDPOINT = `${API_ENDPOINT}/s3`
