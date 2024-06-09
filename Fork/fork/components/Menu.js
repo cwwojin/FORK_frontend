@@ -34,7 +34,7 @@ const Menu = ({
         }
         const currentLanguage = await getLanguageToken();
     
-        const targetLanguage = currentLanguage === 'kr' ? 'en' : 'kr';
+        const targetLanguage = currentLanguage === 'ko' ? 'en' : 'kr';
         let translatedMenuData = {
           name: await translate(targetLanguage, currentLanguage, menuName, {
             timeout: 5000,

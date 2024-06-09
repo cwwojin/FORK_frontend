@@ -3,6 +3,7 @@ import { GlobalStyles } from '../GlobalStyles.js';
 import { useState, useEffect } from 'react';
 
 import { fetchImage } from '../screens/api.js';
+import { getLanguageToken } from '../LanguageUtils.js';
 
 import longImagePlaceholder from '../assets/placeholders/long_image.png';
 
@@ -10,9 +11,12 @@ const SquareFacility = ({
   facilityImage,
   facilityScore,
   facilityName,
+  facilityEnglishName,
   facilityAddress,
+  facilityKoreanAddress,
 }) => {
   const [facilityImages, setFacilityImages] = useState();
+  const [language, setLanguage] = useState('er');
 
   useEffect(() => {
     const fetchFacilityImage = async () => {
@@ -26,7 +30,13 @@ const SquareFacility = ({
         console.log(error.message);
       };
     }
-    if (facilityImage != "") { fetchFacilityImage(); };
+    const fetchLanguage = async () => {
+      const currentLanguage = await getLanguageToken();
+      console.log(currentLanguage);
+      setLanguage(currentLanguage);
+      if (facilityImage != "") { fetchFacilityImage(); };
+    }
+    fetchLanguage();
   }, []);
 
   return (
@@ -48,7 +58,7 @@ const SquareFacility = ({
             style={GlobalStyles.body}
             numberOfLines={1}
             ellipsizeMode="tail">
-            {facilityName}
+            {language === 'ko' ? facilityName : facilityEnglishName}
           </Text>
           <View style={{ flexDirection: 'row', justifyContent: 'center', maxwidth: 20 }}>
             <Image
@@ -56,11 +66,11 @@ const SquareFacility = ({
               contentFit="cover"
               source={require('../assets/icons/star.png')}
             />
-            <Text style={GlobalStyles.body3}>{facilityScore ? Math.round(facilityScore * 10)/10 : '-'}</Text>
+            <Text style={GlobalStyles.body3}>{facilityScore ? Math.round(facilityScore * 10) / 10 : '-'}</Text>
           </View>
         </View>
         <Text style={GlobalStyles.body2} numberOfLines={1} ellipsizeMode="tail">
-          {facilityAddress}
+          {language === 'ko' ? facilityKoreanAddress : facilityAddress}
         </Text>
       </View>
     </View>

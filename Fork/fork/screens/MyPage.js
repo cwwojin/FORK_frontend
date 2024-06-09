@@ -249,7 +249,7 @@ const MyPage = () => {
         const reviewfacilityName = {};
         for (const item of topReviews) {
           const facilityInfo = await getFacilityByID(item.facility_id);
-          reviewfacilityName[item.id] = facilityInfo.name;
+          reviewfacilityName[item.id] = {name: facilityInfo.name, englishName: facilityInfo.english_name};
         }
         setUserReviewFacility(reviewfacilityName);
       } catch (error) {
@@ -556,7 +556,9 @@ const MyPage = () => {
                         <SquareFacility
                           facilityImage={item.profile_img_uri}
                           facilityName={item.name}
+                          facilityEnglishName={item.english_name}
                           facilityAddress={item.english_address}
+                          facilityKoreanAddress={item.road_address}
                           facilityScore={item.avg_score}
                         />
                       </TouchableOpacity>
@@ -643,7 +645,8 @@ const MyPage = () => {
                           facilityImage={item.img_uri}
                           facilityAddress={item.content}
                           facilityScore={item.score}
-                          facilityName={userReviewFacility[item.id]}
+                          facilityName={userReviewFacility[item.id]?.name}
+                          facilityEnglishName={userReviewFacility[item.id]?.englishName}
                         />
                       </TouchableOpacity>
                     ))}

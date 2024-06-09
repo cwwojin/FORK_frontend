@@ -137,7 +137,9 @@ const Home = () => {
                   <SquareFacility
                     facilityImage={item.profile_img_uri}
                     facilityName={item.name}
+                    facilityEnglishName={item.english_name}
                     facilityAddress={item.english_address}
+                    facilityKoreanAddress={item.road_address}
                     facilityScore={item.avg_score}
                   />
                 </TouchableOpacity>
@@ -158,6 +160,8 @@ const Home = () => {
                   <SquareFacility
                     facilityImage={item.profile_img_uri}
                     facilityName={item.name}
+                    facilityEnglishName={item.english_name}
+                    facilityKoreanAddress={item.road_address}
                     facilityAddress={item.english_address}
                     facilityScore={item.avg_score}
                   />
