@@ -102,7 +102,7 @@ const Favorites = () => {
               <TouchableOpacity onPress={() => {
                 navigation.navigate("FacilityDetail", { facilityID: item.id });
               }}>
-                <UserList UserImage={favoritesImageList[item.id]?.image} UserName={item.name} />
+                <UserList UserImage={favoritesImageList[item.id]?.image} UserName={item.name} UserEnglishName={item.english_name} />
               </TouchableOpacity>
             ))}
           </ScrollView>

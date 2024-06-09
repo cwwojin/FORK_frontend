@@ -230,9 +230,9 @@ const MyPage = () => {
           const facilityInfo = await getFacilityByID(item.facility_id);
           if (facilityInfo.profile_img_uri) {
             const imageUrl = await fetchImage(facilityInfo.profile_img_uri);
-            stampFacility[item.facility_id] = { name: facilityInfo.name, image: imageUrl };
+            stampFacility[item.facility_id] = { name: facilityInfo.name, image: imageUrl, english_name: facilityInfo.english_name };
           } else {
-            stampFacility[item.facility_id] = { name: facilityInfo.name, image: userImage };
+            stampFacility[item.facility_id] = { name: facilityInfo.name, image: userImage, english_name: facilityInfo.english_name };
           }
         }
         setUserStampFacility(stampFacility);
@@ -602,7 +602,7 @@ const MyPage = () => {
                         navigation.navigate("FacilityDetail", { facilityID: item.facility_id });
                       }}
                     >
-                      <UserList UserImage={userStampFacility[item.facility_id]?.image} UserName={userStampFacility[item.facility_id]?.name} />
+                      <UserList UserImage={userStampFacility[item.facility_id]?.image} UserName={userStampFacility[item.facility_id]?.name} UserEnglishName={userStampFacility[item.facility_id]?.english_name} />
                     </TouchableOpacity>
                   ))}
                 </ScrollView>
@@ -1064,7 +1064,7 @@ const MyPage = () => {
                         <TouchableOpacity onPress={() => {
                           navigation.navigate("FacilityRegistrationRequest", { author_id: item.author_id, facilityInfo: item.content, requestID: item.id });
                         }}>
-                          <UserList UserImage={userImage} UserName={item.content.name} />
+                          <UserList UserImage={userImage} UserName={item.content.name} UserEnglishName={item.content.name} />
                         </TouchableOpacity>
                       ))}
                     </ScrollView>
