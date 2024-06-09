@@ -54,6 +54,7 @@ const Review = ({
         } else {
           setUserProfile({ userName: facilityName, userImage: "" })
         }
+        if (reviewImage != "") { fetchReviewImage(); };
       } catch (error) {
         console.log(error.message);
       }
@@ -64,11 +65,11 @@ const Review = ({
         if (imageUrl != undefined) {
           setReviewImages(imageUrl);
         }
+        if (reviewImage != "") { fetchReviewImage(); };
       } catch (error) {
         console.log(error.message);
       };
     }
-    if (reviewImage != "") { fetchReviewImage(); };
     if (userID) { fetchUserProfile(); } else { fetchFacilityProfile(); };
   }, []);
 
@@ -313,6 +314,7 @@ const Review = ({
               ...GlobalStyles.body4,
               paddingHorizontal: 30,
               marginLeft: -10,
+              textTransform: 'none',
             }}>
             {result}
           </Text>
