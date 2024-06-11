@@ -32,14 +32,8 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "extra": {
-      "eas": {
-        "projectId": "f9f99001-a4e0-4501-84b4-4a413da8647d"
-      }
-    },
     "plugins": [
       "expo-font"
-    ],
-    "owner": "foodie-team"
+    ]
   }
 }
