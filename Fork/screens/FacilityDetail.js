@@ -635,7 +635,7 @@ const FacilityDetail = () => {
                             setHashtagFilter();
                           }
                         }}>
-                          <Hashtag key={item.id} tag={item.name} tintColor={(hashtagFilter == item.id) ? Color.orange_100 : ""} />
+                          <Hashtag key={item.id} tag={item.name} selected={hashtagFilter == item.id} />
                         </TouchableOpacity>
                       ))
                     }
@@ -677,6 +677,7 @@ const FacilityDetail = () => {
               <Notice
                 facilityImage={profileImage}
                 facilityName={facilityInfo.name}
+                facilityEnglishName={facilityInfo.english_name}
                 noticeDate={item.post_date}
                 noticeImage={item.img_uri}
                 noticeContent={item.title + '\n' + item.content}

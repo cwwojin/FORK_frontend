@@ -4,7 +4,7 @@ import { Border ,Color, GlobalStyles } from '../GlobalStyles.js';
 import { getAllTranslations, getLanguageToken } from '../LanguageUtils';
 
 
-const Hashtag = ({ tag }) => {
+const Hashtag = ({ tag, selected }) => {
   const [translations, setTranslations] = useState({pref: {}});
 
   useEffect(() => {
@@ -46,7 +46,7 @@ const Hashtag = ({ tag }) => {
 
   return (
     <View style={{
-      ...styles.hashtagHolder, backgroundColor: Color.yellow_100,
+      ...styles.hashtagHolder, backgroundColor: selected ? Color.orange_100 : Color.yellow_100,
    }}>
       <Text
         style={GlobalStyles.hashtag}

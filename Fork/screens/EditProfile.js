@@ -17,7 +17,7 @@ import * as ImageManipulator from 'expo-image-manipulator';
 
 import { GlobalStyles, Color, FontSize } from '../GlobalStyles';
 import Review from '../components/Review';
-import { fetchImage, USERPREFERENCE, addUserPreference2, deleteUserPreference, updateUserProfile, uploadUserProfileImage, LOGIN } from './api';
+import { fetchImage, USERPREFERENCE, addUserPreference2, deleteUserPreference, updateUserProfile, uploadUserProfileImage, LOGIN, USERTYPE } from './api';
 import { getAllTranslations, getLanguageToken } from '../LanguageUtils';
 
 
@@ -38,7 +38,7 @@ const EditProfiles = () => {
   const [userProfileEdit, setUserProfileEdit] = useState(false);
   const [email, setEmail] = useState(userInfo.email)
   const [password, setPassword] = useState();
-  const userType = userInfo.user_type;
+  const userType = USERTYPE;
   const [translations, setTranslations] = useState({});
 
   useEffect(() => {
@@ -294,8 +294,8 @@ const EditProfiles = () => {
                 <Text style={{ ...GlobalStyles.h2, textAlign: 'center' }}>{translations.foodPreferences}</Text>
 
                 <Text style={{ ...GlobalStyles.h4, textAlign: 'center' }}>{translations.cuisineTypes}</Text>
-                <View style={styles.grid}>
-                  {cuisines.map((item) => (
+                 <View style={styles.grid}>
+                  {translations.pref && cuisines.map((item) => (
                     <TouchableOpacity
                       key={item.id}
                       style={[styles.option, selectedCuisines.includes(item.id) && styles.selected]}
@@ -307,9 +307,9 @@ const EditProfiles = () => {
                   ))}
                 </View>
 
-                <Text style={{ ...GlobalStyles.h4, textAlign: 'center' }}>{translations.dietaryPreferences}</Text>
+               <Text style={{ ...GlobalStyles.h4, textAlign: 'center' }}>{translations.dietaryPreferences}</Text>
                 <View style={styles.grid}>
-                  {dietaryPreferences.map((item) => (
+                  {translations.pref && dietaryPreferences.map((item) => (
                     <TouchableOpacity
                       key={item.id}
                       style={[styles.option, selectedDietaryPreferences.includes(item.id) && styles.selected]}
@@ -333,7 +333,7 @@ const EditProfiles = () => {
               <TouchableOpacity onPress={handleSubmit}>
                 <Text style={{ ...GlobalStyles.h4, marginLeft: 0, fontSize: FontSize.size_xl, textAlign: 'center' }}>{translations.save}</Text>
               </TouchableOpacity>
-            </View>
+            </View> 
           </View>
         </ScrollView>
 

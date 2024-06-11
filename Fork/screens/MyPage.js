@@ -73,7 +73,6 @@ const MyPage = () => {
   const [translations, setTranslations] = useState({});
 
   useEffect(() => {
-    console.log("?????????????", USERID, USERTYPE);
     const fetchTranslations = async () => {
       const fetchedTranslations = await getAllTranslations();
       setTranslations(fetchedTranslations);
@@ -178,6 +177,8 @@ const MyPage = () => {
       try {
         const data = await getFacilityRegistrations();
         setFacilityRegistrations(data);
+
+        console.log("facility registration: ", data);
       } catch (error) {
         console.log(error.message);
       }
@@ -230,9 +231,9 @@ const MyPage = () => {
           const facilityInfo = await getFacilityByID(item.facility_id);
           if (facilityInfo.profile_img_uri) {
             const imageUrl = await fetchImage(facilityInfo.profile_img_uri);
-            stampFacility[item.facility_id] = { name: facilityInfo.name, image: imageUrl };
+            stampFacility[item.facility_id] = { name: facilityInfo.name, image: imageUrl, english_name: facilityInfo.english_name };
           } else {
-            stampFacility[item.facility_id] = { name: facilityInfo.name, image: userImage };
+            stampFacility[item.facility_id] = { name: facilityInfo.name, image: userImage, english_name: facilityInfo.english_name };
           }
         }
         setUserStampFacility(stampFacility);
@@ -249,7 +250,7 @@ const MyPage = () => {
         const reviewfacilityName = {};
         for (const item of topReviews) {
           const facilityInfo = await getFacilityByID(item.facility_id);
-          reviewfacilityName[item.id] = facilityInfo.name;
+          reviewfacilityName[item.id] = {name: facilityInfo.name, englishName: facilityInfo.english_name};
         }
         setUserReviewFacility(reviewfacilityName);
       } catch (error) {
@@ -391,7 +392,6 @@ const MyPage = () => {
     if (value || isFocus) {
       return (
         <Text style={[styles.label, isFocus && { color: Color.orange_700 }]}>
-          Dropdown label
         </Text>
       );
     }
@@ -557,7 +557,9 @@ const MyPage = () => {
                         <SquareFacility
                           facilityImage={item.profile_img_uri}
                           facilityName={item.name}
+                          facilityEnglishName={item.english_name}
                           facilityAddress={item.english_address}
+                          facilityKoreanAddress={item.road_address}
                           facilityScore={item.avg_score}
                         />
                       </TouchableOpacity>
@@ -601,7 +603,7 @@ const MyPage = () => {
                         navigation.navigate("FacilityDetail", { facilityID: item.facility_id });
                       }}
                     >
-                      <UserList UserImage={userStampFacility[item.facility_id]?.image} UserName={userStampFacility[item.facility_id]?.name} />
+                      <UserList UserImage={userStampFacility[item.facility_id]?.image} UserName={userStampFacility[item.facility_id]?.name} UserEnglishName={userStampFacility[item.facility_id]?.english_name} />
                     </TouchableOpacity>
                   ))}
                 </ScrollView>
@@ -644,7 +646,8 @@ const MyPage = () => {
                           facilityImage={item.img_uri}
                           facilityAddress={item.content}
                           facilityScore={item.score}
-                          facilityName={userReviewFacility[item.id]}
+                          facilityName={userReviewFacility[item.id]?.name}
+                          facilityEnglishName={userReviewFacility[item.id]?.englishName}
                         />
                       </TouchableOpacity>
                     ))}
@@ -731,7 +734,6 @@ const MyPage = () => {
                   <View style={{ width: '100%', justifyContent: 'flex-start' }}>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingRight: 20 }}>
                       <View style={styles.container}>
-                        {renderLabel()}
                         <Dropdown
                           style={[styles.dropdown, isFocus && { borderColor: Color.orange_700 }]}
                           placeholderStyle={styles.placeholderStyle}
@@ -1022,20 +1024,20 @@ const MyPage = () => {
                       style={GlobalStyles.h2}>
                       {translations.reviewReports}
                     </Text>
-                    {reviewReports
+                     {reviewReports != [] && reviewReports
                       .map(item => (
                         <Review
-                          key={item.id} // Make sure to provide a unique key prop
-                          reviewId={item.review_id}
-                          userID={item.review.author_id}
-                          reviewDate={item.created_at}
+                          key={item?.id} // Make sure to provide a unique key prop
+                          reviewId={item?.review_id}
+                          userID={item?.review?.author_id}
+                          reviewDate={item?.created_at}
                           reviewScore={0}
-                          reviewImage={item.review.img_uri}
-                          reviewContent={item.content}
+                          reviewImage={item?.review?.img_uri}
+                          reviewContent={item?.content}
                           reviewHashtags={[]}
                           edit={false}
                           admin={true}
-                          reviewreport={item.id}
+                          reviewreport={item?.id}
                           navigation={navigation}
                         />
                       ))
@@ -1059,11 +1061,11 @@ const MyPage = () => {
                         paddingTop: 5,
                       }}
                       showsHorizontalScrollIndicator={false}>
-                      {facilityRegistrations.map(item => (
+                      {facilityRegistrations != [] && facilityRegistrations.map(item => (
                         <TouchableOpacity onPress={() => {
-                          navigation.navigate("FacilityRegistrationRequest", { author_id: item.author_id, facilityInfo: item.content, requestID: item.id });
+                          navigation.navigate("FacilityRegistrationRequest", { author_id: item?.author_id, facilityInfo: item?.content, requestID: item?.id });
                         }}>
-                          <UserList UserImage={userImage} UserName={item.content.name} />
+                          <UserList UserImage={userImage} UserName={item.content.name} UserEnglishName={item.content.name} />
                         </TouchableOpacity>
                       ))}
                     </ScrollView>
@@ -1078,12 +1080,12 @@ const MyPage = () => {
                       style={GlobalStyles.h2}>
                       {translations.bugReports}
                     </Text>
-                    {bugReports.map(item => (
+                    {bugReports != [] && bugReports.map(item => (
                       <Report
-                        userID={item.author_id}
-                        reportDate={item.created_at}
-                        reportContent={item.content}
-                        reportID={item.id}
+                        userID={item?.author_id}
+                        reportDate={item?.created_at}
+                        reportContent={item?.content}
+                        reportID={item?.id}
                         navigation={navigation}
                       />
                     ))}

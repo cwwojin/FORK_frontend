@@ -133,3 +133,6 @@ dist
 *.http
 *tmp*
 *.zip
+
+# Expo
+.expo/
