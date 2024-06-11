@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "fork",
-    "slug": "snack-5f1e1c5f-e161-43ac-9d2d-ce451d7d9796",
+    "slug": "fork",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -34,8 +34,12 @@
     },
     "extra": {
       "eas": {
-        "projectId": "44561982-9f98-44a2-8f29-6d2cc46a1111"
+        "projectId": "f9f99001-a4e0-4501-84b4-4a413da8647d"
       }
-    }
+    },
+    "plugins": [
+      "expo-font"
+    ],
+    "owner": "foodie-team"
   }
 }

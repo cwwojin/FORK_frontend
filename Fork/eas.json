@@ -10,7 +10,12 @@
     "preview": {
       "distribution": "internal"
     },
-    "production": {}
+    "production": {},
+    "sim": {
+      "ios": {
+        "simulator": true
+      }
+    }
   },
   "submit": {
     "production": {}
