@@ -14,51 +14,67 @@ import {
 import { useNavigation, useRoute } from '@react-navigation/native';
 import ToggleSwitch from 'toggle-switch-react-native';
 import * as ImagePicker from 'expo-image-picker';
-import QRCode from "react-qr-code";
+import QRCode from 'react-qr-code';
 import * as ImageManipulator from 'expo-image-manipulator';
 
-
-import { GlobalStyles, Color, FontFamily, FontSize, Border } from '../GlobalStyles';
-import Hashtag from '../components/Hashtag';
 import {
-  editReview, LOGIN
-} from './api';
+  GlobalStyles,
+  Color,
+  FontFamily,
+  FontSize,
+  Border,
+} from '../GlobalStyles';
+import Hashtag from '../components/Hashtag';
+import { editReview, LOGIN } from './api';
 
 const EditReview = () => {
-
   const route = useRoute();
-  const { reviewId, reviewConten, reviewImage, reviewHashtags, reviewScore, facilityID } = route.params;
+  const {
+    reviewId,
+    reviewConten,
+    reviewImage,
+    reviewHashtags,
+    reviewScore,
+    facilityID,
+  } = route.params;
 
   const navigation = useNavigation();
   useEffect(() => {
-    if (!LOGIN) {navigation.replace("SignUpLogIn")};
+    if (!LOGIN) {
+      navigation.replace('SignUpLogIn');
+    }
   }, LOGIN);
 
   const [reviewContent, setReviewContent] = useState(reviewConten);
-  const [hashtag, setHashtag] = useState("");
-  const [inputHashtag, setInputHashtag] = useState(reviewHashtags.map((item, index) => ({ id: index, tag: item })));
+  const [hashtag, setHashtag] = useState('');
+  const [inputHashtag, setInputHashtag] = useState(
+    reviewHashtags.map((item, index) => ({ id: index, tag: item }))
+  );
   const [moderate, setModerate] = useState(false);
-
 
   const handleEditReview = async () => {
     setModerate(true);
     try {
-      const response = await editReview({ reviewId: reviewId, content: reviewContent, hashtags: inputHashtag.map(item => (item.tag)) });
+      const response = await editReview({
+        reviewId: reviewId,
+        content: reviewContent,
+        hashtags: inputHashtag.map((item) => item.tag),
+      });
       console.log('Review updated successfully:', response);
-      Alert.alert("Review updated successfully");
+      Alert.alert('Review updated successfully');
       setModerate(false);
       navigation.goBack();
-      navigation.replace("FacilityDetail", { facilityID });
+      navigation.replace('FacilityDetail', { facilityID });
     } catch (error) {
       if (error && error === 499) {
         setModerate(false);
-        Alert.alert("Error", "Review update fail due to harmful content");
+        Alert.alert('Error', 'Review update fail due to harmful content');
       } else {
         setModerate(false);
-        Alert.alert("Error", "Review update failed. Please try again.")
+        Alert.alert('Error', 'Review update failed. Please try again.');
       }
     }
-  }
+  };
 
   const renderStars = () => {
     const stars = [];
@@ -66,7 +82,7 @@ const EditReview = () => {
       stars.push(
         <Image
           style={styles.star}
-          tintColor={i >= (reviewScore) && Color.orange_100}
+          tintColor={i >= reviewScore && Color.orange_100}
           source={require('../assets/icons/star.png')}
         />
       );
@@ -75,49 +91,66 @@ const EditReview = () => {
   };
 
   const pushHashtag = () => {
-    setInputHashtag([...inputHashtag, { id: inputHashtag.length + 1, tag: hashtag }]);
+    setInputHashtag([
+      ...inputHashtag,
+      { id: inputHashtag.length + 1, tag: hashtag },
+    ]);
     setHashtag('');
   };
 
   const deleteHashtag = (id) => {
-    setInputHashtag(inputHashtag.filter(item => item.id !== id));
+    setInputHashtag(inputHashtag.filter((item) => item.id !== id));
   };
 
   const confirmDeleteHashtag = (id) => {
-    Alert.alert(
-      "Delete Hashtag",
-      "Do you want to delete this hashtag?",
-      [
-        {
-          text: "Cancel",
-          style: "cancel"
-        },
-        {
-          text: "OK",
-          onPress: () => deleteHashtag(id)
-        }
-      ]
-    );
+    Alert.alert('Delete Hashtag', 'Do you want to delete this hashtag?', [
+      {
+        text: 'Cancel',
+        style: 'cancel',
+      },
+      {
+        text: 'OK',
+        onPress: () => deleteHashtag(id),
+      },
+    ]);
   };
 
   return (
     <SafeAreaView style={GlobalStyles.background}>
       <View style={GlobalStyles.contentNoNav}>
-
         <View style={styles.overlay}>
           <View style={styles.background}>
-            <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
               <Text style={GlobalStyles.h2}>Write Reviews</Text>
-              <TouchableOpacity style={{ ...GlobalStyles.topIcon, marginRight: 0 }} onPress={() => (navigation.goBack())}>
-                <Image
-                  source={require('../assets/icons/navigate_close.png')}
-                />
+              <TouchableOpacity
+                style={{ ...GlobalStyles.topIcon, marginRight: 0 }}
+                onPress={() => navigation.goBack()}
+              >
+                <Image source={require('../assets/icons/navigate_close.png')} />
               </TouchableOpacity>
             </View>
-            <ScrollView style={{ width: '100%' }} showsVerticalScrollIndicator={false}>
-              <View style={{ width: '100%', alignItems: 'center', paddingVertical: 10 }}>
+            <ScrollView
+              style={{ width: '100%' }}
+              showsVerticalScrollIndicator={false}
+            >
+              <View
+                style={{
+                  width: '100%',
+                  alignItems: 'center',
+                  paddingVertical: 10,
+                }}
+              >
                 {reviewImage && (
-                  <Image source={{ uri: reviewImage }} style={GlobalStyles.squareImage2} />
+                  <Image
+                    source={{ uri: reviewImage }}
+                    style={GlobalStyles.squareImage2}
+                  />
                 )}
                 <View
                   style={{
@@ -125,7 +158,8 @@ const EditReview = () => {
                     flexDirection: 'row',
                     justifyContent: 'center',
                     padding: 10,
-                  }}>
+                  }}
+                >
                   {renderStars()}
                 </View>
                 <View style={styles.inputSection}>
@@ -149,12 +183,17 @@ const EditReview = () => {
                       alignItems: 'center',
                       flexWrap: 'wrap',
                       width: '100%',
-                    }}>
-                    {inputHashtag && inputHashtag.map(item => (
-                      <TouchableOpacity key={item.id} onPress={() => confirmDeleteHashtag(item.id)}>
-                        <Hashtag tag={item.tag} />
-                      </TouchableOpacity>
-                    ))}
+                    }}
+                  >
+                    {inputHashtag &&
+                      inputHashtag.map((item) => (
+                        <TouchableOpacity
+                          key={item.id}
+                          onPress={() => confirmDeleteHashtag(item.id)}
+                        >
+                          <Hashtag tag={item.tag} />
+                        </TouchableOpacity>
+                      ))}
                   </View>
                   <View style={styles.hashtagHolder}>
                     <TextInput
@@ -167,12 +206,26 @@ const EditReview = () => {
                   {hashtag && (
                     <TouchableOpacity onPress={pushHashtag}>
                       <View style={styles.hashtagHolder}>
-                        <Text style={{ ...GlobalStyles.hashtag, color: Color.lightGrey }}>Add Hashtag</Text>
+                        <Text
+                          style={{
+                            ...GlobalStyles.hashtag,
+                            color: Color.lightGrey,
+                          }}
+                        >
+                          Add Hashtag
+                        </Text>
                       </View>
                     </TouchableOpacity>
                   )}
                 </View>
-                <View style={{ width: '100%', justifyContent: 'flex-end', flexDirection: 'row', paddingTop: 20 }}>
+                <View
+                  style={{
+                    width: '100%',
+                    justifyContent: 'flex-end',
+                    flexDirection: 'row',
+                    paddingTop: 20,
+                  }}
+                >
                   <TouchableOpacity onPress={handleEditReview}>
                     <Text style={GlobalStyles.h4}>Edit</Text>
                   </TouchableOpacity>
@@ -180,7 +233,7 @@ const EditReview = () => {
               </View>
             </ScrollView>
           </View>
-          
+
           {moderate && (
             <View style={styles.overlay}>
               <View style={styles.background}>
@@ -191,11 +244,9 @@ const EditReview = () => {
               </View>
             </View>
           )}
-
         </View>
-
       </View>
-    </SafeAreaView >
+    </SafeAreaView>
   );
 };
 
@@ -205,7 +256,7 @@ const styles = StyleSheet.create({
     height: 15,
     marginTop: 2,
     marginLeft: 2,
-    marginRight: 7
+    marginRight: 7,
   },
   star: {
     width: 25,
@@ -213,7 +264,7 @@ const styles = StyleSheet.create({
   },
   navigator: {
     width: 22,
-    height: 22
+    height: 22,
   },
   tab: {
     fontFamily: FontFamily.robotoBold,
@@ -237,7 +288,7 @@ const styles = StyleSheet.create({
     borderRadius: Border.br_lg,
     padding: 30,
     paddingTop: 15,
-    alignItems: 'center'
+    alignItems: 'center',
   },
   inputSection: {
     width: '100%',

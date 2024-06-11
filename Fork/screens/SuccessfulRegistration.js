@@ -1,11 +1,20 @@
-import React, { useCallback, useState, useEffect }  from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Image, TouchableOpacity, SafeAreaView } from 'react-native';
-import {LinearGradient}  from 'expo-linear-gradient';
-import { Border, Color, GlobalStyles } from "../GlobalStyles.js"; 
+import React, { useCallback, useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  Button,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  SafeAreaView,
+} from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Border, Color, GlobalStyles } from '../GlobalStyles.js';
 import { useNavigation } from '@react-navigation/native';
 import { getAllTranslations, getLanguageToken } from '../LanguageUtils';
 
-const SuccessfulRegistration = ({navigation}) => {
+const SuccessfulRegistration = ({ navigation }) => {
   const [translations, setTranslations] = useState({});
 
   useEffect(() => {
@@ -17,7 +26,7 @@ const SuccessfulRegistration = ({navigation}) => {
   }, []);
 
   const onStart = useCallback(() => {
-    navigation.navigate("Home");
+    navigation.navigate('Home');
   }, [navigation]);
 
   return (
@@ -28,9 +37,16 @@ const SuccessfulRegistration = ({navigation}) => {
             style={styles.image}
             source={require('../assets/logos/coloredLogo.png')}
           />
-          <Text style={styles.title}>{translations.successfulRegistrationTitle}</Text>
-          <TouchableOpacity style={GlobalStyles.confirmButton} onPress={onStart}>
-          <Text style={GlobalStyles.confirmButtonText}>{translations.start}</Text>
+          <Text style={styles.title}>
+            {translations.successfulRegistrationTitle}
+          </Text>
+          <TouchableOpacity
+            style={GlobalStyles.confirmButton}
+            onPress={onStart}
+          >
+            <Text style={GlobalStyles.confirmButtonText}>
+              {translations.start}
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -53,7 +69,7 @@ const styles = StyleSheet.create({
     backgroundColor: Color.white,
     marginBottom: 70,
     marginTop: 40,
-    gap: 60, 
+    gap: 60,
   },
   image: {
     width: 120,
@@ -65,7 +81,7 @@ const styles = StyleSheet.create({
     color: Color.black,
     textAlign: 'center',
     fontSize: 35,
-    fontWeight: 'bold', 
+    fontWeight: 'bold',
   },
 });
 

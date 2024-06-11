@@ -5,12 +5,7 @@ import { fetchImage } from '../screens/api.js';
 
 import longImagePlaceholder from '../assets/placeholders/long_image.png';
 
-const Request = ({
-  facilityImage,
-  facilityName,
-  facilityAddress,
-  state,
-}) => {
+const Request = ({ facilityImage, facilityName, facilityAddress, state }) => {
   const [facilityImages, setFacilityImages] = useState();
 
   useEffect(() => {
@@ -22,14 +17,15 @@ const Request = ({
         }
       } catch (error) {
         console.log(error.message);
-      };
+      }
+    };
+    if (facilityImage != '') {
+      fetchFacilityImage();
     }
-    if (facilityImage != "") { fetchFacilityImage(); };
   }, []);
 
   return (
     <View style={{ width: '100%', alignItems: 'center' }}>
-
       <View
         style={{
           flexDirection: 'row',
@@ -37,11 +33,14 @@ const Request = ({
           width: '100%',
           justifyContent: 'flex-start',
           paddingTop: 5,
-        }}>
+        }}
+      >
         <Image
           style={{ ...GlobalStyles.squareImage2, marginBottom: 0 }}
           contentFit="cover"
-          source={facilityImages ? { uri: facilityImages } : longImagePlaceholder}
+          source={
+            facilityImages ? { uri: facilityImages } : longImagePlaceholder
+          }
         />
         <View style={{ width: '75%', paddingVertical: 10 }}>
           <Text
@@ -49,7 +48,8 @@ const Request = ({
               ...GlobalStyles.body,
               paddingHorizontal: 30,
               marginLeft: -10,
-            }}>
+            }}
+          >
             {facilityName}
           </Text>
           <View style={{ padding: 5 }} />
@@ -58,7 +58,8 @@ const Request = ({
               ...GlobalStyles.body2,
               paddingHorizontal: 30,
               marginLeft: -10,
-            }}>
+            }}
+          >
             {facilityAddress}
           </Text>
         </View>
@@ -68,8 +69,9 @@ const Request = ({
         style={{
           ...GlobalStyles.h4,
           paddingHorizontal: 20,
-          textAlign: 'right'
-        }}>
+          textAlign: 'right',
+        }}
+      >
         {state}
       </Text>
 

@@ -12,7 +12,6 @@ const Report = ({
   reportID,
   navigation,
 }) => {
-
   const [userProfile, setUserProfile] = useState();
 
   useEffect(() => {
@@ -21,9 +20,12 @@ const Report = ({
         const userInfo = await getUserByID(userID);
         if (userInfo.profile_img_uri) {
           const profileUrl = await fetchImage(userInfo.profile_img_uri);
-          setUserProfile({ userName: userInfo.account_id, userImage: (profileUrl != undefined) ? profileUrl : "" })
+          setUserProfile({
+            userName: userInfo.account_id,
+            userImage: profileUrl != undefined ? profileUrl : '',
+          });
         } else {
-          setUserProfile({ userName: userInfo.account_id, userImage: "" })
+          setUserProfile({ userName: userInfo.account_id, userImage: '' });
         }
       } catch (error) {
         console.log(error.message);
@@ -34,29 +36,26 @@ const Report = ({
 
   const reportHandled = () => {
     Alert.alert(
-      "Report Handled",
-      "Is the report handled?",
-      [ 
+      'Report Handled',
+      'Is the report handled?',
+      [
         {
-          text: "Yes",
+          text: 'Yes',
           onPress: () => {
             deleteReport(reportID);
-            Alert.alert(
-              "Report Handled"
-            );
-            navigation.replace("MyPage");
-          }
+            Alert.alert('Report Handled');
+            navigation.replace('MyPage');
+          },
         },
         {
-          text: "No",
-          onPress: () => { },
-          style: "cancel"
+          text: 'No',
+          onPress: () => {},
+          style: 'cancel',
         },
       ],
       { cancelable: false }
     );
   };
-
 
   return (
     <View style={{ width: '100%', alignItems: 'center' }}>
@@ -66,13 +65,14 @@ const Report = ({
           alignItems: 'center',
           width: '100%',
           justifyContent: 'space-between',
-
-        }}>
+        }}
+      >
         <View
           style={{
             flexDirection: 'row',
             alignItems: 'center',
-          }}>
+          }}
+        >
           <Image
             style={{
               ...GlobalStyles.profileImage2,
@@ -80,20 +80,26 @@ const Report = ({
               marginRight: 15,
             }}
             contentFit="cover"
-            source={userProfile?.userImage ? userProfile.userImage : userImagePlaceholder}
+            source={
+              userProfile?.userImage
+                ? userProfile.userImage
+                : userImagePlaceholder
+            }
           />
 
           <Text
             style={GlobalStyles.body}
             numberOfLines={1}
-            ellipsizeMode="tail">
+            ellipsizeMode="tail"
+          >
             {userProfile?.userName}
           </Text>
         </View>
         <Text
           style={{ ...GlobalStyles.body2 }}
           numberOfLines={1}
-          ellipsizeMode="tail">
+          ellipsizeMode="tail"
+        >
           {reportDate.slice(0, 10)}
         </Text>
       </View>
@@ -105,14 +111,15 @@ const Report = ({
           width: '100%',
           paddingLeft: 70,
           paddingBottom: 20,
-        }}>
-        <Text
-          style={GlobalStyles.body4}>
-          {reportContent}
-        </Text>
+        }}
+      >
+        <Text style={GlobalStyles.body4}>{reportContent}</Text>
       </View>
 
-      <TouchableOpacity onPress={reportHandled} style={{ alignSelf: 'flex-end' }}>
+      <TouchableOpacity
+        onPress={reportHandled}
+        style={{ alignSelf: 'flex-end' }}
+      >
         <Text style={GlobalStyles.h4}>Fixed</Text>
       </TouchableOpacity>
 

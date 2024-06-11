@@ -11,11 +11,12 @@ const QRScanner = () => {
   const [scanned, setScanned] = useState(false);
   const [scannedData, setScannedData] = useState(null);
 
-
   const navigation = useNavigation();
 
   useEffect(() => {
-    if (!LOGIN) {navigation.replace("SignUpLogIn")};
+    if (!LOGIN) {
+      navigation.replace('SignUpLogIn');
+    }
   }, LOGIN);
 
   const route = useRoute();
@@ -25,7 +26,7 @@ const QRScanner = () => {
     (async () => {
       const { status } = await BarCodeScanner.requestPermissionsAsync();
       setHasPermission(status === 'granted');
-    })()
+    })();
   }, []);
 
   const handleBarCodeScanned = ({ type, data }) => {
@@ -60,12 +61,20 @@ const QRScanner = () => {
 
   return (
     <SafeAreaView style={GlobalStyles.container}>
-      <View style={{ width: '100%', padding: 20, backgroundColor: Color.white, height: '100%' }}>
+      <View
+        style={{
+          width: '100%',
+          padding: 20,
+          backgroundColor: Color.white,
+          height: '100%',
+        }}
+      >
         <View style={{ width: '100%', flexDirection: 'row' }}>
           <TouchableOpacity
             onPress={() => {
               navigation.goBack();
-            }}>
+            }}
+          >
             <Image
               style={GlobalStyles.icon}
               source={require('../assets/icons/navigate_left.png')}
@@ -77,17 +86,20 @@ const QRScanner = () => {
               alignItems: 'center',
               marginTop: -27,
               paddingBottom: 10,
-            }}>
+            }}
+          >
             <Text style={GlobalStyles.h1}>Give Stamps</Text>
           </View>
         </View>
-        <View style={{ width: '100%', alignItems: 'center', paddingTop: '40%' }}>
+        <View
+          style={{ width: '100%', alignItems: 'center', paddingTop: '40%' }}
+        >
           {renderCamera()}
         </View>
       </View>
-    </SafeAreaView >
+    </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -119,13 +131,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 20,
     borderRadius: Border.br_sm,
-    width: '80%'
+    width: '80%',
   },
   buttonText: {
     color: Color.white,
     fontSize: FontSize.size_xl,
     fontWeight: 'bold',
-    textAlign: 'center'
+    textAlign: 'center',
   },
 });
 

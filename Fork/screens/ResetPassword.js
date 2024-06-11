@@ -1,8 +1,17 @@
 import { resetPassword } from './api.js';
-import React, { useCallback, useState, useEffect}  from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Image, TouchableOpacity, SafeAreaView } from 'react-native';
-import {LinearGradient}  from 'expo-linear-gradient';
-import { Border, Color, GlobalStyles } from "../GlobalStyles.js";
+import React, { useCallback, useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  Button,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  SafeAreaView,
+} from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Border, Color, GlobalStyles } from '../GlobalStyles.js';
 import { useNavigation } from '@react-navigation/native';
 import { getAllTranslations, getLanguageToken } from '../LanguageUtils';
 
@@ -21,16 +30,16 @@ const ResetPassword = ({ navigation }) => {
   const [errorMessage, setErrorMessage] = useState('');
 
   const onConfirm = useCallback(async () => {
-      try {
-          const response = await resetPassword(userId);
-          if (response.status === 'success') {
-              navigation.navigate("Login");
-          } else {
-              setErrorMessage(response.message || translations.resetPasswordFailed);
-          }
-      } catch (error) {
-          setErrorMessage(translations.resetPasswordError);
+    try {
+      const response = await resetPassword(userId);
+      if (response.status === 'success') {
+        navigation.navigate('Login');
+      } else {
+        setErrorMessage(response.message || translations.resetPasswordFailed);
       }
+    } catch (error) {
+      setErrorMessage(translations.resetPasswordError);
+    }
   }, [navigation, userId, translations]);
 
   return (
@@ -45,17 +54,25 @@ const ResetPassword = ({ navigation }) => {
           <Text style={styles.text}>{translations.enterUsername}</Text>
           <View style={GlobalStyles.inputWrapper}>
             <TextInput
-                style={GlobalStyles.registrationInput}
-                onChangeText={setUserId}
-                value={userId}
-                placeholder={translations.username}
-                autoCapitalize="none"
+              style={GlobalStyles.registrationInput}
+              onChangeText={setUserId}
+              value={userId}
+              placeholder={translations.username}
+              autoCapitalize="none"
             />
-            <Image source={require("../assets/icons/email.png")} style={GlobalStyles.passwordIcon} />
+            <Image
+              source={require('../assets/icons/email.png')}
+              style={GlobalStyles.passwordIcon}
+            />
           </View>
         </View>
-        <TouchableOpacity style={GlobalStyles.confirmButton} onPress={onConfirm}>
-        <Text style={GlobalStyles.confirmButtonText}>{translations.confirm}</Text>
+        <TouchableOpacity
+          style={GlobalStyles.confirmButton}
+          onPress={onConfirm}
+        >
+          <Text style={GlobalStyles.confirmButtonText}>
+            {translations.confirm}
+          </Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -89,7 +106,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 15,
     fontWeight: 'bold',
-    marginBottom: 50, 
+    marginBottom: 50,
   },
 });
 

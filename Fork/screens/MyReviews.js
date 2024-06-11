@@ -16,7 +16,6 @@ import Review from '../components/Review';
 import { getReviewByQuery, getFacilityByID, USERID, LOGIN } from './api';
 import { getAllTranslations, getLanguageToken } from '../LanguageUtils';
 
-
 const MyReviews = () => {
   //Get Informations of facilities
   //All the reviews [facility_img, facility_name, score(int), date(string), review_img, review_content, hashtags(Array)]
@@ -24,7 +23,9 @@ const MyReviews = () => {
   const navigation = useNavigation();
 
   useEffect(() => {
-    if (!LOGIN) {navigation.replace("SignUpLogIn")};
+    if (!LOGIN) {
+      navigation.replace('SignUpLogIn');
+    }
   }, LOGIN);
 
   const [translations, setTranslations] = useState({});
@@ -48,7 +49,10 @@ const MyReviews = () => {
         const reviewfacilityName = {};
         for (const item of data) {
           const facilityInfo = await getFacilityByID(item.facility_id);
-          reviewfacilityName[item.facility_id] = { name: facilityInfo.name, image: facilityInfo.profile_img_uri };
+          reviewfacilityName[item.facility_id] = {
+            name: facilityInfo.name,
+            image: facilityInfo.profile_img_uri,
+          };
         }
         setUserReviewFacility(reviewfacilityName);
         setUserReview(data);
@@ -78,7 +82,8 @@ const MyReviews = () => {
           <TouchableOpacity
             onPress={() => {
               navigation.goBack();
-            }}>
+            }}
+          >
             <Image
               style={GlobalStyles.icon}
               source={require('../assets/icons/navigate_left.png')}
@@ -90,7 +95,8 @@ const MyReviews = () => {
               alignItems: 'center',
               marginTop: -27,
               paddingBottom: 10,
-            }}>
+            }}
+          >
             <Text style={GlobalStyles.h1}>{translations.myReviews}</Text>
           </View>
         </View>
@@ -101,12 +107,15 @@ const MyReviews = () => {
             overflow: 'hidden',
             marginBottom: -27,
           }}
-          showsVerticalScrollIndicator={false}>
-          {userReview?.map(item => (
+          showsVerticalScrollIndicator={false}
+        >
+          {userReview?.map((item) => (
             <TouchableOpacity
               key={item.id}
               onPress={() => {
-                navigation.navigate("FacilityDetail", { facilityID: item.facility_id });
+                navigation.navigate('FacilityDetail', {
+                  facilityID: item.facility_id,
+                });
               }}
             >
               <Review

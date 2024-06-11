@@ -39,12 +39,17 @@ import FacilityInformationCreate from './screens/FacilityInformationCreate.js';
 import EditMenu from './screens/EditMenu.js';
 import EditReview from './screens/EditReview.js';
 import { initializeUserState } from './screens/api';
-{/*import Maps from './screens/Maps';*/ }
+{
+  /*import Maps from './screens/Maps';*/
+}
 
 const requestLocationPermission = async () => {
   let { status } = await Location.requestForegroundPermissionsAsync();
   if (status !== 'granted') {
-    Alert.alert('Permission denied', 'Location permission is required to use this feature.');
+    Alert.alert(
+      'Permission denied',
+      'Location permission is required to use this feature.'
+    );
   } else {
     console.log('Location permission granted');
   }
@@ -62,7 +67,7 @@ const App = () => {
     };
     initialize();
   }, []);
-  
+
   useEffect(() => {
     const loadLanguagePreference = async () => {
       const storedLanguage = await AsyncStorage.getItem('user-language');
@@ -88,7 +93,7 @@ const App = () => {
       <TranslatorProvider
         translations={{
           en: require('./locales/en.json'),
-          ko: require('./locales/ko.json')
+          ko: require('./locales/ko.json'),
         }}
         language={language}
         fallback="en"
@@ -104,15 +109,27 @@ const App = () => {
             >
               <Stack.Screen name="SignUpLogIn" component={SignUpLogIn} />
               <Stack.Screen name="UserType" component={UserType} />
-              <Stack.Screen name="FacilityInformation" component={FacilityInformation} />
+              <Stack.Screen
+                name="FacilityInformation"
+                component={FacilityInformation}
+              />
               <Stack.Screen name="SignUpKaist" component={SignUpKaist} />
               <Stack.Screen name="SignUpFacility" component={SignUpFacility} />
               <Stack.Screen name="VerifyEmail" component={VerifyEmail} />
               <Stack.Screen name="Survey" component={Survey} />
               <Stack.Screen name="AdjustFilter" component={AdjustFilter} />
-              <Stack.Screen name="SuccessfulRegistration" component={SuccessfulRegistration} />
-              <Stack.Screen name="PushNotification" component={PushNotification} />
-              <Stack.Screen name="WaitingApproval" component={WaitingApproval} />
+              <Stack.Screen
+                name="SuccessfulRegistration"
+                component={SuccessfulRegistration}
+              />
+              <Stack.Screen
+                name="PushNotification"
+                component={PushNotification}
+              />
+              <Stack.Screen
+                name="WaitingApproval"
+                component={WaitingApproval}
+              />
               <Stack.Screen name="Login" component={Login} />
               <Stack.Screen name="ResetPassword" component={ResetPassword} />
               <Stack.Screen name="MyPage" component={MyPage} />
@@ -123,12 +140,21 @@ const App = () => {
               <Stack.Screen name="FacilityDetail" component={FacilityDetail} />
               <Stack.Screen name="MyStamps" component={MyStamps} />
               <Stack.Screen name="Settings" component={Settings} />
-              <Stack.Screen name="FacilityRegistrationRequest" component={FacilityRegistrationRequest} />
+              <Stack.Screen
+                name="FacilityRegistrationRequest"
+                component={FacilityRegistrationRequest}
+              />
               <Stack.Screen name="QRScanner" component={QRScanner} />
               <Stack.Screen name="GiveStamp" component={GiveStamp} />
               <Stack.Screen name="EditProfile" component={EditProfile} />
-              <Stack.Screen name="FacilityInformationEdit" component={FacilityInformationEdit} />
-              <Stack.Screen name="FacilityInformationCreate" component={FacilityInformationCreate} />
+              <Stack.Screen
+                name="FacilityInformationEdit"
+                component={FacilityInformationEdit}
+              />
+              <Stack.Screen
+                name="FacilityInformationCreate"
+                component={FacilityInformationCreate}
+              />
               <Stack.Screen name="EditMenu" component={EditMenu} />
               <Stack.Screen name="EditReview" component={EditReview} />
               {/* Register the FavoritesScreen */}
@@ -138,7 +164,7 @@ const App = () => {
       </TranslatorProvider>
     </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   safeArea: {

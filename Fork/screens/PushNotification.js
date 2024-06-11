@@ -1,15 +1,23 @@
-import React, { useCallback, useState, useEffect }  from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Image, TouchableOpacity, SafeAreaView } from 'react-native';
-import {LinearGradient}  from 'expo-linear-gradient';
-import { Border, Color, GlobalStyles } from "../GlobalStyles.js"; 
+import React, { useCallback, useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  Button,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  SafeAreaView,
+} from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Border, Color, GlobalStyles } from '../GlobalStyles.js';
 import { useNavigation } from '@react-navigation/native';
 import { getAllTranslations, getLanguageToken } from '../LanguageUtils';
 import { LANGUAGE_CODES } from 'react-native-translator';
 
-const PushNotification= ({navigation}) => {
-
+const PushNotification = ({ navigation }) => {
   const onConfirm = useCallback(() => {
-    navigation.navigate("WaitingApproval");
+    navigation.navigate('WaitingApproval');
   }, [navigation]);
 
   const [translations, setTranslations] = useState({});
@@ -30,13 +38,23 @@ const PushNotification= ({navigation}) => {
           <Text style={styles.text}>{translations.permissionNotif}</Text>
         </View>
         <View style={styles.subArea}>
-            <TouchableOpacity style={GlobalStyles.confirmButton} onPress={onConfirm}>
-            <Text style={GlobalStyles.confirmButtonText}>{translations.yes}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={GlobalStyles.confirmButton1} onPress={onConfirm}>
-            <Text style={GlobalStyles.confirmButtonText1}>{translations.no}</Text>
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity
+            style={GlobalStyles.confirmButton}
+            onPress={onConfirm}
+          >
+            <Text style={GlobalStyles.confirmButtonText}>
+              {translations.yes}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={GlobalStyles.confirmButton1}
+            onPress={onConfirm}
+          >
+            <Text style={GlobalStyles.confirmButtonText1}>
+              {translations.no}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -73,7 +91,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 16,
     fontWeight: 'bold',
-    marginBottom: 50, 
+    marginBottom: 50,
   },
 });
 

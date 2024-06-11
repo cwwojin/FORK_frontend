@@ -26,7 +26,9 @@ const MyStamps = () => {
   const navigation = useNavigation();
 
   useEffect(() => {
-    if (!LOGIN) {navigation.replace("SignUpLogIn")};
+    if (!LOGIN) {
+      navigation.replace('SignUpLogIn');
+    }
   }, LOGIN);
 
   const [userStamp, setUserStamp] = useState([]);
@@ -59,7 +61,7 @@ const MyStamps = () => {
   if (loading) {
     return (
       <SafeAreaView style={GlobalStyles.background}>
-        <View style={{...GlobalStyles.content, justifyContent:'center'}}>
+        <View style={{ ...GlobalStyles.content, justifyContent: 'center' }}>
           <ActivityIndicator size="large" color={Color.orange_700} />
         </View>
       </SafeAreaView>
@@ -73,7 +75,8 @@ const MyStamps = () => {
           <TouchableOpacity
             onPress={() => {
               navigation.goBack();
-            }}>
+            }}
+          >
             <Image
               style={GlobalStyles.icon}
               source={require('../assets/icons/navigate_left.png')}
@@ -84,7 +87,8 @@ const MyStamps = () => {
               flexDirection: 'row',
               alignItems: 'center',
               marginTop: -27,
-            }}>
+            }}
+          >
             <Text style={GlobalStyles.h1}>{translations.myStamps}</Text>
           </View>
         </View>
@@ -95,29 +99,27 @@ const MyStamps = () => {
             overflow: 'hidden',
             marginBottom: -27,
           }}
-          showsVerticalScrollIndicator={false}>
-          {
-            userStamp.map(item => (
-              <TouchableOpacity
-                key={item.id}
-                onPress={() => {
-                  navigation.navigate("FacilityDetail", { facilityID: item.facility_id });
+          showsVerticalScrollIndicator={false}
+        >
+          {userStamp.map((item) => (
+            <TouchableOpacity
+              key={item.id}
+              onPress={() => {
+                navigation.navigate('FacilityDetail', {
+                  facilityID: item.facility_id,
+                });
+              }}
+            >
+              <Stamp number={item.cnt} facilityID={item.facility_id} />
+              <View
+                style={{
+                  borderBottomColor: Color.lightGrey,
+                  borderBottomWidth: 1,
+                  marginBottom: 15,
                 }}
-              >
-                <Stamp
-                  number={item.cnt}
-                  facilityID={item.facility_id}
-                />
-                <View
-                  style={{
-                    borderBottomColor: Color.lightGrey,
-                    borderBottomWidth: 1,
-                    marginBottom: 15,
-                  }}
-                />
-              </TouchableOpacity>
-            ))
-          }
+              />
+            </TouchableOpacity>
+          ))}
         </ScrollView>
       </View>
     </SafeAreaView>

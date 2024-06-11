@@ -169,7 +169,7 @@ export const GlobalStyles = StyleSheet.create({
     margin: 20,
     marginTop: 5,
     borderRadius: Border.br_sm,
-    alignSelf: 'center'
+    alignSelf: 'center',
   },
   squareImage: {
     width: 145,
@@ -452,8 +452,9 @@ export const GlobalStyles = StyleSheet.create({
     position: 'relative',
     marginLeft: 10,
   },
-  inputWrapper3: { //for write review / upload notice input
+  inputWrapper3: {
+    //for write review / upload notice input
     width: '100%',
     alignItems: 'center',
-},
+  },
 });

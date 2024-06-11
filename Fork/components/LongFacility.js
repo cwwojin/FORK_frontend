@@ -10,14 +10,18 @@ const LongFacility = ({
 }) => {
   if (facilityImage == undefined) {
     facilityImage = require('../assets/placeholders/long_image.png');
-  };
+  }
 
   return (
     <View style={{ width: '100%', alignItems: 'center' }}>
       <Image
         style={{ ...GlobalStyles.longImage, marginTop: 5 }}
         contentFit="cover"
-        source={Number.isInteger(facilityImage) ? facilityImage : { uri: facilityImage }}
+        source={
+          Number.isInteger(facilityImage)
+            ? facilityImage
+            : { uri: facilityImage }
+        }
       />
       <View style={{ marginLeft: 20, marginRight: 20, width: '95%' }}>
         <View
@@ -25,12 +29,20 @@ const LongFacility = ({
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'space-between',
-          }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
+          }}
+        >
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              marginBottom: 2,
+            }}
+          >
             <Text
               style={{ ...GlobalStyles.body, marginRight: 10 }}
               numberOfLines={1}
-              ellipsizeMode="tail">
+              ellipsizeMode="tail"
+            >
               {facilityName}
             </Text>
             <Text style={GlobalStyles.body2}>{facilityState}</Text>
@@ -44,7 +56,11 @@ const LongFacility = ({
             <Text style={GlobalStyles.body3}>{facilityScore}</Text>
           </View>
         </View>
-        <Text style={{ ...GlobalStyles.body2, marginBottom: 18 }} numberOfLines={1} ellipsizeMode="tail">
+        <Text
+          style={{ ...GlobalStyles.body2, marginBottom: 18 }}
+          numberOfLines={1}
+          ellipsizeMode="tail"
+        >
           {facilityAddress}
         </Text>
       </View>

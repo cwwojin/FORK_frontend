@@ -15,52 +15,71 @@ const CustomTabIcon = ({ focused, focusedSource, unfocusedSource }) => (
 );
 
 const NavigationBar = ({ homeb, mapb, favoritesb, myPageb, navigation }) => {
-
   const [home, setHome] = useState(homeb);
   const [favorites, setFavorites] = useState(favoritesb);
   const [map, setMap] = useState(mapb);
   const [myPage, setMyPage] = useState(myPageb);
 
   return (
-    <View style={{ flexDirection: 'row', justifyContent: 'space-evenly', height: 50, width: '100%', position: 'absolute', bottom: 0, backgroundColor: Color.white, paddingTop: 10, borderRadius: Border.br_sm }}>
-      <TouchableOpacity onPress={() => {
-        navigation.replace('Home');
-      }}>
+    <View
+      style={{
+        flexDirection: 'row',
+        justifyContent: 'space-evenly',
+        height: 50,
+        width: '100%',
+        position: 'absolute',
+        bottom: 0,
+        backgroundColor: Color.white,
+        paddingTop: 10,
+        borderRadius: Border.br_sm,
+      }}
+    >
+      <TouchableOpacity
+        onPress={() => {
+          navigation.replace('Home');
+        }}
+      >
         <CustomTabIcon
           focused={home}
           focusedSource={require('../assets/icons/home_on.png')}
           unfocusedSource={require('../assets/icons/home_off.png')}
         />
       </TouchableOpacity>
-      <TouchableOpacity onPress={() => {
-        navigation.replace('MapView');
-      }}>
+      <TouchableOpacity
+        onPress={() => {
+          navigation.replace('MapView');
+        }}
+      >
         <CustomTabIcon
           focused={map}
           focusedSource={require('../assets/icons/map_on.png')}
           unfocusedSource={require('../assets/icons/map_off.png')}
         />
-      </TouchableOpacity >
-      <TouchableOpacity onPress={() => {
-        navigation.replace('Favorites');
-      }}>
+      </TouchableOpacity>
+      <TouchableOpacity
+        onPress={() => {
+          navigation.replace('Favorites');
+        }}
+      >
         <CustomTabIcon
           focused={favorites}
           focusedSource={require('../assets/icons/bookmark_on.png')}
           unfocusedSource={require('../assets/icons/bookmark_off.png')}
         />
-      </TouchableOpacity >
-      <TouchableOpacity onPress={() => {
-        navigation.replace('MyPage');
-      }}>
+      </TouchableOpacity>
+      <TouchableOpacity
+        onPress={() => {
+          navigation.replace('MyPage');
+        }}
+      >
         <CustomTabIcon
           focused={myPage}
           focusedSource={require('../assets/icons/myPage_on.png')}
           unfocusedSource={require('../assets/icons/myPage_off.png')}
         />
-      </TouchableOpacity >
+      </TouchableOpacity>
       {/* Add more screens as needed */}
-    </View >
+    </View>
   );
 };
 

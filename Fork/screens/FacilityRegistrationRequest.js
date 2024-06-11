@@ -1,8 +1,24 @@
 import React, { useCallback, useState, useEffect } from 'react';
-import { ScrollView, View, Text, TouchableOpacity, StyleSheet, Image, Alert, SafeAreaView, ActivityIndicator } from 'react-native';
-import { Border, Color, GlobalStyles } from "../GlobalStyles.js";
+import {
+  ScrollView,
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
+  Alert,
+  SafeAreaView,
+  ActivityIndicator,
+} from 'react-native';
+import { Border, Color, GlobalStyles } from '../GlobalStyles.js';
 import { useRoute, useNavigation } from '@react-navigation/native';
-import { acceptFacilityRegistrations, fetchImage, getUserByID, declineFacilityRegistrations, LOGIN } from './api.js';
+import {
+  acceptFacilityRegistrations,
+  fetchImage,
+  getUserByID,
+  declineFacilityRegistrations,
+  LOGIN,
+} from './api.js';
 
 import Menu from '../components/Menu.js';
 import Stamp from '../components/Stamp.js';
@@ -12,7 +28,6 @@ import userImage from '../assets/placeholders/User.png';
 import longImagePlaceholder from '../assets/placeholders/long_image.png';
 
 const FacilityRegistrationRequest = () => {
-
   const route = useRoute();
   const navigation = useNavigation();
 
@@ -22,9 +37,8 @@ const FacilityRegistrationRequest = () => {
   const [timeData, setTimeData] = useState([]);
   const [facilityImage, setFacilityImage] = useState(longImagePlaceholder);
   const [stampRule, setStampRule] = useState([]);
-  const [stampLogo, setStampLogo] = useState("");
+  const [stampLogo, setStampLogo] = useState('');
   const [loading, setLoading] = useState(true);
-
 
   useEffect(() => {
     const fetchUser = async (userID) => {
@@ -33,7 +47,9 @@ const FacilityRegistrationRequest = () => {
 
         if (data.profile_img_uri && !Number.isNaN(data.profile_img_uri)) {
           const profileimage = await fetchImage(data.profile_img_uri);
-          data.profile_img_uri = profileimage ? { uri: profileimage } : userImage;
+          data.profile_img_uri = profileimage
+            ? { uri: profileimage }
+            : userImage;
         } else {
           data.profile_img_uri = userImage;
         }
@@ -116,24 +132,22 @@ const FacilityRegistrationRequest = () => {
 
   const acceptRegistration = () => {
     Alert.alert(
-      "Accept Registration",
-      "Do you really want to accept this registration?",
+      'Accept Registration',
+      'Do you really want to accept this registration?',
       [
         {
-          text: "Yes",
+          text: 'Yes',
           onPress: () => {
             acceptFacilityRegistrations(requestID);
-            Alert.alert(
-              "Registration accepted"
-            );
+            Alert.alert('Registration accepted');
             navigation.goBack();
-            navigation.replace("MyPage");
-          }
+            navigation.replace('MyPage');
+          },
         },
         {
-          text: "No",
-          onPress: () => { },
-          style: "cancel"
+          text: 'No',
+          onPress: () => {},
+          style: 'cancel',
         },
       ],
       { cancelable: false }
@@ -141,24 +155,22 @@ const FacilityRegistrationRequest = () => {
   };
   const declineRegistration = () => {
     Alert.alert(
-      "Decline Registration",
-      "Do you really want to decline this registration?",
+      'Decline Registration',
+      'Do you really want to decline this registration?',
       [
         {
-          text: "Yes",
+          text: 'Yes',
           onPress: () => {
             declineFacilityRegistrations(requestID);
-            Alert.alert(
-              "Registration declined"
-            );
+            Alert.alert('Registration declined');
             navigation.goBack();
-            navigation.replace("MyPage");
-          }
+            navigation.replace('MyPage');
+          },
         },
         {
-          text: "No",
-          onPress: () => { },
-          style: "cancel"
+          text: 'No',
+          onPress: () => {},
+          style: 'cancel',
         },
       ],
       { cancelable: false }
@@ -173,17 +185,23 @@ const FacilityRegistrationRequest = () => {
     );
   }
 
-
   return (
     <SafeAreaView style={GlobalStyles.background}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={GlobalStyles.contentNoNav}>
-          <View style={{ width: '100%', flexDirection: 'row', justifyContent: 'space-between' }}>
+          <View
+            style={{
+              width: '100%',
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+            }}
+          >
             <View style={{ flexDirection: 'row' }}>
               <TouchableOpacity
                 onPress={() => {
                   navigation.goBack();
-                }}>
+                }}
+              >
                 <Image
                   style={GlobalStyles.icon}
                   source={require('../assets/icons/navigate_left.png')}
@@ -195,8 +213,9 @@ const FacilityRegistrationRequest = () => {
                   alignItems: 'center',
                   marginTop: -27,
                   paddingBottom: 10,
-                  width: '100%'
-                }}>
+                  width: '100%',
+                }}
+              >
                 <Text style={GlobalStyles.h1}>Registration Request</Text>
               </View>
             </View>
@@ -208,7 +227,8 @@ const FacilityRegistrationRequest = () => {
               width: '100%',
               justifyContent: 'flex-start',
               marginTop: 10,
-            }}>
+            }}
+          >
             <Image
               style={{ ...GlobalStyles.profileImage, marginRight: 20 }}
               source={userInfo.profile_img_uri}
@@ -223,13 +243,20 @@ const FacilityRegistrationRequest = () => {
             </View>
           </View>
           <View style={{ width: '100%' }}>
-            <TouchableOpacity style={{ paddingTop: 15 }}>
-            </TouchableOpacity>
+            <TouchableOpacity style={{ paddingTop: 15 }}></TouchableOpacity>
             <Image
               source={facilityImage}
               style={{ ...GlobalStyles.longImage, margin: 0, marginTop: 15 }}
             />
-            <View style={{ width: '100%', flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 15, paddingHorizontal: 5 }}>
+            <View
+              style={{
+                width: '100%',
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                paddingVertical: 15,
+                paddingHorizontal: 5,
+              }}
+            >
               <Text style={GlobalStyles.body}>{facilityInfo.name}</Text>
               <View style={{ flexDirection: 'row' }}>
                 <Image
@@ -244,35 +271,54 @@ const FacilityRegistrationRequest = () => {
                 source={require('../assets/icons/facility.png')}
                 style={GlobalStyles.icon}
               />
-              <Text style={{ ...GlobalStyles.body2, paddingHorizontal: 5 }}>{facilityInfo.englishName}</Text>
+              <Text style={{ ...GlobalStyles.body2, paddingHorizontal: 5 }}>
+                {facilityInfo.englishName}
+              </Text>
             </View>
             <View style={{ flexDirection: 'row', paddingVertical: 5 }}>
               <Image
                 source={require('../assets/icons/location.png')}
                 style={GlobalStyles.icon}
               />
-              <Text style={{ ...GlobalStyles.body2, paddingHorizontal: 5 }}>{facilityInfo.address.englishAddress}</Text>
+              <Text style={{ ...GlobalStyles.body2, paddingHorizontal: 5 }}>
+                {facilityInfo.address.englishAddress}
+              </Text>
             </View>
             <View style={{ flexDirection: 'row', paddingVertical: 5 }}>
               <Image
                 source={require('../assets/icons/phone.png')}
                 style={GlobalStyles.icon}
               />
-              <Text style={{ ...GlobalStyles.body2, paddingHorizontal: 5 }}>{facilityInfo.phone}</Text>
+              <Text style={{ ...GlobalStyles.body2, paddingHorizontal: 5 }}>
+                {facilityInfo.phone}
+              </Text>
             </View>
             <View style={{ flexDirection: 'row', paddingVertical: 5 }}>
               <Image
                 source={require('../assets/icons/url.png')}
                 style={GlobalStyles.icon}
               />
-              <Text style={{ ...GlobalStyles.body2, textTransform: 'none', paddingHorizontal: 5 }}>{facilityInfo.url}</Text>
+              <Text
+                style={{
+                  ...GlobalStyles.body2,
+                  textTransform: 'none',
+                  paddingHorizontal: 5,
+                }}
+              >
+                {facilityInfo.url}
+              </Text>
             </View>
           </View>
-          <View style={{ flexDirection: 'row', paddingTop: 5, width: '100%', paddingBottom: 20 }}>
-            {facilityInfo?.preferences?.map(item => (
-              <Hashtag
-                tag={item}
-              />
+          <View
+            style={{
+              flexDirection: 'row',
+              paddingTop: 5,
+              width: '100%',
+              paddingBottom: 20,
+            }}
+          >
+            {facilityInfo?.preferences?.map((item) => (
+              <Hashtag tag={item} />
             ))}
           </View>
 
@@ -290,20 +336,35 @@ const FacilityRegistrationRequest = () => {
               source={require('../assets/icons/hour.png')}
             />
             <View>
-              {timeData?.map(item => (
-                <Text key={item.day} style={{ ...GlobalStyles.body2, color: new Date().toLocaleDateString('en-KR', { weekday: 'long' }) === item.day ? Color.black : Color.darkgray, paddingVertical: 2 }}>{item.day.substring(0, 3)} : {item.openTime} - {item.closeTime}</Text>
+              {timeData?.map((item) => (
+                <Text
+                  key={item.day}
+                  style={{
+                    ...GlobalStyles.body2,
+                    color:
+                      new Date().toLocaleDateString('en-KR', {
+                        weekday: 'long',
+                      }) === item.day
+                        ? Color.black
+                        : Color.darkgray,
+                    paddingVertical: 2,
+                  }}
+                >
+                  {item.day.substring(0, 3)} : {item.openTime} -{' '}
+                  {item.closeTime}
+                </Text>
               ))}
             </View>
           </View>
 
           <View style={{ width: '100%' }}>
             <Text style={GlobalStyles.h2}>Menu</Text>
-            {facilityInfo?.menu?.map(item => (
+            {facilityInfo?.menu?.map((item) => (
               <Menu
                 menuName={item.name}
                 menuDescription={item.description}
                 menuPrice={item.price}
-                menuImage={item.imgUri ? item.imgUri : ""}
+                menuImage={item.imgUri ? item.imgUri : ''}
                 menuQuantity={item.quantity}
               />
             ))}
@@ -311,24 +372,30 @@ const FacilityRegistrationRequest = () => {
           {stampRule && (
             <View style={{ width: '100%' }}>
               <Text style={GlobalStyles.h2}>Stamps</Text>
-              <Stamp
-                stamp={stampRule}
-                stampImage={stampLogo}
-              />
+              <Stamp stamp={stampRule} stampImage={stampLogo} />
             </View>
           )}
 
-          <View style={{ flexDirection: 'row', justifyContent: 'flex-end', width: '100%', paddingBottom: 15 }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'flex-end',
+              width: '100%',
+              paddingBottom: 15,
+            }}
+          >
             <TouchableOpacity onPress={acceptRegistration}>
               <Text style={GlobalStyles.h4}>Accept</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={declineRegistration}>
-              <Text style={{ ...GlobalStyles.h4, color: Color.darkgray }}>Decline</Text>
+              <Text style={{ ...GlobalStyles.h4, color: Color.darkgray }}>
+                Decline
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
       </ScrollView>
-    </SafeAreaView >
+    </SafeAreaView>
   );
 };
 
@@ -338,7 +405,7 @@ const styles = StyleSheet.create({
     height: 15,
     marginTop: 2,
     marginLeft: 2,
-    marginRight: 7
+    marginRight: 7,
   },
 });
 

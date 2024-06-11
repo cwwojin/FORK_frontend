@@ -14,36 +14,49 @@ import {
 import { useNavigation, useRoute } from '@react-navigation/native';
 import ToggleSwitch from 'toggle-switch-react-native';
 import * as ImagePicker from 'expo-image-picker';
-import QRCode from "react-qr-code";
+import QRCode from 'react-qr-code';
 import * as ImageManipulator from 'expo-image-manipulator';
 
-
-import { GlobalStyles, Color, FontFamily, FontSize, Border } from '../GlobalStyles';
+import {
+  GlobalStyles,
+  Color,
+  FontFamily,
+  FontSize,
+  Border,
+} from '../GlobalStyles';
 import Hashtag from '../components/Hashtag';
 import Menu from '../components/Menu';
 import Review from '../components/Review';
 import Notice from '../components/Notice';
 import Stamp from '../components/Stamp';
 
-
 import stampImage from '../assets/icons/stamp.png';
 
 //To be deleted
 import longImagePlaceholder from '../assets/placeholders/long_image.png';
 import {
-  addFavorite, deleteFavorite, fetchImage, getFacilityByID, getTopHashtags, getFacilityNotices, getFacilityPreferences, getFacilityStamp,
-  getFacilityStampRuleByID, getReviewByQuery, isFacilityBookmarked, USERID, createReview,
+  addFavorite,
+  deleteFavorite,
+  fetchImage,
+  getFacilityByID,
+  getTopHashtags,
+  getFacilityNotices,
+  getFacilityPreferences,
+  getFacilityStamp,
+  getFacilityStampRuleByID,
+  getReviewByQuery,
+  isFacilityBookmarked,
+  USERID,
+  createReview,
   getSummaryReview,
   USERTYPE,
-  getMyFacilities, LOGIN
+  getMyFacilities,
+  LOGIN,
 } from './api';
 import { getAllTranslations, getLanguageToken } from '../LanguageUtils';
-import Translator, {
-  useTranslator,
-} from 'react-native-translator';
+import Translator, { useTranslator } from 'react-native-translator';
 
 const FacilityDetail = () => {
-
   const route = useRoute();
 
   const { facilityID } = route.params;
@@ -51,14 +64,14 @@ const FacilityDetail = () => {
   const [facilityInfo, setFacilityInfo] = useState({});
   const [reviewList, setReviewList] = useState('');
   const [stampRule, setStampRule] = useState([]);
-  const [stampLogo, setStampLogo] = useState("");
+  const [stampLogo, setStampLogo] = useState('');
   const [myStamp, setMyStamp] = useState(0);
   const [preferences, setPreferences] = useState('');
   const [bookmarked, setBookmarked] = useState(false);
   const [timeData, setTimeData] = useState([]);
   const [profileImage, setProfileImage] = useState(longImagePlaceholder);
   const [isLoading, setIsLoading] = useState(true);
-  const [summaryReview, setSummaryReview] = useState("");
+  const [summaryReview, setSummaryReview] = useState('');
   const [notices, setNotices] = useState([]);
   const [topHashtags, setTopHashtags] = useState([]);
   const [owner, setOwner] = useState(false);
@@ -71,8 +84,8 @@ const FacilityDetail = () => {
   useEffect(() => {
     if (!LOGIN) {
       navigation.goBack();
-      navigation.replace("SignUpLogIn")
-    };
+      navigation.replace('SignUpLogIn');
+    }
   }, LOGIN);
 
   useEffect(() => {
@@ -100,7 +113,11 @@ const FacilityDetail = () => {
         }
 
         if (language !== 'ko') {
-          const translatedDesc = await translate('ko', language, data.description);
+          const translatedDesc = await translate(
+            'ko',
+            language,
+            data.description
+          );
           setTranslatedDescription(translatedDesc);
         } else {
           setTranslatedDescription(data.description);
@@ -114,32 +131,73 @@ const FacilityDetail = () => {
 
     initializeLanguage().then(fetchFacilityData);
   }, [facilityID, language]);
-  
+
   useEffect(() => {
     const fetchFacility = async (facilityID) => {
       try {
         const data = await getFacilityByID(facilityID);
-        console.log("data: "+JSON.stringify(data, null, 2));
+        console.log('data: ' + JSON.stringify(data, null, 2));
         setFacilityInfo(data);
 
         const newtimeData = [
-          { index: 1, day: 'Monday', dayS: translations.monday, openTime: '', closeTime: '' },
-          { index: 2, day: 'Tuesday', dayS: translations.tuesday, openTime: '', closeTime: '' },
-          { index: 3, day: 'Wednesday', dayS: translations.wednesday, openTime: '', closeTime: '' },
-          { index: 4, day: 'Thursday', dayS: translations.thursday, openTime: '', closeTime: '' },
-          { index: 5, day: 'Friday', dayS: translations.friday, openTime: '', closeTime: '' },
-          { index: 6, day: 'Saturday', dayS: translations.saturday, openTime: '', closeTime: '' },
-          { index: 0, day: 'Sunday', dayS: translations.sunday, openTime: '', closeTime: '' },
-
+          {
+            index: 1,
+            day: 'Monday',
+            dayS: translations.monday,
+            openTime: '',
+            closeTime: '',
+          },
+          {
+            index: 2,
+            day: 'Tuesday',
+            dayS: translations.tuesday,
+            openTime: '',
+            closeTime: '',
+          },
+          {
+            index: 3,
+            day: 'Wednesday',
+            dayS: translations.wednesday,
+            openTime: '',
+            closeTime: '',
+          },
+          {
+            index: 4,
+            day: 'Thursday',
+            dayS: translations.thursday,
+            openTime: '',
+            closeTime: '',
+          },
+          {
+            index: 5,
+            day: 'Friday',
+            dayS: translations.friday,
+            openTime: '',
+            closeTime: '',
+          },
+          {
+            index: 6,
+            day: 'Saturday',
+            dayS: translations.saturday,
+            openTime: '',
+            closeTime: '',
+          },
+          {
+            index: 0,
+            day: 'Sunday',
+            dayS: translations.sunday,
+            openTime: '',
+            closeTime: '',
+          },
         ];
         data.opening_hours.forEach(({ day, dayS, open_time, close_time }) => {
-          const item = newtimeData.find(entry => entry.index === day);
+          const item = newtimeData.find((entry) => entry.index === day);
           if (item) {
-            item.openTime = open_time.slice(0, 5);  // Remove seconds
+            item.openTime = open_time.slice(0, 5); // Remove seconds
             item.closeTime = close_time.slice(0, 5); // Remove seconds
           }
         });
-        setTimeData(newtimeData)
+        setTimeData(newtimeData);
 
         if (data.profile_img_uri) {
           const imageUrl = await fetchImage(data.profile_img_uri);
@@ -154,7 +212,7 @@ const FacilityDetail = () => {
         const data = await getReviewByQuery('', facilityID, '', '');
         setReviewList(data);
         setIsLoading(false);
-      } catch (error) { 
+      } catch (error) {
         console.log(error.message);
       }
     };
@@ -176,9 +234,11 @@ const FacilityDetail = () => {
         }
 
         if (stamps.rewards) {
-          const maxCnt = Math.max(...stamps.rewards.map(reward => reward.cnt));
+          const maxCnt = Math.max(
+            ...stamps.rewards.map((reward) => reward.cnt)
+          );
           const newStampRule = Array(maxCnt).fill('');
-          stamps.rewards.forEach(reward => {
+          stamps.rewards.forEach((reward) => {
             newStampRule[reward.cnt - 1] = reward?.name;
           });
           setStampRule(newStampRule);
@@ -205,11 +265,13 @@ const FacilityDetail = () => {
     const isMyFacility = async (facilityID) => {
       try {
         const facilities = await getMyFacilities();
-        const facilityExists = facilities.some(facility => facility.id === facilityID);
+        const facilityExists = facilities.some(
+          (facility) => facility.id === facilityID
+        );
 
         if (facilityExists) {
           setOwner(true);
-        };
+        }
       } catch (error) {
         console.log(error.message);
       }
@@ -248,14 +310,11 @@ const FacilityDetail = () => {
     };
 
     isBookmarked(facilityID);
-
   }, [translations]);
-
-  
 
   const [isTimeVisible, setTimeVisible] = useState(false);
   const [stamp, setStamp] = useState(false);
-  const [tabState, setTabState] = useState("Menu");
+  const [tabState, setTabState] = useState('Menu');
   const [reviewFilter, setReviewFilter] = useState(false);
   const [writeReview, setWriteReview] = useState(false);
   const [hashtagFilter, setHashtagFilter] = useState();
@@ -280,70 +339,84 @@ const FacilityDetail = () => {
       }
       setBookmarked(!bookmarked);
     } else {
-      Alert.alert("Only for KAIST User");
+      Alert.alert('Only for KAIST User');
     }
-
   };
 
   const toggleStamp = () => {
     if (USERTYPE == 1) {
       setStamp(!stamp);
     } else {
-      Alert.alert("Only for KAIST User");
+      Alert.alert('Only for KAIST User');
     }
-  }
+  };
 
   const switchTabMenu = () => {
-    setTabState("Menu");
+    setTabState('Menu');
   };
   const switchTabReview = () => {
-    setTabState("Review");
+    setTabState('Review');
   };
   const switchTabNotice = () => {
-    setTabState("Notice");
+    setTabState('Notice');
   };
 
   const toggleReviewFilter = () => {
     setReviewFilter(!reviewFilter);
-  }
+  };
 
   const toggleWriteReview = () => {
     if (USERTYPE == 1) {
       setWriteReview(!writeReview);
     } else {
-      Alert.alert("Only for KAIST User");
+      Alert.alert('Only for KAIST User');
     }
-  }
+  };
 
   const handleCreateReview = async () => {
-    console.log(facilityID, reviewScore, reviewContent, inputHashtag, reviewImage);
+    console.log(
+      facilityID,
+      reviewScore,
+      reviewContent,
+      inputHashtag,
+      reviewImage
+    );
     setModerating(true);
     try {
       if (reviewImage == '') {
-        const response = await createReview({ facilityId: facilityID, score: reviewScore, content: reviewContent, hashtags: inputHashtag?.map(item => (item.tag)) });
+        const response = await createReview({
+          facilityId: facilityID,
+          score: reviewScore,
+          content: reviewContent,
+          hashtags: inputHashtag?.map((item) => item.tag),
+        });
         console.log('Review uploaded successfully:', response);
-      }
-      else {
-        const response = await createReview({ facilityId: facilityID, score: reviewScore, content: reviewContent, hashtags: inputHashtag?.map(item => (item.tag)), imageUri: reviewImage });
+      } else {
+        const response = await createReview({
+          facilityId: facilityID,
+          score: reviewScore,
+          content: reviewContent,
+          hashtags: inputHashtag?.map((item) => item.tag),
+          imageUri: reviewImage,
+        });
         console.log('Review uploaded successfully:', response);
       }
       toggleWriteReview();
-      setModerating(false)
-      Alert.alert("Review uploaded successfully")
-      navigation.replace("FacilityDetail", { facilityID });
+      setModerating(false);
+      Alert.alert('Review uploaded successfully');
+      navigation.replace('FacilityDetail', { facilityID });
     } catch (error) {
       if (error && error === 499) {
         setModerating(false);
-        Alert.alert("Error", "Review upload fail due to harmful content");
+        Alert.alert('Error', 'Review upload fail due to harmful content');
       } else {
         setModerating(false);
-        Alert.alert("Error", "Review upload failed. Please try again.")
+        Alert.alert('Error', 'Review upload failed. Please try again.');
       }
 
       console.log(error.message);
-
     }
-  }
+  };
 
   const renderStars = () => {
     const stars = [];
@@ -352,7 +425,7 @@ const FacilityDetail = () => {
         <TouchableOpacity key={i} onPress={() => setReviewScore(i + 1)}>
           <Image
             style={styles.star}
-            tintColor={i >= (reviewScore) && Color.orange_100}
+            tintColor={i >= reviewScore && Color.orange_100}
             source={require('../assets/icons/star.png')}
           />
         </TouchableOpacity>
@@ -397,46 +470,53 @@ const FacilityDetail = () => {
   };
 
   const getCurrentDayTimeData = () => {
-    const currentDay = new Date().toLocaleDateString('en-KR', { weekday: 'long' });
-    return timeData.filter(item => item.day === currentDay);
+    const currentDay = new Date().toLocaleDateString('en-KR', {
+      weekday: 'long',
+    });
+    return timeData.filter((item) => item.day === currentDay);
   };
 
   const pushHashtag = () => {
-    setInputHashtag([...inputHashtag, { id: inputHashtag.length + 1, tag: hashtag }]);
+    setInputHashtag([
+      ...inputHashtag,
+      { id: inputHashtag.length + 1, tag: hashtag },
+    ]);
     setHashtag('');
   };
 
   const deleteHashtag = (id) => {
-    setInputHashtag(inputHashtag.filter(item => item.id !== id));
+    setInputHashtag(inputHashtag.filter((item) => item.id !== id));
   };
 
   const confirmDeleteHashtag = (id) => {
-    Alert.alert(
-      "Delete Hashtag",
-      "Do you want to delete this hashtag?",
-      [
-        {
-          text: "Cancel",
-          style: "cancel"
-        },
-        {
-          text: "OK",
-          onPress: () => deleteHashtag(id)
-        }
-      ]
-    );
+    Alert.alert('Delete Hashtag', 'Do you want to delete this hashtag?', [
+      {
+        text: 'Cancel',
+        style: 'cancel',
+      },
+      {
+        text: 'OK',
+        onPress: () => deleteHashtag(id),
+      },
+    ]);
   };
 
   return (
     <SafeAreaView style={GlobalStyles.background}>
       <View style={GlobalStyles.contentNoNav}>
-
-        <View style={{ width: '100%', flexDirection: 'row', justifyContent: 'space-between' }}>
+        <View
+          style={{
+            width: '100%',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+          }}
+        >
           <View style={{ flexDirection: 'row' }}>
             <TouchableOpacity
               onPress={() => {
                 navigation.goBack();
-              }}>
+              }}
+            >
               <Image
                 style={GlobalStyles.icon}
                 source={require('../assets/icons/navigate_left.png')}
@@ -448,9 +528,14 @@ const FacilityDetail = () => {
                 alignItems: 'center',
                 marginTop: -27,
                 paddingBottom: 10,
-                width: '70%'
-              }}>
-              <Text style={GlobalStyles.h1} numberOfLines={1}>{language === 'ko' ? facilityInfo?.name : facilityInfo?.english_name}</Text>
+                width: '70%',
+              }}
+            >
+              <Text style={GlobalStyles.h1} numberOfLines={1}>
+                {language === 'ko'
+                  ? facilityInfo?.name
+                  : facilityInfo?.english_name}
+              </Text>
             </View>
           </View>
           <View style={{ flexDirection: 'row' }}>
@@ -463,32 +548,49 @@ const FacilityDetail = () => {
             <TouchableOpacity onPress={toggleBookmarked}>
               <Image
                 style={{ width: 30, height: 30 }}
-                source={bookmarked ? require('../assets/icons/bookmark_on.png') : require('../assets/icons/bookmark_off2.png')}
+                source={
+                  bookmarked
+                    ? require('../assets/icons/bookmark_on.png')
+                    : require('../assets/icons/bookmark_off2.png')
+                }
               />
             </TouchableOpacity>
           </View>
         </View>
 
-        <ScrollView vertical style={{ width: '100%' }} showsVerticalScrollIndicator={false}>
-
+        <ScrollView
+          vertical
+          style={{ width: '100%' }}
+          showsVerticalScrollIndicator={false}
+        >
           <View style={{ width: '100%' }}>
             <Image
               style={GlobalStyles.longImage}
-              source={Number.isInteger(profileImage) ? profileImage : { uri: profileImage }}
+              source={
+                Number.isInteger(profileImage)
+                  ? profileImage
+                  : { uri: profileImage }
+              }
             />
             <View style={{ flexDirection: 'row' }}>
               <Image
                 style={{ ...GlobalStyles.icon, marginRight: 5 }}
                 source={require('../assets/icons/location.png')}
               />
-              <Text style={GlobalStyles.body2}>{language === 'ko' ? facilityInfo?.road_address : facilityInfo?.english_address}</Text>
+              <Text style={GlobalStyles.body2}>
+                {language === 'ko'
+                  ? facilityInfo?.road_address
+                  : facilityInfo?.english_address}
+              </Text>
             </View>
             <View style={{ flexDirection: 'row' }}>
               <Image
                 style={styles.icon}
-                source={require("../assets/icons/facility.png")}
+                source={require('../assets/icons/facility.png')}
               />
-              <Text style={{ ...GlobalStyles.body2, textTransform: 'none' }}>{translatedDescription}</Text>
+              <Text style={{ ...GlobalStyles.body2, textTransform: 'none' }}>
+                {translatedDescription}
+              </Text>
             </View>
             <View style={{ flexDirection: 'row' }}>
               <Image
@@ -502,14 +604,18 @@ const FacilityDetail = () => {
                 style={styles.icon}
                 source={require('../assets/icons/url.png')}
               />
-              <Text style={{ ...GlobalStyles.body2, textTransform: 'none' }}>{facilityInfo.url}</Text>
+              <Text style={{ ...GlobalStyles.body2, textTransform: 'none' }}>
+                {facilityInfo.url}
+              </Text>
             </View>
             <View style={{ flexDirection: 'row' }}>
               <Image
                 style={{ ...GlobalStyles.icon, marginRight: 5 }}
                 source={require('../assets/icons/star.png')}
               />
-              <Text style={GlobalStyles.body2}>{Math.round(facilityInfo.avg_score * 10) / 10}</Text>
+              <Text style={GlobalStyles.body2}>
+                {Math.round(facilityInfo.avg_score * 10) / 10}
+              </Text>
             </View>
             <View
               style={{
@@ -519,10 +625,12 @@ const FacilityDetail = () => {
                 width: '100%',
                 paddingTop: 10,
                 paddingBottom: 15,
-              }}>
-              {preferences && preferences.map(item => (
-                <Hashtag key={item.id} tag={translations.pref[item.name]} />
-              ))}
+              }}
+            >
+              {preferences &&
+                preferences.map((item) => (
+                  <Hashtag key={item.id} tag={translations.pref[item.name]} />
+                ))}
             </View>
           </View>
 
@@ -534,17 +642,50 @@ const FacilityDetail = () => {
             }}
           />
 
-          <View style={{ flexDirection: 'row', width: '100%', justifyContent: 'space-between' }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              width: '100%',
+              justifyContent: 'space-between',
+            }}
+          >
             <View style={{ flexDirection: 'row' }}>
               <Image
                 style={styles.icon}
                 source={require('../assets/icons/hour.png')}
               />
               <View>
-                {!isTimeVisible && getCurrentDayTimeData().map(item => (
-                  <Text key={item.day} style={{ ...GlobalStyles.body2, color: Color.black, paddingVertical: 2 }}>{item.dayS} : {item.openTime} - {item.closeTime}</Text>))}
-                {isTimeVisible && timeData.map(item => (
-                  <Text key={item.day} style={{ ...GlobalStyles.body2, color: new Date().toLocaleDateString('en-KR', { weekday: 'long' }) === item.day ? Color.black : Color.darkgray, paddingVertical: 2 }}>{item.dayS} : {item.openTime} - {item.closeTime}</Text>))}
+                {!isTimeVisible &&
+                  getCurrentDayTimeData().map((item) => (
+                    <Text
+                      key={item.day}
+                      style={{
+                        ...GlobalStyles.body2,
+                        color: Color.black,
+                        paddingVertical: 2,
+                      }}
+                    >
+                      {item.dayS} : {item.openTime} - {item.closeTime}
+                    </Text>
+                  ))}
+                {isTimeVisible &&
+                  timeData.map((item) => (
+                    <Text
+                      key={item.day}
+                      style={{
+                        ...GlobalStyles.body2,
+                        color:
+                          new Date().toLocaleDateString('en-KR', {
+                            weekday: 'long',
+                          }) === item.day
+                            ? Color.black
+                            : Color.darkgray,
+                        paddingVertical: 2,
+                      }}
+                    >
+                      {item.dayS} : {item.openTime} - {item.closeTime}
+                    </Text>
+                  ))}
               </View>
             </View>
             {!isTimeVisible && (
@@ -573,37 +714,81 @@ const FacilityDetail = () => {
             }}
           />
 
-          <View style={{ flexDirection: 'row', paddingVertical: 15, paddingHorizontal: 3 }}>
-            <TouchableOpacity style={{ marginRight: 20 }} onPress={switchTabMenu}>
-              <Text style={{ ...styles.tab, color: tabState === "Menu" ? Color.orange_700 : Color.orange_100 }}>{translations.menuSmall}</Text>
+          <View
+            style={{
+              flexDirection: 'row',
+              paddingVertical: 15,
+              paddingHorizontal: 3,
+            }}
+          >
+            <TouchableOpacity
+              style={{ marginRight: 20 }}
+              onPress={switchTabMenu}
+            >
+              <Text
+                style={{
+                  ...styles.tab,
+                  color:
+                    tabState === 'Menu' ? Color.orange_700 : Color.orange_100,
+                }}
+              >
+                {translations.menuSmall}
+              </Text>
             </TouchableOpacity>
-            <TouchableOpacity style={{ marginRight: 20 }} onPress={switchTabReview}>
-              <Text style={{ ...styles.tab, color: tabState === "Review" ? Color.orange_700 : Color.orange_100 }}>{translations.review}</Text>
+            <TouchableOpacity
+              style={{ marginRight: 20 }}
+              onPress={switchTabReview}
+            >
+              <Text
+                style={{
+                  ...styles.tab,
+                  color:
+                    tabState === 'Review' ? Color.orange_700 : Color.orange_100,
+                }}
+              >
+                {translations.review}
+              </Text>
             </TouchableOpacity>
-            <TouchableOpacity style={{ marginRight: 20 }} onPress={switchTabNotice}>
-              <Text style={{ ...styles.tab, color: tabState === "Notice" ? Color.orange_700 : Color.orange_100 }}>{translations.notice}</Text>
+            <TouchableOpacity
+              style={{ marginRight: 20 }}
+              onPress={switchTabNotice}
+            >
+              <Text
+                style={{
+                  ...styles.tab,
+                  color:
+                    tabState === 'Notice' ? Color.orange_700 : Color.orange_100,
+                }}
+              >
+                {translations.notice}
+              </Text>
             </TouchableOpacity>
           </View>
           <View>
-            {(tabState == "Menu") && facilityInfo.menus?.filter(item => item !== null).map(item => (
-              <Menu
-                key={item.id}
-                menuName={item.name}
-                menuDescription={item.description}
-                menuPrice={item.price}
-                menuImage={item.img_uri}
-                menuQuantity={item.quantity}
-              />
-            ))}
-            {(tabState == "Review" && isLoading) && (
+            {tabState == 'Menu' &&
+              facilityInfo.menus
+                ?.filter((item) => item !== null)
+                .map((item) => (
+                  <Menu
+                    key={item.id}
+                    menuName={item.name}
+                    menuDescription={item.description}
+                    menuPrice={item.price}
+                    menuImage={item.img_uri}
+                    menuQuantity={item.quantity}
+                  />
+                ))}
+            {tabState == 'Review' && isLoading && (
               <View style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color={Color.orange_700} />
                 <Text>Loading reviews...</Text>
               </View>
             )}
-            {(tabState == "Review") && (
+            {tabState == 'Review' && (
               <>
-                <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+                <View
+                  style={{ flexDirection: 'row', justifyContent: 'flex-end' }}
+                >
                   <Image
                     style={{ ...GlobalStyles.icon, marginRight: 5 }}
                     source={require('../assets/icons/camera.png')}
@@ -617,7 +802,15 @@ const FacilityDetail = () => {
                   />
                 </View>
                 <View style={{ alignItems: 'center', paddingVertical: 20 }}>
-                  <Text style={{ ...GlobalStyles.body, padding: '5%', textAlign: 'center' }}>{summaryReview.summary}</Text>
+                  <Text
+                    style={{
+                      ...GlobalStyles.body,
+                      padding: '5%',
+                      textAlign: 'center',
+                    }}
+                  >
+                    {summaryReview.summary}
+                  </Text>
                   <View
                     style={{
                       flexDirection: 'row',
@@ -625,20 +818,27 @@ const FacilityDetail = () => {
                       flexWrap: 'wrap',
                       width: '100%',
                       paddingTop: 20,
-                    }}>
-                    {topHashtags && topHashtags
-                      .map(item => (
-                        <TouchableOpacity key={item.id} onPress={() => {
-                          if (hashtagFilter != item.id) {
-                            setHashtagFilter(item.id);
-                          } else {
-                            setHashtagFilter();
-                          }
-                        }}>
-                          <Hashtag key={item.id} tag={item.name} selected={hashtagFilter == item.id} />
+                    }}
+                  >
+                    {topHashtags &&
+                      topHashtags.map((item) => (
+                        <TouchableOpacity
+                          key={item.id}
+                          onPress={() => {
+                            if (hashtagFilter != item.id) {
+                              setHashtagFilter(item.id);
+                            } else {
+                              setHashtagFilter();
+                            }
+                          }}
+                        >
+                          <Hashtag
+                            key={item.id}
+                            tag={item.name}
+                            selected={hashtagFilter == item.id}
+                          />
                         </TouchableOpacity>
-                      ))
-                    }
+                      ))}
                   </View>
                 </View>
 
@@ -650,72 +850,113 @@ const FacilityDetail = () => {
                   }}
                 />
 
-                {reviewList && reviewList
-                  .filter(item => !reviewFilter || (reviewFilter && item.img_uri)) // Apply filter conditionally based on reviewFilter state
-                  .filter(item => !hashtagFilter || item.hashtags.some(hashtag => hashtag.id === hashtagFilter))
-                  .map(item => (
-                    <Review
-                      key={item.id} // Make sure to provide a unique key prop
-                      reviewId={item.id}
-                      userID={item.author_id}
-                      edit={USERID == item.author_id}
-                      reviewDate={item.post_date}
-                      reviewScore={item.score}
-                      reviewImage={item.img_uri}
-                      reviewContent={item.content}
-                      reviewHashtags={item.hashtags}
-                      admin={false}
-                      reviewreport={item}
-                      facilityID={item.facility_id}
-                      navigation={navigation}
-                    />
-                  ))
-                }
+                {reviewList &&
+                  reviewList
+                    .filter(
+                      (item) => !reviewFilter || (reviewFilter && item.img_uri)
+                    ) // Apply filter conditionally based on reviewFilter state
+                    .filter(
+                      (item) =>
+                        !hashtagFilter ||
+                        item.hashtags.some(
+                          (hashtag) => hashtag.id === hashtagFilter
+                        )
+                    )
+                    .map((item) => (
+                      <Review
+                        key={item.id} // Make sure to provide a unique key prop
+                        reviewId={item.id}
+                        userID={item.author_id}
+                        edit={USERID == item.author_id}
+                        reviewDate={item.post_date}
+                        reviewScore={item.score}
+                        reviewImage={item.img_uri}
+                        reviewContent={item.content}
+                        reviewHashtags={item.hashtags}
+                        admin={false}
+                        reviewreport={item}
+                        facilityID={item.facility_id}
+                        navigation={navigation}
+                      />
+                    ))}
               </>
             )}
-            {(tabState == "Notice") && notices?.map(item => (
-              <Notice
-                facilityImage={profileImage}
-                facilityName={facilityInfo.name}
-                facilityEnglishName={facilityInfo.english_name}
-                noticeDate={item.post_date}
-                noticeImage={item.img_uri}
-                noticeContent={item.title + '\n' + item.content}
-                facilityID={facilityID}
-                postId={item.id}
-                owner={owner}
-                navigation={navigation}
-              />
-            ))}
+            {tabState == 'Notice' &&
+              notices?.map((item) => (
+                <Notice
+                  facilityImage={profileImage}
+                  facilityName={facilityInfo.name}
+                  facilityEnglishName={facilityInfo.english_name}
+                  noticeDate={item.post_date}
+                  noticeImage={item.img_uri}
+                  noticeContent={item.title + '\n' + item.content}
+                  facilityID={facilityID}
+                  postId={item.id}
+                  owner={owner}
+                  navigation={navigation}
+                />
+              ))}
           </View>
         </ScrollView>
-      </View >
-      {(tabState == 'Review') && (USERTYPE == 1) && (
+      </View>
+      {tabState == 'Review' && USERTYPE == 1 && (
         <TouchableOpacity onPress={toggleWriteReview}>
           <Image
             source={require('../assets/icons/write_review.png')}
-            style={{ width: 150, height: 150, position: 'absolute', bottom: 0, right: 10 }}
+            style={{
+              width: 150,
+              height: 150,
+              position: 'absolute',
+              bottom: 0,
+              right: 10,
+            }}
           />
         </TouchableOpacity>
       )}
       {writeReview && (
         <View style={styles.overlay}>
           <View style={styles.background}>
-            <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
               <Text style={GlobalStyles.h2}>{translations.writeReviews}</Text>
-              <TouchableOpacity style={{ ...GlobalStyles.topIcon, marginRight: 0 }} onPress={toggleWriteReview}>
-                <Image
-                  source={require('../assets/icons/navigate_close.png')}
-                />
+              <TouchableOpacity
+                style={{ ...GlobalStyles.topIcon, marginRight: 0 }}
+                onPress={toggleWriteReview}
+              >
+                <Image source={require('../assets/icons/navigate_close.png')} />
               </TouchableOpacity>
             </View>
-            <ScrollView style={{ width: '100%' }} showsVerticalScrollIndicator={false}>
-              <View style={{ width: '100%', alignItems: 'center', paddingVertical: 10 }}>
+            <ScrollView
+              style={{ width: '100%' }}
+              showsVerticalScrollIndicator={false}
+            >
+              <View
+                style={{
+                  width: '100%',
+                  alignItems: 'center',
+                  paddingVertical: 10,
+                }}
+              >
                 <TouchableOpacity onPress={saveReviewImage}>
                   {reviewImage ? (
-                    <Image source={Number.isInteger(reviewImage) ? reviewImage : { uri: reviewImage }} style={GlobalStyles.squareImage2} />
+                    <Image
+                      source={
+                        Number.isInteger(reviewImage)
+                          ? reviewImage
+                          : { uri: reviewImage }
+                      }
+                      style={GlobalStyles.squareImage2}
+                    />
                   ) : (
-                    <Image source={require('../assets/placeholders/long_image.png')} style={GlobalStyles.squareImage2} />
+                    <Image
+                      source={require('../assets/placeholders/long_image.png')}
+                      style={GlobalStyles.squareImage2}
+                    />
                   )}
                 </TouchableOpacity>
                 <View
@@ -724,7 +965,8 @@ const FacilityDetail = () => {
                     flexDirection: 'row',
                     justifyContent: 'center',
                     padding: 10,
-                  }}>
+                  }}
+                >
                   {renderStars()}
                 </View>
                 <View style={styles.inputSection}>
@@ -748,12 +990,17 @@ const FacilityDetail = () => {
                       alignItems: 'center',
                       flexWrap: 'wrap',
                       width: '100%',
-                    }}>
-                    {inputHashtag && inputHashtag.map(item => (
-                      <TouchableOpacity key={item.id} onPress={() => confirmDeleteHashtag(item.id)}>
-                        <Hashtag tag={item.tag} />
-                      </TouchableOpacity>
-                    ))}
+                    }}
+                  >
+                    {inputHashtag &&
+                      inputHashtag.map((item) => (
+                        <TouchableOpacity
+                          key={item.id}
+                          onPress={() => confirmDeleteHashtag(item.id)}
+                        >
+                          <Hashtag tag={item.tag} />
+                        </TouchableOpacity>
+                      ))}
                   </View>
                   <View style={styles.hashtagHolder}>
                     <TextInput
@@ -766,12 +1013,26 @@ const FacilityDetail = () => {
                   {hashtag && (
                     <TouchableOpacity onPress={pushHashtag}>
                       <View style={styles.hashtagHolder}>
-                        <Text style={{ ...GlobalStyles.hashtag, color: Color.lightGrey }}>{translations.addHashtag}</Text>
+                        <Text
+                          style={{
+                            ...GlobalStyles.hashtag,
+                            color: Color.lightGrey,
+                          }}
+                        >
+                          {translations.addHashtag}
+                        </Text>
                       </View>
                     </TouchableOpacity>
                   )}
                 </View>
-                <View style={{ width: '100%', justifyContent: 'flex-end', flexDirection: 'row', paddingTop: 20 }}>
+                <View
+                  style={{
+                    width: '100%',
+                    justifyContent: 'flex-end',
+                    flexDirection: 'row',
+                    paddingTop: 20,
+                  }}
+                >
                   <TouchableOpacity onPress={handleCreateReview}>
                     <Text style={GlobalStyles.h4}>{translations.send}</Text>
                   </TouchableOpacity>
@@ -793,23 +1054,40 @@ const FacilityDetail = () => {
       )}
       {stamp && (
         <View style={styles.overlay}>
-          <View style={{ ...styles.background, justifyContent: 'center', height: '80%' }}>
+          <View
+            style={{
+              ...styles.background,
+              justifyContent: 'center',
+              height: '80%',
+            }}
+          >
             <View style={{ width: '100%' }}>
-              <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
-                <TouchableOpacity style={{ marginRight: -10 }} onPress={toggleStamp}>
+              <View
+                style={{ flexDirection: 'row', justifyContent: 'flex-end' }}
+              >
+                <TouchableOpacity
+                  style={{ marginRight: -10 }}
+                  onPress={toggleStamp}
+                >
                   <Image
                     source={require('../assets/icons/navigate_close.png')}
                   />
                 </TouchableOpacity>
               </View>
             </View>
-            <View style={{ width: '100%', alignItems: 'center', paddingVertical: 10 }}>
-              {!(stampRule == []) &&
+            <View
+              style={{
+                width: '100%',
+                alignItems: 'center',
+                paddingVertical: 10,
+              }}
+            >
+              {!(stampRule == []) && (
                 <>
                   <View style={{ width: '80%', aspectRatio: 1, padding: 30 }}>
                     <QRCode
                       size={180}
-                      style={{ maxWidth: "100%", width: "100%" }}
+                      style={{ maxWidth: '100%', width: '100%' }}
                       value={Number(USERID)}
                     />
                   </View>
@@ -819,14 +1097,15 @@ const FacilityDetail = () => {
                     facilityID={facilityID}
                   />
                 </>
-              }
-              {(stampRule == '') && <Text style={GlobalStyles.body}>Stamps not created</Text>}
+              )}
+              {stampRule == '' && (
+                <Text style={GlobalStyles.body}>Stamps not created</Text>
+              )}
             </View>
           </View>
-
         </View>
       )}
-    </SafeAreaView >
+    </SafeAreaView>
   );
 };
 
@@ -836,7 +1115,7 @@ const styles = StyleSheet.create({
     height: 15,
     marginTop: 2,
     marginLeft: 2,
-    marginRight: 7
+    marginRight: 7,
   },
   star: {
     width: 25,
@@ -844,7 +1123,7 @@ const styles = StyleSheet.create({
   },
   navigator: {
     width: 22,
-    height: 22
+    height: 22,
   },
   tab: {
     fontFamily: FontFamily.robotoBold,
@@ -868,7 +1147,7 @@ const styles = StyleSheet.create({
     borderRadius: Border.br_lg,
     padding: 30,
     paddingTop: 15,
-    alignItems: 'center'
+    alignItems: 'center',
   },
   inputSection: {
     width: '100%',

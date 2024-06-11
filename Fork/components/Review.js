@@ -1,14 +1,18 @@
 import { useState, useEffect } from 'react';
 import { Image, View, Text, TouchableOpacity, Alert } from 'react-native';
 import { Color, GlobalStyles } from '../GlobalStyles.js';
-import Translator, {
-  useTranslator,
-} from 'react-native-translator';
+import Translator, { useTranslator } from 'react-native-translator';
 import { useNavigation } from 'react-router-dom';
 import { getLanguageToken } from '../LanguageUtils.js';
 
 import Hashtag from './Hashtag';
-import { deleteReport, sendReviewReport, fetchImage, getUserByID, deleteReview } from '../screens/api.js';
+import {
+  deleteReport,
+  sendReviewReport,
+  fetchImage,
+  getUserByID,
+  deleteReview,
+} from '../screens/api.js';
 import userProfilePlaceholder from '../assets/placeholders/User.png';
 
 const Review = ({
@@ -27,9 +31,11 @@ const Review = ({
   navigation,
   facilityID,
 }) => {
-
   const [reviewImages, setReviewImages] = useState();
-  const [userProfile, setUserProfile] = useState({ userName: facilityName ? facilityName : "", userImage: "" });
+  const [userProfile, setUserProfile] = useState({
+    userName: facilityName ? facilityName : '',
+    userImage: '',
+  });
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -37,25 +43,33 @@ const Review = ({
         const userInfo = await getUserByID(userID);
         if (userInfo.profile_img_uri) {
           const profileUrl = await fetchImage(userInfo.profile_img_uri);
-          setUserProfile({ userName: userInfo.account_id, userImage: (profileUrl != undefined) ? profileUrl : "" })
+          setUserProfile({
+            userName: userInfo.account_id,
+            userImage: profileUrl != undefined ? profileUrl : '',
+          });
         } else {
-          setUserProfile({ userName: userInfo.account_id, userImage: "" })
+          setUserProfile({ userName: userInfo.account_id, userImage: '' });
         }
       } catch (error) {
         console.log(error.message);
       }
     };
     const fetchFacilityProfile = async () => {
-      console.log("fetching facility");
+      console.log('fetching facility');
       try {
-        if (facilityImage != "") {
-          console.log("fetching");
+        if (facilityImage != '') {
+          console.log('fetching');
           const profileUrl = await fetchImage(facilityImage);
-          setUserProfile({ userName: facilityName, userImage: (profileUrl != undefined) ? profileUrl : "" })
+          setUserProfile({
+            userName: facilityName,
+            userImage: profileUrl != undefined ? profileUrl : '',
+          });
         } else {
-          setUserProfile({ userName: facilityName, userImage: "" })
+          setUserProfile({ userName: facilityName, userImage: '' });
         }
-        if (reviewImage != "") { fetchReviewImage(); };
+        if (reviewImage != '') {
+          fetchReviewImage();
+        }
       } catch (error) {
         console.log(error.message);
       }
@@ -66,12 +80,18 @@ const Review = ({
         if (imageUrl != undefined) {
           setReviewImages(imageUrl);
         }
-        if (reviewImage != "") { fetchReviewImage(); };
+        if (reviewImage != '') {
+          fetchReviewImage();
+        }
       } catch (error) {
         console.log(error.message);
-      };
+      }
+    };
+    if (userID) {
+      fetchUserProfile();
+    } else {
+      fetchFacilityProfile();
     }
-    if (userID) { fetchUserProfile(); } else { fetchFacilityProfile(); };
   }, []);
 
   const renderStars = () => {
@@ -91,7 +111,7 @@ const Review = ({
     const hashtags = [];
 
     if (reviewHashtags[0] == null) {
-      console.log(hashtags, "empty");
+      console.log(hashtags, 'empty');
       return hashtags;
     }
     if (Array.isArray(reviewHashtags)) {
@@ -115,12 +135,17 @@ const Review = ({
       setLoading(true);
       const currentLanguage = await getLanguageToken();
       const targetLanguage = currentLanguage === 'kr' ? 'en' : 'kr';
-      const _result = await translate(targetLanguage, currentLanguage, reviewContent, {
-        timeout: 5000,
-      });
+      const _result = await translate(
+        targetLanguage,
+        currentLanguage,
+        reviewContent,
+        {
+          timeout: 5000,
+        }
+      );
       setResult(_result);
     } catch (error) {
-      Alert.alert('Translate error!', "Already set to current language");
+      Alert.alert('Translate error!', 'Already set to current language');
       console.error('Translation error:', error);
     } finally {
       setLoading(false);
@@ -129,50 +154,51 @@ const Review = ({
 
   const deleteReviews = () => {
     Alert.alert(
-      "Delete Review",
-      "Do you really want to delete this review?",
+      'Delete Review',
+      'Do you really want to delete this review?',
       [
         {
-          text: "Yes",
+          text: 'Yes',
           onPress: () => {
             deleteReview(reviewId);
-            if (reviewreport) { deleteReport(reviewreport); };
-            Alert.alert(
-              "Review deleted"
-            );
-            if (!edit) { navigation.replace("MyPage"); }
-            else { navigation.replace("FacilityDetail", { facilityID }); };
-          }
+            if (reviewreport) {
+              deleteReport(reviewreport);
+            }
+            Alert.alert('Review deleted');
+            if (!edit) {
+              navigation.replace('MyPage');
+            } else {
+              navigation.replace('FacilityDetail', { facilityID });
+            }
+          },
         },
         {
-          text: "No",
-          onPress: () => { },
-          style: "cancel"
+          text: 'No',
+          onPress: () => {},
+          style: 'cancel',
         },
       ],
       { cancelable: false }
     );
   };
-  
+
   const keepReview = () => {
     Alert.alert(
-      "Keep Review",
-      "Do you really want to keep this review?",
+      'Keep Review',
+      'Do you really want to keep this review?',
       [
         {
-          text: "Yes",
+          text: 'Yes',
           onPress: () => {
             deleteReport(reviewreport);
-            Alert.alert(
-              "Review kept"
-            );
-            navigation.replace("MyPage");
-          }
+            Alert.alert('Review kept');
+            navigation.replace('MyPage');
+          },
         },
         {
-          text: "No",
-          onPress: () => { },
-          style: "cancel"
+          text: 'No',
+          onPress: () => {},
+          style: 'cancel',
         },
       ],
       { cancelable: false }
@@ -180,23 +206,21 @@ const Review = ({
   };
   const reportReview = () => {
     Alert.alert(
-      "Confirm Report",
-      "Do you really want to report this review?",
+      'Confirm Report',
+      'Do you really want to report this review?',
       [
         {
-          text: "Yes",
+          text: 'Yes',
           onPress: () => {
-            console.log("Report Sent:", reviewId);
+            console.log('Report Sent:', reviewId);
             sendReviewReport({ content: reviewContent, reviewId: reviewId });
-            Alert.alert(
-              "Report Sent"
-            )
-          }
+            Alert.alert('Report Sent');
+          },
         },
         {
-          text: "No",
-          onPress: () => console.log("Report cancelled"),
-          style: "cancel"
+          text: 'No',
+          onPress: () => console.log('Report cancelled'),
+          style: 'cancel',
         },
       ],
       { cancelable: false }
@@ -211,14 +235,23 @@ const Review = ({
             width: '95%',
             flexDirection: 'row',
             justifyContent: 'flex-end',
-          }}>
-          <TouchableOpacity onPress={() => (navigation.navigate("EditReview", { reviewId: reviewId, reviewConten: reviewContent, reviewImage: reviewImages, reviewHashtags: (reviewHashtags.map(item => (item.name))), reviewScore: reviewScore, facilityID: facilityID }))}>
-            <Text style={{ ...GlobalStyles.body2, marginRight: 12 }}>
-              Edit
-            </Text>
-          </TouchableOpacity>
+          }}
+        >
           <TouchableOpacity
-            onPress={deleteReviews}>
+            onPress={() =>
+              navigation.navigate('EditReview', {
+                reviewId: reviewId,
+                reviewConten: reviewContent,
+                reviewImage: reviewImages,
+                reviewHashtags: reviewHashtags.map((item) => item.name),
+                reviewScore: reviewScore,
+                facilityID: facilityID,
+              })
+            }
+          >
+            <Text style={{ ...GlobalStyles.body2, marginRight: 12 }}>Edit</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={deleteReviews}>
             <Image
               style={GlobalStyles.icon}
               contentFit="cover"
@@ -233,14 +266,14 @@ const Review = ({
             width: '95%',
             flexDirection: 'row',
             justifyContent: 'flex-end',
-          }}>
+          }}
+        >
           <TouchableOpacity onPress={onTranslate}>
             <Text style={{ ...GlobalStyles.body2, marginRight: 12 }}>
               Translate
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            onPress={reportReview}>
+          <TouchableOpacity onPress={reportReview}>
             <Image
               style={GlobalStyles.icon}
               contentFit="cover"
@@ -255,7 +288,8 @@ const Review = ({
           flexDirection: 'row',
           alignItems: 'center',
           width: '95%',
-        }}>
+        }}
+      >
         <Image
           style={{
             ...GlobalStyles.profileImage2,
@@ -263,7 +297,11 @@ const Review = ({
             marginRight: 15,
           }}
           contentFit="cover"
-          source={(userProfile?.userImage == "") ? userProfilePlaceholder : { uri: userProfile?.userImage }}
+          source={
+            userProfile?.userImage == ''
+              ? userProfilePlaceholder
+              : { uri: userProfile?.userImage }
+          }
         />
         <View>
           <View
@@ -272,17 +310,20 @@ const Review = ({
               alignItems: 'center',
               width: '90%',
               justifyContent: 'space-between',
-            }}>
+            }}
+          >
             <Text
               style={{ ...GlobalStyles.body, marginRight: 10 }}
               numberOfLines={1}
-              ellipsizeMode="tail">
+              ellipsizeMode="tail"
+            >
               {userProfile?.userName}
             </Text>
             <Text
               style={{ ...GlobalStyles.body2, marginRight: 10 }}
               numberOfLines={1}
-              ellipsizeMode="tail">
+              ellipsizeMode="tail"
+            >
               {reviewDate.substring(0, 10)}
             </Text>
           </View>
@@ -290,7 +331,8 @@ const Review = ({
             style={{
               flexDirection: 'row',
               alignItems: 'center',
-            }}>
+            }}
+          >
             {renderStars()}
           </View>
         </View>
@@ -303,7 +345,8 @@ const Review = ({
           width: '100%',
           justifyContent: 'flex-start',
           paddingTop: 5,
-        }}>
+        }}
+      >
         {reviewImages && (
           <Image
             style={GlobalStyles.squareImage2}
@@ -318,7 +361,8 @@ const Review = ({
               paddingHorizontal: 30,
               marginLeft: -10,
               textTransform: 'none',
-            }}>
+            }}
+          >
             {result}
           </Text>
         </View>
@@ -330,17 +374,27 @@ const Review = ({
           flexWrap: 'wrap',
           width: '100%',
           paddingBottom: 15,
-        }}>
+        }}
+      >
         {renderHashtags()}
       </View>
 
       {admin && (
-        <View style={{ flexDirection: 'row', justifyContent: 'flex-end', width: '100%', paddingBottom: 15 }}>
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'flex-end',
+            width: '100%',
+            paddingBottom: 15,
+          }}
+        >
           <TouchableOpacity onPress={deleteReviews}>
             <Text style={GlobalStyles.h4}>Delete</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={keepReview}>
-            <Text style={{ ...GlobalStyles.h4, color: Color.darkgray }}>Keep</Text>
+            <Text style={{ ...GlobalStyles.h4, color: Color.darkgray }}>
+              Keep
+            </Text>
           </TouchableOpacity>
         </View>
       )}
@@ -352,9 +406,7 @@ const Review = ({
           marginBottom: 10,
         }}
       />
-
     </View>
-
   );
 };
 

@@ -5,21 +5,28 @@ import { useEffect, useState } from 'react';
 const UserList = ({ UserImage, UserName, UserEnglishName }) => {
   if (UserImage == undefined) {
     UserImage = require('../assets/placeholders/User.png');
-  };
+  }
 
-  const [language, setLanguage] = useState('en');  
+  const [language, setLanguage] = useState('en');
 
   useEffect(() => {
     const fetchLanguage = async () => {
       const currentLanguage = await getLanguageToken();
       setLanguage(currentLanguage);
-      console.log("language: ", language);
-    }
+      console.log('language: ', language);
+    };
     fetchLanguage();
   }, []);
 
   return (
-    <View style={{ width: 70, alignItems: 'center', margin: 9, justifyContent: 'center' }}>
+    <View
+      style={{
+        width: 70,
+        alignItems: 'center',
+        margin: 9,
+        justifyContent: 'center',
+      }}
+    >
       <Image
         style={{ ...GlobalStyles.profileImage, marginTop: 0 }}
         contentFit="cover"
@@ -28,8 +35,9 @@ const UserList = ({ UserImage, UserName, UserEnglishName }) => {
       <Text
         style={{ ...GlobalStyles.body4, marginTop: 5 }}
         numberOfLines={1}
-        ellipsizeMode="tail">
-            {language === 'ko' ? UserName : UserEnglishName}
+        ellipsizeMode="tail"
+      >
+        {language === 'ko' ? UserName : UserEnglishName}
       </Text>
     </View>
   );

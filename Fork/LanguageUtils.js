@@ -12,10 +12,10 @@ const translations = {
     logout: 'Logout',
     login: 'Login',
     deleteAccount: 'Delete Account',
-    permissionDelete: "Do you really want to delete your account?",
-    deleteSuccess: "Account Deleted Successfully",
-    deleteFail: "Account deletion failed. Please try again",
-    reportSent: "Report Sent",
+    permissionDelete: 'Do you really want to delete your account?',
+    deleteSuccess: 'Account Deleted Successfully',
+    deleteFail: 'Account deletion failed. Please try again',
+    reportSent: 'Report Sent',
     reportAnIssue: 'Report an Issue',
     description: 'Description',
     reviewContent: 'Review Content',
@@ -101,7 +101,8 @@ const translations = {
     passwordsDoNotMatch: 'Passwords do not match',
 
     verifyEmailTitle: 'Verify your KAIST email',
-    verificationCodePrompt: 'We sent a verification code to your email address. Please check your email inbox.',
+    verificationCodePrompt:
+      'We sent a verification code to your email address. Please check your email inbox.',
     verificationCodePlaceholder: 'Verification code',
     resendCode: 'Resend code',
     successfulRegistrationTitle: 'You successfully registered on FORK!',
@@ -132,7 +133,8 @@ const translations = {
     reward: 'Add Reward',
     confirm: 'Confirm',
     failedRegistration: 'Error',
-    failedRegistrationMessage: 'Failed to send facility registration request. Please try again.',
+    failedRegistrationMessage:
+      'Failed to send facility registration request. Please try again.',
     menuItemName: 'Menu Item Name',
     rewardName: 'Reward Name',
     quantity: 'Quantity',
@@ -140,14 +142,16 @@ const translations = {
     openTimePlaceholder: 'Open Time (e.g., 17:00, Closed)',
     closeTimePlaceholder: 'Close Time (e.g., 09:00, Closed)',
     allowNotif: 'Allow push notifications',
-    permissionNotif: 'Would you like to enable push notifications to be notified once your registration request is accepted?',
+    permissionNotif:
+      'Would you like to enable push notifications to be notified once your registration request is accepted?',
     yes: 'Yes',
     no: 'No',
-    open: "Open",
-    closed: "Closed",
+    open: 'Open',
+    closed: 'Closed',
 
     registerReq: 'Registration request sent',
-    reqText: 'Once FORK admin reviews your registration request, a notification will be sent by both FORK application and email.',
+    reqText:
+      'Once FORK admin reviews your registration request, a notification will be sent by both FORK application and email.',
 
     foodPreferences: 'Your Food Prefences',
     save: 'Save',
@@ -195,9 +199,9 @@ const translations = {
     logout: '로그아웃',
     deleteAccount: '계정 삭제',
     permissionDelete: '정말로 계정을 삭제하시겠습니까?',
-    deleteSuccess: "계정이 성공적으로 삭제되었습니다",
-    deleteFail: "계정 삭제에 실패했습니다. 다시 시도해 주세요",
-    reportSent: "보고서 전송됨",
+    deleteSuccess: '계정이 성공적으로 삭제되었습니다',
+    deleteFail: '계정 삭제에 실패했습니다. 다시 시도해 주세요',
+    reportSent: '보고서 전송됨',
     reportAnIssue: '문제 신고',
     description: '설명',
     reviewContent: '내용 검토',
@@ -277,14 +281,14 @@ const translations = {
     facilityOwner: '시설 소유자',
     kaistMember: 'KAIST 회원',
 
-
     email: '이메일',
     confirmPassword: '비밀번호 확인',
     error: '오류',
     passwordsDoNotMatch: '비밀번호가 일치하지 않습니다',
 
     verifyEmailTitle: 'KAIST 이메일을 확인하세요',
-    verificationCodePrompt: '귀하의 이메일 주소로 인증 코드를 보냈습니다. 이메일 받은 편지함을 확인하세요.',
+    verificationCodePrompt:
+      '귀하의 이메일 주소로 인증 코드를 보냈습니다. 이메일 받은 편지함을 확인하세요.',
     verificationCodePlaceholder: '인증 코드',
     resendCode: '코드 재전송',
     successfulRegistrationTitle: 'FORK에 성공적으로 등록되었습니다!',
@@ -315,7 +319,8 @@ const translations = {
     reward: '보상 추가',
     confirm: '확인',
     failedRegistration: '오류',
-    failedRegistrationMessage: '시설 등록 요청을 보내지 못했습니다. 다시 시도해 주세요.',
+    failedRegistrationMessage:
+      '시설 등록 요청을 보내지 못했습니다. 다시 시도해 주세요.',
     menuItemName: '메뉴 항목 이름',
     rewardName: '보상 이름',
     quantity: '수량',
@@ -323,12 +328,14 @@ const translations = {
     openTimePlaceholder: '개장 시간 (예: 9:00, 휴무)',
     closeTimePlaceholder: '마감 시간 (예: 17:00, 휴무)',
     allowNotif: '푸시 알림 허용',
-    permissionNotif: '등록 요청이 승인되면 알림을 받기 위해 푸시 알림을 활성화하시겠습니까?',
+    permissionNotif:
+      '등록 요청이 승인되면 알림을 받기 위해 푸시 알림을 활성화하시겠습니까?',
     yes: '예',
     no: '아니오',
 
     registerReq: '등록 요청이 전송되었습니다',
-    reqText: 'FORK 관리자가 귀하의 등록 요청을 검토하면, FORK 애플리케이션과 이메일로 알림이 전송됩니다.',
+    reqText:
+      'FORK 관리자가 귀하의 등록 요청을 검토하면, FORK 애플리케이션과 이메일로 알림이 전송됩니다.',
 
     foodPreferences: '귀하의 음식 선호도',
     save: '저장',
@@ -345,8 +352,8 @@ const translations = {
     translate: '번역하다',
     permissionDenied: '위치 접근 권한이 거부되었습니다',
     permissionGranted: '위치 접근 권한이 승인되었습니다',
-    open: "열려 있는",
-    closed: "닫은",
+    open: '열려 있는',
+    closed: '닫은',
   },
   // Add more languages here
 };

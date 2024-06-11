@@ -145,14 +145,18 @@ import {
   StyleSheet,
   Alert,
   Keyboard,
-  TextInput
+  TextInput,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import ToggleSwitch from 'toggle-switch-react-native';
 import { useTranslator } from 'react-native-translator';
 import { GlobalStyles, Color, Border, FontSize } from '../GlobalStyles';
 import { deleteUser, handleLogOut, sendBugReport } from './api';
-import { setLanguageToken, getLanguageToken, getAllTranslations } from '../LanguageUtils';
+import {
+  setLanguageToken,
+  getLanguageToken,
+  getAllTranslations,
+} from '../LanguageUtils';
 import { USERTOKEN, LOGIN } from './api';
 import * as Location from 'expo-location';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -176,7 +180,9 @@ const Settings = () => {
   const navigation = useNavigation();
 
   useEffect(() => {
-    if (!LOGIN) {navigation.replace("SignUpLogIn")};
+    if (!LOGIN) {
+      navigation.replace('SignUpLogIn');
+    }
   }, LOGIN);
 
   const route = useRoute();
@@ -204,7 +210,10 @@ const Settings = () => {
   const toggleAccessLocation = async () => {
     const newAccessLocation = !accessLocation;
     setAccessLocation(newAccessLocation);
-    await AsyncStorage.setItem('locationPermission', JSON.stringify(newAccessLocation));
+    await AsyncStorage.setItem(
+      'locationPermission',
+      JSON.stringify(newAccessLocation)
+    );
   };
 
   const fetchTranslations = async (lang) => {
@@ -246,12 +255,11 @@ const Settings = () => {
     if (USERTOKEN) {
       await handleLogOut();
       navigation.goBack();
-      navigation.replace("SignUpLogIn");
+      navigation.replace('SignUpLogIn');
     } else {
       navigation.goBack();
-      navigation.replace("SignUpLogIn");
+      navigation.replace('SignUpLogIn');
     }
-
   };
 
   const deleteAccount = () => {
@@ -268,19 +276,19 @@ const Settings = () => {
                 console.log('Account Deleted Successfully: ', response);
                 Alert.alert(translations.deleteSuccess);
                 navigation.goBack();
-                navigation.replace("SignUpLogIn");
+                navigation.replace('SignUpLogIn');
               } else {
                 Alert.alert(translations.deleteFail);
               }
             } catch (error) {
               Alert.alert(translations.deleteFail);
             }
-          }
+          },
         },
         {
           text: translations.no,
-          onPress: () => { },
-          style: "cancel"
+          onPress: () => {},
+          style: 'cancel',
         },
       ],
       { cancelable: false }
@@ -304,19 +312,38 @@ const Settings = () => {
               source={require('../assets/icons/navigate_left.png')}
             />
           </TouchableOpacity>
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: -27, paddingBottom: 10 }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              marginTop: -27,
+              paddingBottom: 10,
+            }}
+          >
             <Text style={GlobalStyles.h1}>{translations.settings}</Text>
           </View>
         </View>
 
         <View style={{ alignItems: 'center', width: '100%' }}>
           <Image
-            style={{ ...GlobalStyles.profileImage, marginTop: 10, marginBottom: 10 }}
+            style={{
+              ...GlobalStyles.profileImage,
+              marginTop: 10,
+              marginBottom: 10,
+            }}
             contentFit="cover"
             source={userProfile}
           />
           <Text style={GlobalStyles.body}>{userName}</Text>
-          <Text style={{ ...GlobalStyles.body2, paddingVertical: 8, textTransform: 'none' }}>{userEmail}</Text>
+          <Text
+            style={{
+              ...GlobalStyles.body2,
+              paddingVertical: 8,
+              textTransform: 'none',
+            }}
+          >
+            {userEmail}
+          </Text>
         </View>
 
         <View style={{ width: '100%', paddingVertical: 5 }}>
@@ -327,7 +354,9 @@ const Settings = () => {
                 source={require('../assets/icons/location.png')}
                 style={styles.icon}
               />
-              <Text style={GlobalStyles.body}>{translations.shareMyLocation}</Text>
+              <Text style={GlobalStyles.body}>
+                {translations.shareMyLocation}
+              </Text>
             </View>
             <ToggleSwitch
               isOn={accessLocation}
@@ -346,7 +375,9 @@ const Settings = () => {
               <Text style={GlobalStyles.body}>{translations.language}</Text>
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Text style={{ ...GlobalStyles.body2, paddingHorizontal: 5 }}>ENG</Text>
+              <Text style={{ ...GlobalStyles.body2, paddingHorizontal: 5 }}>
+                ENG
+              </Text>
               <ToggleSwitch
                 isOn={language === 'ko'}
                 onColor={Color.orange_700}
@@ -354,7 +385,9 @@ const Settings = () => {
                 size="small"
                 onToggle={toggleLanguage}
               />
-              <Text style={{ ...GlobalStyles.body2, paddingHorizontal: 5 }}>KOR</Text>
+              <Text style={{ ...GlobalStyles.body2, paddingHorizontal: 5 }}>
+                KOR
+              </Text>
             </View>
           </View>
         </View>
@@ -365,7 +398,11 @@ const Settings = () => {
                 source={require('../assets/icons/logout.png')}
                 style={styles.icon}
               />
-              <Text style={GlobalStyles.body}>{(USERTOKEN != 'guest') ? translations.logout : translations.login}</Text>
+              <Text style={GlobalStyles.body}>
+                {USERTOKEN != 'guest'
+                  ? translations.logout
+                  : translations.login}
+              </Text>
             </View>
           </TouchableOpacity>
           <TouchableOpacity style={styles.container} onPress={deleteAccount}>
@@ -374,19 +411,32 @@ const Settings = () => {
                 source={require('../assets/icons/delete.png')}
                 style={styles.icon}
               />
-              <Text style={GlobalStyles.body}>{translations.deleteAccount}</Text>
+              <Text style={GlobalStyles.body}>
+                {translations.deleteAccount}
+              </Text>
             </View>
           </TouchableOpacity>
         </View>
 
         <View style={{ width: '100%', paddingVertical: 5 }}>
           <TouchableOpacity style={styles.container} onPress={toggleReport}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: Color.yellow_100, width: '100%', paddingVertical: 10, borderRadius: Border.br_2xs }}>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: Color.yellow_100,
+                width: '100%',
+                paddingVertical: 10,
+                borderRadius: Border.br_2xs,
+              }}
+            >
               <Image
                 source={require('../assets/icons/report.png')}
                 style={{ ...styles.icon, tintColor: Color.orange_700 }}
               />
-              <Text style={GlobalStyles.body}>{translations.reportAnIssue}</Text>
+              <Text style={GlobalStyles.body}>
+                {translations.reportAnIssue}
+              </Text>
             </View>
           </TouchableOpacity>
         </View>
@@ -394,9 +444,18 @@ const Settings = () => {
         {report && (
           <View style={styles.overlay}>
             <View style={styles.background}>
-              <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+              >
                 <Text style={GlobalStyles.h2}>{translations.description}</Text>
-                <TouchableOpacity style={{ ...GlobalStyles.topIcon, marginRight: 0 }} onPress={toggleReport}>
+                <TouchableOpacity
+                  style={{ ...GlobalStyles.topIcon, marginRight: 0 }}
+                  onPress={toggleReport}
+                >
                   <Image
                     source={require('../assets/icons/navigate_close.png')}
                   />
@@ -404,7 +463,9 @@ const Settings = () => {
               </View>
               <View style={{ width: '100%', alignItems: 'center' }}>
                 <View style={styles.inputSection}>
-                  <Text style={GlobalStyles.h3}>{translations.description}</Text>
+                  <Text style={GlobalStyles.h3}>
+                    {translations.description}
+                  </Text>
                   <View style={GlobalStyles.inputWrapper3}>
                     <TextInput
                       style={styles.registrationInput2}
@@ -417,7 +478,14 @@ const Settings = () => {
                     />
                   </View>
                 </View>
-                <View style={{ width: '100%', justifyContent: 'flex-end', flexDirection: 'row', paddingTop: 20 }}>
+                <View
+                  style={{
+                    width: '100%',
+                    justifyContent: 'flex-end',
+                    flexDirection: 'row',
+                    paddingTop: 20,
+                  }}
+                >
                   <TouchableOpacity onPress={sendReport}>
                     <Text style={GlobalStyles.h4}>{translations.send}</Text>
                   </TouchableOpacity>
@@ -435,14 +503,14 @@ const styles = StyleSheet.create({
   icon: {
     width: 30,
     height: 30,
-    marginRight: 10
+    marginRight: 10,
   },
   container: {
     width: '100%',
     flexDirection: 'row',
     justifyContent: 'space-between',
     padding: 10,
-    alignItems: 'center'
+    alignItems: 'center',
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
@@ -466,7 +534,7 @@ const styles = StyleSheet.create({
     borderRadius: Border.br_lg,
     padding: 30,
     paddingTop: 15,
-    alignItems: 'center'
+    alignItems: 'center',
   },
   inputSection: {
     width: '100%',

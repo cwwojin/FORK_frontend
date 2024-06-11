@@ -1,8 +1,16 @@
 import React, { useCallback, useState, useEffect } from 'react';
-import { View, Text, Button, StyleSheet, Image, TouchableOpacity, SafeAreaView } from 'react-native';
-import {LinearGradient}  from 'expo-linear-gradient';
-import { Border, Color, GlobalStyles } from "../GlobalStyles.js";
-import LoginInput from '../components/LoginInput'; 
+import {
+  View,
+  Text,
+  Button,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  SafeAreaView,
+} from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Border, Color, GlobalStyles } from '../GlobalStyles.js';
+import LoginInput from '../components/LoginInput';
 import { getAllTranslations, getLanguageToken } from '../LanguageUtils';
 
 const Login = ({ navigation }) => {
@@ -27,7 +35,7 @@ const Login = ({ navigation }) => {
           <Text style={GlobalStyles.title}>{translations.logIn}</Text>
         </View>
         <View style={styles.userInputs}>
-          <LoginInput /> 
+          <LoginInput />
         </View>
       </View>
     </SafeAreaView>
@@ -50,7 +58,7 @@ const styles = StyleSheet.create({
     height: 120,
     marginBottom: 30,
     marginTop: 70,
-  }, 
+  },
   userInputs: {
     flexDirection: 'column',
     justifyContent: 'space-between',

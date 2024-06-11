@@ -1,11 +1,5 @@
 import * as React from 'react';
-import {
-  Text,
-  View,
-  Image,
-  SafeAreaView,
-  ScrollView,
-} from 'react-native';
+import { Text, View, Image, SafeAreaView, ScrollView } from 'react-native';
 import { useEffect, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 
@@ -17,15 +11,21 @@ import { FacilityDetails } from './MapViewFunctions';
 
 //To be deleted
 import longImagePlaceholder from '../assets/placeholders/long_image.png';
-import { getNewestFacilities, getTrendingFacilities, LOGIN, USERPREFERENCE, getTrendingPreferenceFacilities } from './api';
+import {
+  getNewestFacilities,
+  getTrendingFacilities,
+  LOGIN,
+  USERPREFERENCE,
+  getTrendingPreferenceFacilities,
+} from './api';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { getLanguageToken, getAllTranslations } from '../LanguageUtils';
 
-
 const Home = () => {
-
   useEffect(() => {
-    if (!LOGIN) {navigation.replace("SignUpLogIn")};
+    if (!LOGIN) {
+      navigation.replace('SignUpLogIn');
+    }
   }, LOGIN);
 
   //Get Informations of facilities
@@ -59,7 +59,7 @@ const Home = () => {
     while (indices.size < n) {
       indices.add(Math.floor(Math.random() * length)); // Generate random index
     }
-    indices.forEach(index => {
+    indices.forEach((index) => {
       result.push(array[index]); // Push the element corresponding to the index to the result array
     });
     return result;
@@ -94,7 +94,8 @@ const Home = () => {
         const suggestedFacilities = {};
         for (const item of indices) {
           const facilityInfo = await getTrendingPreferenceFacilities(item.id);
-          suggestedFacilities[item.id] = facilityInfo.length > 0 ? facilityInfo[0] : null;
+          suggestedFacilities[item.id] =
+            facilityInfo.length > 0 ? facilityInfo[0] : null;
         }
         setSuggestions(suggestedFacilities);
         setPreference(indices);
@@ -105,13 +106,14 @@ const Home = () => {
       }
     };
     fetchTrending();
-
   }, []);
 
   const navigation = useNavigation();
 
   useEffect(() => {
-    if (!LOGIN) {navigation.replace("SignUpLogIn")};
+    if (!LOGIN) {
+      navigation.replace('SignUpLogIn');
+    }
   }, LOGIN);
 
   return (
@@ -129,21 +131,27 @@ const Home = () => {
             <ScrollView
               horizontal
               style={GlobalStyles.scroll}
-              showsHorizontalScrollIndicator={false}>
-              {trending && trending.map(item => (
-                <TouchableOpacity onPress={() => {
-                  navigation.navigate("FacilityDetail", { facilityID: item.id });
-                }}>
-                  <SquareFacility
-                    facilityImage={item.profile_img_uri}
-                    facilityName={item.name}
-                    facilityEnglishName={item.english_name}
-                    facilityAddress={item.english_address}
-                    facilityKoreanAddress={item.road_address}
-                    facilityScore={item.avg_score}
-                  />
-                </TouchableOpacity>
-              ))}
+              showsHorizontalScrollIndicator={false}
+            >
+              {trending &&
+                trending.map((item) => (
+                  <TouchableOpacity
+                    onPress={() => {
+                      navigation.navigate('FacilityDetail', {
+                        facilityID: item.id,
+                      });
+                    }}
+                  >
+                    <SquareFacility
+                      facilityImage={item.profile_img_uri}
+                      facilityName={item.name}
+                      facilityEnglishName={item.english_name}
+                      facilityAddress={item.english_address}
+                      facilityKoreanAddress={item.road_address}
+                      facilityScore={item.avg_score}
+                    />
+                  </TouchableOpacity>
+                ))}
             </ScrollView>
           </View>
 
@@ -152,37 +160,46 @@ const Home = () => {
             <ScrollView
               horizontal
               style={GlobalStyles.scroll}
-              showsHorizontalScrollIndicator={false}>
-              {newest && newest.map(item => (
-                <TouchableOpacity onPress={() => {
-                  navigation.navigate("FacilityDetail", { facilityID: item.id });
-                }}>
-                  <SquareFacility
-                    facilityImage={item.profile_img_uri}
-                    facilityName={item.name}
-                    facilityEnglishName={item.english_name}
-                    facilityKoreanAddress={item.road_address}
-                    facilityAddress={item.english_address}
-                    facilityScore={item.avg_score}
-                  />
-                </TouchableOpacity>
-              ))}
+              showsHorizontalScrollIndicator={false}
+            >
+              {newest &&
+                newest.map((item) => (
+                  <TouchableOpacity
+                    onPress={() => {
+                      navigation.navigate('FacilityDetail', {
+                        facilityID: item.id,
+                      });
+                    }}
+                  >
+                    <SquareFacility
+                      facilityImage={item.profile_img_uri}
+                      facilityName={item.name}
+                      facilityEnglishName={item.english_name}
+                      facilityKoreanAddress={item.road_address}
+                      facilityAddress={item.english_address}
+                      facilityScore={item.avg_score}
+                    />
+                  </TouchableOpacity>
+                ))}
             </ScrollView>
           </View>
 
-          <Text style={GlobalStyles.h2}>
-            {translations.foodiePicks}
-          </Text>
-          {preference?.map(item => (
+          <Text style={GlobalStyles.h2}>{translations.foodiePicks}</Text>
+          {preference?.map((item) => (
             <>
               <Text style={{ ...GlobalStyles.h3, flexDirection: 'row' }}>
                 <Text>{translations.forOur}</Text>
-                <Text style={{ color: Color.orange_700 }}>{item.name} {translations.dishLovers}</Text>
+                <Text style={{ color: Color.orange_700 }}>
+                  {item.name} {translations.dishLovers}
+                </Text>
                 <Text>, {translations.weSuggest} ...</Text>
               </Text>
               <View style={{ width: '105%', paddingBottom: 15 }}>
                 {suggestions[item.id] && (
-                  <FacilityDetails key={item.id} facility={suggestions[item.id]} />
+                  <FacilityDetails
+                    key={item.id}
+                    facility={suggestions[item.id]}
+                  />
                 )}
               </View>
             </>

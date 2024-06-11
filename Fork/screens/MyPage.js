@@ -18,10 +18,13 @@ import { Dropdown } from 'react-native-element-dropdown';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 
-
-
-
-import { GlobalStyles, Color, Border, FontFamily, FontSize } from '../GlobalStyles';
+import {
+  GlobalStyles,
+  Color,
+  Border,
+  FontFamily,
+  FontSize,
+} from '../GlobalStyles';
 import SquareFacility from '../components/SqureFacility';
 import UserList from '../components/UserList';
 import Hashtag from '../components/Hashtag';
@@ -33,23 +36,40 @@ import Stamp from '../components/Stamp';
 import NavigationBar from '../components/NavigationBar';
 
 import userImage from '../assets/placeholders/User.png';
-import { getLanguageToken, getTranslations, getAllTranslations } from '../LanguageUtils';
+import {
+  getLanguageToken,
+  getTranslations,
+  getAllTranslations,
+} from '../LanguageUtils';
 
 //To be deleted
 import longImagePlaceholder from '../assets/placeholders/long_image.png';
 import {
-  USERID, USERPREFERENCE, fetchImage, getFacilityByID, getFacilityRegistrations, getMyFacilities, getMyFacilityRegistrations, getReports, getReviewByQuery,
-  getStampBook, getUserByID, getUserFavorites, getFacilityStampRuleByID,
+  USERID,
+  USERPREFERENCE,
+  fetchImage,
+  getFacilityByID,
+  getFacilityRegistrations,
+  getMyFacilities,
+  getMyFacilityRegistrations,
+  getReports,
+  getReviewByQuery,
+  getStampBook,
+  getUserByID,
+  getUserFavorites,
+  getFacilityStampRuleByID,
   createFacilityPost,
   USERTYPE,
-  LOGIN
+  LOGIN,
 } from './api';
 
 const MyPage = () => {
   //Get Informations of facilities
 
   useEffect(() => {
-    if (!LOGIN) {navigation.replace("SignUpLogIn")};
+    if (!LOGIN) {
+      navigation.replace('SignUpLogIn');
+    }
   }, LOGIN);
 
   const [userType, setUserType] = useState(USERTYPE);
@@ -90,32 +110,43 @@ const MyPage = () => {
         { index: 5, day: 'Friday', openTime: '', closeTime: '' },
         { index: 6, day: 'Saturday', openTime: '', closeTime: '' },
         { index: 0, day: 'Sunday', openTime: '', closeTime: '' },
-
       ];
-      console.log("data opening", data.opening_hours)
-      if (!(data.opening_hours.length === 1 && data.opening_hours[0] === null)) {
-
+      console.log('data opening', data.opening_hours);
+      if (
+        !(data.opening_hours.length === 1 && data.opening_hours[0] === null)
+      ) {
         data.opening_hours?.forEach(({ day, open_time, close_time }) => {
-          const item = newtimeData.find(entry => entry.index === day);
+          const item = newtimeData.find((entry) => entry.index === day);
           if (item) {
-            item.openTime = open_time.slice(0, 5);  // Remove seconds
+            item.openTime = open_time.slice(0, 5); // Remove seconds
             item.closeTime = close_time.slice(0, 5); // Remove seconds
           }
         });
       }
 
-
       const stamps = await fetchFacilityInfoSubStamp(data.id);
-      console.log("stamps: ", stamps);
+      console.log('stamps: ', stamps);
 
-      const imageUrl = data.profile_img_uri ? await fetchImage(data.profile_img_uri) : longImagePlaceholder;
-
+      const imageUrl = data.profile_img_uri
+        ? await fetchImage(data.profile_img_uri)
+        : longImagePlaceholder;
 
       if (data.profile_img_uri) {
         const imageUrl = await fetchImage(data.profile_img_uri);
-        setFacilityInfoSub({ timeData: newtimeData, stamp: stamps.stamp, stampImage: stamps.stampImage, profileImage: (imageUrl != undefined) ? { uri: imageUrl } : longImagePlaceholder });
+        setFacilityInfoSub({
+          timeData: newtimeData,
+          stamp: stamps.stamp,
+          stampImage: stamps.stampImage,
+          profileImage:
+            imageUrl != undefined ? { uri: imageUrl } : longImagePlaceholder,
+        });
       } else {
-        setFacilityInfoSub({ timeData: newtimeData, stamp: stamps.stamp, stampImage: stamps.stampImage, profileImage: longImagePlaceholder });
+        setFacilityInfoSub({
+          timeData: newtimeData,
+          stamp: stamps.stamp,
+          stampImage: stamps.stampImage,
+          profileImage: longImagePlaceholder,
+        });
       }
     } catch (error) {
       console.log(error.message);
@@ -124,52 +155,53 @@ const MyPage = () => {
   const fetchFacilityInfoSubStamp = async (id) => {
     try {
       const stamps = await getFacilityStampRuleByID(id);
-      console.log("real stamps: ", stamps);
-      let stampImage = "";
+      console.log('real stamps: ', stamps);
+      let stampImage = '';
       let stampRule = [];
       if (stamps.logo_img_uri) {
         const stampImages = await fetchImage(stamps.logo_img_uri);
         if (stampImages != undefined) {
-          stampImage = stampImages
+          stampImage = stampImages;
           if (stamps.rewards) {
-            const maxCnt = Math.max(...stamps.rewards.map(reward => reward.cnt));
+            const maxCnt = Math.max(
+              ...stamps.rewards.map((reward) => reward.cnt)
+            );
             const newStampRule = Array(maxCnt).fill('');
-            stamps.rewards.forEach(reward => {
+            stamps.rewards.forEach((reward) => {
               newStampRule[reward.cnt - 1] = reward?.name;
             });
             stampRule = newStampRule;
-            console.log("StampRule: ", stampRule)
+            console.log('StampRule: ', stampRule);
             return { stampImage: stampImage, stamp: stampRule };
           } else {
             return { stampImage: stampImage, stamp: stampRule };
           }
         } else {
           return { stampImage: stampImage, stamp: stampRule };
-        };
+        }
       } else {
-
         if (stamps.rewards) {
-          const maxCnt = Math.max(...stamps.rewards.map(reward => reward.cnt));
+          const maxCnt = Math.max(
+            ...stamps.rewards.map((reward) => reward.cnt)
+          );
           const newStampRule = Array(maxCnt).fill('');
-          stamps.rewards.forEach(reward => {
-            console.log("reading rewards")
+          stamps.rewards.forEach((reward) => {
+            console.log('reading rewards');
             newStampRule[reward.cnt - 1] = reward?.name;
           });
           stampRule = newStampRule;
-          console.log("StampRule: ", newStampRule)
+          console.log('StampRule: ', newStampRule);
 
           return { stampImage: stampImage, stamp: stampRule };
         } else {
           return { stampImage: stampImage, stamp: stampRule };
         }
-
       }
     } catch (error) {
       console.log(error.message);
       return { stampImage: require('../assets/icons/stamp.png'), stamp: [] };
     }
   };
-
 
   useEffect(() => {
     // -------Admin User---------
@@ -178,7 +210,7 @@ const MyPage = () => {
         const data = await getFacilityRegistrations();
         setFacilityRegistrations(data);
 
-        console.log("facility registration: ", data);
+        console.log('facility registration: ', data);
       } catch (error) {
         console.log(error.message);
       }
@@ -188,7 +220,7 @@ const MyPage = () => {
         const data = await getReports(1);
         setReviewReports(data);
 
-        console.log("review reports: ", data);
+        console.log('review reports: ', data);
 
         const newReviewReportsProfile = {};
         for (const item of data) {
@@ -204,7 +236,7 @@ const MyPage = () => {
       try {
         const data = await getReports(0);
         setBugReports(data);
-        console.log("bug reports:", data);
+        console.log('bug reports:', data);
       } catch (error) {
         console.log(error.message);
       }
@@ -214,7 +246,7 @@ const MyPage = () => {
       try {
         const data = await getUserFavorites();
         setUserFavorite(data);
-        console.log("favorites: ", data);
+        console.log('favorites: ', data);
       } catch (error) {
         console.log(error.message);
       }
@@ -231,9 +263,17 @@ const MyPage = () => {
           const facilityInfo = await getFacilityByID(item.facility_id);
           if (facilityInfo.profile_img_uri) {
             const imageUrl = await fetchImage(facilityInfo.profile_img_uri);
-            stampFacility[item.facility_id] = { name: facilityInfo.name, image: imageUrl, english_name: facilityInfo.english_name };
+            stampFacility[item.facility_id] = {
+              name: facilityInfo.name,
+              image: imageUrl,
+              english_name: facilityInfo.english_name,
+            };
           } else {
-            stampFacility[item.facility_id] = { name: facilityInfo.name, image: userImage, english_name: facilityInfo.english_name };
+            stampFacility[item.facility_id] = {
+              name: facilityInfo.name,
+              image: userImage,
+              english_name: facilityInfo.english_name,
+            };
           }
         }
         setUserStampFacility(stampFacility);
@@ -250,7 +290,10 @@ const MyPage = () => {
         const reviewfacilityName = {};
         for (const item of topReviews) {
           const facilityInfo = await getFacilityByID(item.facility_id);
-          reviewfacilityName[item.id] = {name: facilityInfo.name, englishName: facilityInfo.english_name};
+          reviewfacilityName[item.id] = {
+            name: facilityInfo.name,
+            englishName: facilityInfo.english_name,
+          };
         }
         setUserReviewFacility(reviewfacilityName);
       } catch (error) {
@@ -273,8 +316,7 @@ const MyPage = () => {
       } catch (error) {
         console.log(error.message);
       }
-    }
-
+    };
 
     const fetchUser = async (userID) => {
       try {
@@ -284,18 +326,19 @@ const MyPage = () => {
         if (data.profile_img_uri) {
           const profileImage = await fetchImage(data.profile_img_uri);
           setUserProfile(profileImage);
-        };
-        if (data.user_type == 0) { //Admin
+        }
+        if (data.user_type == 0) {
+          //Admin
           fetchFacilityRegistration();
           fetchReviewReports();
           fetchBugReports();
-        }
-        else if (data.user_type == 1) { //KAIST User
+        } else if (data.user_type == 1) {
+          //KAIST User
           fetchFavorites();
           fetchMyStamps();
           fetchMyReviews();
-        }
-        else if (data.user_type == 2) { //Facility User
+        } else if (data.user_type == 2) {
+          //Facility User
           fetchMyFacilityRegistrations();
           fetchMyFacilities();
         }
@@ -303,7 +346,9 @@ const MyPage = () => {
         console.log(error.message);
       }
     };
-    if (USERID) { fetchUser(USERID) };
+    if (USERID) {
+      fetchUser(USERID);
+    }
   }, []);
 
   console.log(userInfo);
@@ -340,10 +385,10 @@ const MyPage = () => {
         aspect: [1, 3],
         quality: 1,
       });
-      console.log("Result object:", result);
+      console.log('Result object:', result);
       if (!result.canceled && result.assets && result.assets.length > 0) {
         const source = { uri: result.assets[0].uri };
-        console.log("source uri : " + source.uri);
+        console.log('source uri : ' + source.uri);
 
         const uncompressedImage = await ImageManipulator.manipulateAsync(
           source.uri,
@@ -362,43 +407,50 @@ const MyPage = () => {
     setModerate(true);
     try {
       if (noticeImage == '') {
-        const response = await createFacilityPost({ facilityId: facilityInfo.id, content: noticeContent });
+        const response = await createFacilityPost({
+          facilityId: facilityInfo.id,
+          content: noticeContent,
+        });
         console.log('Notice uploaded successfully:', response);
-        Alert.alert("Notice upload successful!")
-      }
-      else {
-        const response = await createFacilityPost({ facilityId: facilityInfo.id, content: noticeContent, imageUri: noticeImage });
+        Alert.alert('Notice upload successful!');
+      } else {
+        const response = await createFacilityPost({
+          facilityId: facilityInfo.id,
+          content: noticeContent,
+          imageUri: noticeImage,
+        });
         console.log('Notice uploaded successfully:', response);
-        Alert.alert("Notice upload successful!")
+        Alert.alert('Notice upload successful!');
       }
       toggleUpload();
       setModerate(false);
-      navigation.replace("MyPage");
+      navigation.replace('MyPage');
     } catch (error) {
       if (error && error === 499) {
         setModerate(false);
-        Alert.alert("Error", "Review upload fail due to harmful content");
+        Alert.alert('Error', 'Review upload fail due to harmful content');
       } else {
         setModerate(false);
         console.log(error);
-        Alert.alert("Notice upload failed. Please try again");
+        Alert.alert('Notice upload failed. Please try again');
       }
-
     }
-  }
-
+  };
 
   const renderLabel = () => {
     if (value || isFocus) {
       return (
-        <Text style={[styles.label, isFocus && { color: Color.orange_700 }]}>
-        </Text>
+        <Text
+          style={[styles.label, isFocus && { color: Color.orange_700 }]}
+        ></Text>
       );
     }
     return null;
   };
 
-  {/* -----------------GUEST User---------------------- */ }
+  {
+    /* -----------------GUEST User---------------------- */
+  }
   if (USERTYPE !== 0 && USERTYPE !== 1 && USERTYPE !== 2) {
     return (
       <>
@@ -410,15 +462,18 @@ const MyPage = () => {
                 alignItems: 'center',
                 marginTop: -27,
                 paddingBottom: 10,
-              }}>
+              }}
+            >
               <Text style={GlobalStyles.h1}>My Page</Text>
-              <TouchableOpacity onPress={() => {
-                navigation.navigate("Settings", {
-                  userName: userInfo.account_id,
-                  userProfile: userProfile,
-                  userEmail: userInfo.email
-                });
-              }}>
+              <TouchableOpacity
+                onPress={() => {
+                  navigation.navigate('Settings', {
+                    userName: userInfo.account_id,
+                    userProfile: userProfile,
+                    userEmail: userInfo.email,
+                  });
+                }}
+              >
                 <Image
                   style={GlobalStyles.topIcon}
                   source={require('../assets/icons/setting.png')}
@@ -431,9 +486,17 @@ const MyPage = () => {
                 justifyContent: 'center',
                 alignItems: 'center',
                 marginTop: 10,
-              }}>
-              <Image source={require('../assets/logos/coloredLogo.png')} style={{ height: 80, width: 80 }} />
-              <Text style={{ ...GlobalStyles.h4, textAlign: 'center', padding: 20 }}>Please Login for more</Text>
+              }}
+            >
+              <Image
+                source={require('../assets/logos/coloredLogo.png')}
+                style={{ height: 80, width: 80 }}
+              />
+              <Text
+                style={{ ...GlobalStyles.h4, textAlign: 'center', padding: 20 }}
+              >
+                Please Login for more
+              </Text>
             </View>
           </View>
         </SafeAreaView>
@@ -445,14 +508,12 @@ const MyPage = () => {
           navigation={navigation}
         />
       </>
-    )
+    );
   } else {
-
     return (
       <>
-
         {/* -----------------KAIST User---------------------- */}
-        {(userType == 1) && (
+        {userType == 1 && (
           <SafeAreaView style={GlobalStyles.background}>
             <ScrollView showsVerticalScrollIndicator={false}>
               <View style={GlobalStyles.content}>
@@ -462,15 +523,18 @@ const MyPage = () => {
                     alignItems: 'center',
                     marginTop: -27,
                     paddingBottom: 10,
-                  }}>
+                  }}
+                >
                   <Text style={GlobalStyles.h1}>{translations.myPage}</Text>
-                  <TouchableOpacity onPress={() => {
-                    navigation.navigate("Settings", {
-                      userName: userInfo.account_id,
-                      userProfile: userProfile,
-                      userEmail: userInfo.email
-                    });
-                  }}>
+                  <TouchableOpacity
+                    onPress={() => {
+                      navigation.navigate('Settings', {
+                        userName: userInfo.account_id,
+                        userProfile: userProfile,
+                        userEmail: userInfo.email,
+                      });
+                    }}
+                  >
                     <Image
                       style={GlobalStyles.topIcon}
                       source={require('../assets/icons/setting.png')}
@@ -483,21 +547,36 @@ const MyPage = () => {
                     width: '100%',
                     justifyContent: 'flex-start',
                     marginTop: 10,
-                  }}>
+                  }}
+                >
                   <Image
                     style={{ ...GlobalStyles.profileImage, marginRight: 20 }}
-                    source={Number.isInteger(userProfile) ? userProfile : { uri: userProfile }}
+                    source={
+                      Number.isInteger(userProfile)
+                        ? userProfile
+                        : { uri: userProfile }
+                    }
                   />
                   <View style={{ justifyContent: 'center' }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <View
+                      style={{ flexDirection: 'row', alignItems: 'center' }}
+                    >
                       <Text style={{ ...GlobalStyles.body, marginRight: 15 }}>
                         {userInfo.account_id}
                       </Text>
-                      <TouchableOpacity onPress={() => (navigation.navigate("EditProfile", { userInfo }))}>
-                        <Text style={GlobalStyles.body2}>{translations.edit}</Text>
+                      <TouchableOpacity
+                        onPress={() =>
+                          navigation.navigate('EditProfile', { userInfo })
+                        }
+                      >
+                        <Text style={GlobalStyles.body2}>
+                          {translations.edit}
+                        </Text>
                       </TouchableOpacity>
                     </View>
-                    <Text style={{ ...GlobalStyles.body2, textTransform: 'none' }}>
+                    <Text
+                      style={{ ...GlobalStyles.body2, textTransform: 'none' }}
+                    >
                       {userInfo.email}
                     </Text>
                   </View>
@@ -509,12 +588,11 @@ const MyPage = () => {
                     justifyContent: 'flex-start',
                     flexWrap: 'wrap',
                     marginTop: 10,
-                  }}>
-                  {USERPREFERENCE && USERPREFERENCE.map(item => (
-                    <Hashtag tag={item} />
-                  ))}
+                  }}
+                >
+                  {USERPREFERENCE &&
+                    USERPREFERENCE.map((item) => <Hashtag tag={item} />)}
                 </View>
- 
 
                 <View
                   style={{
@@ -523,19 +601,22 @@ const MyPage = () => {
                     justifyContent: 'space-between',
                     marginTop: 10,
                     alignItems: 'center',
-                  }}>
+                  }}
+                >
                   <Text
                     style={{
                       ...GlobalStyles.h2,
                       width: 'flexwrap',
                       justifyContent: 'center',
-                    }}>
+                    }}
+                  >
                     {translations.favorites}
                   </Text>
                   <TouchableOpacity
                     onPress={() => {
                       navigation.navigate('Favorites');
-                    }}>
+                    }}
+                  >
                     <Image
                       style={GlobalStyles.icon}
                       source={require('../assets/icons/navigate_right.png')}
@@ -546,12 +627,15 @@ const MyPage = () => {
                   <ScrollView
                     horizontal
                     style={GlobalStyles.scroll}
-                    showsHorizontalScrollIndicator={false}>
-                    {userFavorite?.map(item => (
+                    showsHorizontalScrollIndicator={false}
+                  >
+                    {userFavorite?.map((item) => (
                       <TouchableOpacity
                         key={item.id}
                         onPress={() => {
-                          navigation.navigate("FacilityDetail", { facilityID: item.id });
+                          navigation.navigate('FacilityDetail', {
+                            facilityID: item.id,
+                          });
                         }}
                       >
                         <SquareFacility
@@ -574,19 +658,22 @@ const MyPage = () => {
                     justifyContent: 'space-between',
                     marginTop: 10,
                     alignItems: 'center',
-                  }}>
+                  }}
+                >
                   <Text
                     style={{
                       ...GlobalStyles.h2,
                       width: 'flexwrap',
                       justifyContent: 'center',
-                    }}>
+                    }}
+                  >
                     {translations.myStamps}
                   </Text>
                   <TouchableOpacity
                     onPress={() => {
                       navigation.navigate('MyStamps');
-                    }}>
+                    }}
+                  >
                     <Image
                       style={GlobalStyles.icon}
                       source={require('../assets/icons/navigate_right.png')}
@@ -596,14 +683,23 @@ const MyPage = () => {
                 <ScrollView
                   horizontal
                   style={GlobalStyles.scroll}
-                  showsHorizontalScrollIndicator={false}>
-                  {userStamp?.map(item => (
+                  showsHorizontalScrollIndicator={false}
+                >
+                  {userStamp?.map((item) => (
                     <TouchableOpacity
                       onPress={() => {
-                        navigation.navigate("FacilityDetail", { facilityID: item.facility_id });
+                        navigation.navigate('FacilityDetail', {
+                          facilityID: item.facility_id,
+                        });
                       }}
                     >
-                      <UserList UserImage={userStampFacility[item.facility_id]?.image} UserName={userStampFacility[item.facility_id]?.name} UserEnglishName={userStampFacility[item.facility_id]?.english_name} />
+                      <UserList
+                        UserImage={userStampFacility[item.facility_id]?.image}
+                        UserName={userStampFacility[item.facility_id]?.name}
+                        UserEnglishName={
+                          userStampFacility[item.facility_id]?.english_name
+                        }
+                      />
                     </TouchableOpacity>
                   ))}
                 </ScrollView>
@@ -614,19 +710,22 @@ const MyPage = () => {
                     justifyContent: 'space-between',
                     marginTop: 10,
                     alignItems: 'center',
-                  }}>
+                  }}
+                >
                   <Text
                     style={{
                       ...GlobalStyles.h2,
                       width: 'flexwrap',
                       justifyContent: 'center',
-                    }}>
+                    }}
+                  >
                     {translations.myReviews}
                   </Text>
                   <TouchableOpacity
                     onPress={() => {
                       navigation.navigate('MyReviews');
-                    }}>
+                    }}
+                  >
                     <Image
                       style={GlobalStyles.icon}
                       source={require('../assets/icons/navigate_right.png')}
@@ -637,17 +736,24 @@ const MyPage = () => {
                   <ScrollView
                     horizontal
                     style={GlobalStyles.scroll}
-                    showsHorizontalScrollIndicator={false}>
-                    {userReview?.map(item => (
-                      <TouchableOpacity onPress={() => {
-                        navigation.navigate("FacilityDetail", { facilityID: item.facility_id });
-                      }}>
+                    showsHorizontalScrollIndicator={false}
+                  >
+                    {userReview?.map((item) => (
+                      <TouchableOpacity
+                        onPress={() => {
+                          navigation.navigate('FacilityDetail', {
+                            facilityID: item.facility_id,
+                          });
+                        }}
+                      >
                         <SquareFacility
                           facilityImage={item.img_uri}
                           facilityAddress={item.content}
                           facilityScore={item.score}
                           facilityName={userReviewFacility[item.id]?.name}
-                          facilityEnglishName={userReviewFacility[item.id]?.englishName}
+                          facilityEnglishName={
+                            userReviewFacility[item.id]?.englishName
+                          }
                         />
                       </TouchableOpacity>
                     ))}
@@ -659,7 +765,7 @@ const MyPage = () => {
         )}
 
         {/* -----------------Facility User---------------------- */}
-        {(userType == 2) && (
+        {userType == 2 && (
           <>
             <SafeAreaView style={GlobalStyles.background}>
               <ScrollView showsVerticalScrollIndicator={false}>
@@ -670,15 +776,18 @@ const MyPage = () => {
                       alignItems: 'center',
                       marginTop: -27,
                       paddingBottom: 10,
-                    }}>
+                    }}
+                  >
                     <Text style={GlobalStyles.h1}>{translations.myPage}</Text>
-                    <TouchableOpacity onPress={() => {
-                      navigation.navigate("Settings", {
-                        userName: userInfo.account_id,
-                        userProfile: userProfile,
-                        userEmail: userInfo.email
-                      });
-                    }}>
+                    <TouchableOpacity
+                      onPress={() => {
+                        navigation.navigate('Settings', {
+                          userName: userInfo.account_id,
+                          userProfile: userProfile,
+                          userEmail: userInfo.email,
+                        });
+                      }}
+                    >
                       <Image
                         style={GlobalStyles.topIcon}
                         source={require('../assets/icons/setting.png')}
@@ -691,21 +800,36 @@ const MyPage = () => {
                       width: '100%',
                       justifyContent: 'flex-start',
                       marginTop: 10,
-                    }}>
+                    }}
+                  >
                     <Image
                       style={{ ...GlobalStyles.profileImage, marginRight: 20 }}
-                      source={Number.isInteger(userProfile) ? userProfile : { uri: userProfile }}
+                      source={
+                        Number.isInteger(userProfile)
+                          ? userProfile
+                          : { uri: userProfile }
+                      }
                     />
                     <View style={{ justifyContent: 'center' }}>
-                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <View
+                        style={{ flexDirection: 'row', alignItems: 'center' }}
+                      >
                         <Text style={{ ...GlobalStyles.body, marginRight: 15 }}>
                           {userInfo.account_id}
                         </Text>
-                        <TouchableOpacity onPress={() => (navigation.navigate("EditProfile", { userInfo }))}>
-                          <Text style={GlobalStyles.body2}>{translations.edit}</Text>
+                        <TouchableOpacity
+                          onPress={() =>
+                            navigation.navigate('EditProfile', { userInfo })
+                          }
+                        >
+                          <Text style={GlobalStyles.body2}>
+                            {translations.edit}
+                          </Text>
                         </TouchableOpacity>
                       </View>
-                      <Text style={{ ...GlobalStyles.body2, textTransform: 'none' }}>
+                      <Text
+                        style={{ ...GlobalStyles.body2, textTransform: 'none' }}
+                      >
                         {userInfo.email}
                       </Text>
                     </View>
@@ -714,14 +838,16 @@ const MyPage = () => {
                   <View
                     style={{
                       width: '100%',
-                    }}>
+                    }}
+                  >
                     <Text
                       style={{
                         ...GlobalStyles.h2,
-                      }}>
+                      }}
+                    >
                       {translations.registrationRequest}
                     </Text>
-                    {myFacilityRegistrations?.map(item => (
+                    {myFacilityRegistrations?.map((item) => (
                       <Request
                         facilityName={item.content.name}
                         facilityImage={item.content.profileImgUri}
@@ -732,10 +858,20 @@ const MyPage = () => {
                   </View>
 
                   <View style={{ width: '100%', justifyContent: 'flex-start' }}>
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingRight: 20 }}>
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        paddingRight: 20,
+                      }}
+                    >
                       <View style={styles.container}>
                         <Dropdown
-                          style={[styles.dropdown, isFocus && { borderColor: Color.orange_700 }]}
+                          style={[
+                            styles.dropdown,
+                            isFocus && { borderColor: Color.orange_700 },
+                          ]}
                           placeholderStyle={styles.placeholderStyle}
                           selectedTextStyle={styles.selectedTextStyle}
                           inputSearchStyle={styles.inputSearchStyle}
@@ -745,7 +881,9 @@ const MyPage = () => {
                           maxHeight={300}
                           labelField="name"
                           valueField="id"
-                          placeholder={(!isFocus) ? (translations.selectFacility) : "..."}
+                          placeholder={
+                            !isFocus ? translations.selectFacility : '...'
+                          }
                           searchPlaceholder={translations.search}
                           value={value}
                           onFocus={() => setIsFocus(true)}
@@ -756,94 +894,197 @@ const MyPage = () => {
                               setFacilityInfo(item);
                               setFacilityInfoSub();
                               await fetchFacilityInfoSub(item);
-                              console.log("facilityinfosub is: ", facilityInfoSub);
+                              console.log(
+                                'facilityinfosub is: ',
+                                facilityInfoSub
+                              );
                               setIsFocus(false);
                             } catch (error) {
-                              console.error('Error fetching facility info:', error);
+                              console.error(
+                                'Error fetching facility info:',
+                                error
+                              );
                             }
                           }}
                         />
                       </View>
-                      <TouchableOpacity onPress={() => {
-                        navigation.navigate("FacilityInformationCreate", { authorId: USERID })
-                      }}>
-                        <Text style={{ ...GlobalStyles.body3, fontSize: FontSize.size_xl, width: 20 }}>+</Text>
+                      <TouchableOpacity
+                        onPress={() => {
+                          navigation.navigate('FacilityInformationCreate', {
+                            authorId: USERID,
+                          });
+                        }}
+                      >
+                        <Text
+                          style={{
+                            ...GlobalStyles.body3,
+                            fontSize: FontSize.size_xl,
+                            width: 20,
+                          }}
+                        >
+                          +
+                        </Text>
                       </TouchableOpacity>
                     </View>
                     {facilityInfo && (
                       <>
-                        <View style={{ width: '100%', flexDirection: 'row', justifyContent: 'space-between', paddingTop: 15 }}>
-                          <TouchableOpacity style={styles.facilityButton} onPress={toggleUpload}>
+                        <View
+                          style={{
+                            width: '100%',
+                            flexDirection: 'row',
+                            justifyContent: 'space-between',
+                            paddingTop: 15,
+                          }}
+                        >
+                          <TouchableOpacity
+                            style={styles.facilityButton}
+                            onPress={toggleUpload}
+                          >
                             <Image
                               source={require('../assets/icons/upload.png')}
                               style={styles.buttonIcon}
                             />
-                            <Text style={styles.buttonText}>{translations.notice}</Text>
+                            <Text style={styles.buttonText}>
+                              {translations.notice}
+                            </Text>
                           </TouchableOpacity>
-                          <TouchableOpacity style={styles.facilityButton} onPress={() => navigation.navigate('QRScanner', { facilityID: facilityInfo?.id })}>
+                          <TouchableOpacity
+                            style={styles.facilityButton}
+                            onPress={() =>
+                              navigation.navigate('QRScanner', {
+                                facilityID: facilityInfo?.id,
+                              })
+                            }
+                          >
                             <Image
                               source={require('../assets/icons/giveStamp.png')}
                               style={styles.buttonIcon}
                             />
                             <Text style={styles.buttonText}>Stamp</Text>
                           </TouchableOpacity>
-                          <TouchableOpacity style={styles.facilityButton}
+                          <TouchableOpacity
+                            style={styles.facilityButton}
                             onPress={() => {
-                              navigation.navigate('FacilityDetail', { facilityID: facilityInfo?.id });
-                            }}>
+                              navigation.navigate('FacilityDetail', {
+                                facilityID: facilityInfo?.id,
+                              });
+                            }}
+                          >
                             <Image
                               source={require('../assets/icons/toFacility.png')}
                               style={styles.buttonIcon}
                             />
-                            <Text style={styles.buttonText}>{translations.facility}</Text>
+                            <Text style={styles.buttonText}>
+                              {translations.facility}
+                            </Text>
                           </TouchableOpacity>
                         </View>
                         <View style={{ width: '100%' }}>
-                          <TouchableOpacity style={{ paddingTop: 15, alignSelf: 'flex-end' }} onPress={() => (navigation.navigate("FacilityInformationEdit", { facilityINFO: facilityInfo, userEmail: userInfo.email }))}>
-                            <Text style={GlobalStyles.body3}>{translations.edit}</Text>
+                          <TouchableOpacity
+                            style={{ paddingTop: 15, alignSelf: 'flex-end' }}
+                            onPress={() =>
+                              navigation.navigate('FacilityInformationEdit', {
+                                facilityINFO: facilityInfo,
+                                userEmail: userInfo.email,
+                              })
+                            }
+                          >
+                            <Text style={GlobalStyles.body3}>
+                              {translations.edit}
+                            </Text>
                           </TouchableOpacity>
                           <Image
-                            source={facilityInfoSub?.profileImage ? facilityInfoSub?.profileImage : longImagePlaceholder}
-                            style={{ ...GlobalStyles.longImage, margin: 0, marginTop: 15 }}
+                            source={
+                              facilityInfoSub?.profileImage
+                                ? facilityInfoSub?.profileImage
+                                : longImagePlaceholder
+                            }
+                            style={{
+                              ...GlobalStyles.longImage,
+                              margin: 0,
+                              marginTop: 15,
+                            }}
                           />
-                          <View style={{ width: '100%', flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 15, paddingHorizontal: 5 }}>
-                            <Text style={GlobalStyles.body}>{facilityInfo?.name}</Text>
+                          <View
+                            style={{
+                              width: '100%',
+                              flexDirection: 'row',
+                              justifyContent: 'space-between',
+                              paddingVertical: 15,
+                              paddingHorizontal: 5,
+                            }}
+                          >
+                            <Text style={GlobalStyles.body}>
+                              {facilityInfo?.name}
+                            </Text>
                             <View style={{ flexDirection: 'row' }}>
                               <Image
                                 source={require('../assets/icons/star.png')}
                                 style={GlobalStyles.icon}
                               />
-                              <Text style={GlobalStyles.body2}>{Math.round(facilityInfo?.avg_score * 10) / 10}</Text>
+                              <Text style={GlobalStyles.body2}>
+                                {Math.round(facilityInfo?.avg_score * 10) / 10}
+                              </Text>
                             </View>
                           </View>
-                          <View style={{ flexDirection: 'row', paddingVertical: 5 }}>
+                          <View
+                            style={{ flexDirection: 'row', paddingVertical: 5 }}
+                          >
                             <Image
                               source={require('../assets/icons/location.png')}
                               style={GlobalStyles.icon}
                             />
-                            <Text style={{ ...GlobalStyles.body2, paddingHorizontal: 5 }}>{facilityInfo?.english_address}</Text>
+                            <Text
+                              style={{
+                                ...GlobalStyles.body2,
+                                paddingHorizontal: 5,
+                              }}
+                            >
+                              {facilityInfo?.english_address}
+                            </Text>
                           </View>
-                          <View style={{ flexDirection: 'row', paddingVertical: 5 }}>
+                          <View
+                            style={{ flexDirection: 'row', paddingVertical: 5 }}
+                          >
                             <Image
                               source={require('../assets/icons/phone.png')}
                               style={GlobalStyles.icon}
                             />
-                            <Text style={{ ...GlobalStyles.body2, paddingHorizontal: 5 }}>{facilityInfo?.phone}</Text>
+                            <Text
+                              style={{
+                                ...GlobalStyles.body2,
+                                paddingHorizontal: 5,
+                              }}
+                            >
+                              {facilityInfo?.phone}
+                            </Text>
                           </View>
                           <View style={{ flexDirection: 'row' }}>
                             <Image
                               style={GlobalStyles.icon}
                               source={require('../assets/icons/url.png')}
                             />
-                            <Text style={{ ...GlobalStyles.body2, textTransform: 'none', paddingHorizontal: 5 }}>{facilityInfo?.url}</Text>
+                            <Text
+                              style={{
+                                ...GlobalStyles.body2,
+                                textTransform: 'none',
+                                paddingHorizontal: 5,
+                              }}
+                            >
+                              {facilityInfo?.url}
+                            </Text>
                           </View>
                         </View>
-                        <View style={{ flexDirection: 'row', paddingTop: 5, width: '100%', paddingBottom: 20 }}>
-                          {facilityInfo?.preferences?.map(item => (
-                            <Hashtag
-                              key={item.id}
-                              tag={item.name}
-                            />
+                        <View
+                          style={{
+                            flexDirection: 'row',
+                            paddingTop: 5,
+                            width: '100%',
+                            paddingBottom: 20,
+                          }}
+                        >
+                          {facilityInfo?.preferences?.map((item) => (
+                            <Hashtag key={item.id} tag={item.name} />
                           ))}
                         </View>
 
@@ -861,15 +1102,25 @@ const MyPage = () => {
                             source={require('../assets/icons/hour.png')}
                           />
                           <View>
-                            {facilityInfoSub?.timeData?.map(item => (
-                              <Text key={item.day} style={{ ...GlobalStyles.body2, color: Color.darkgray, paddingVertical: 2 }}>{item.day.substring(0, 3)} : {item.openTime} - {item.closeTime}</Text>
+                            {facilityInfoSub?.timeData?.map((item) => (
+                              <Text
+                                key={item.day}
+                                style={{
+                                  ...GlobalStyles.body2,
+                                  color: Color.darkgray,
+                                  paddingVertical: 2,
+                                }}
+                              >
+                                {item.day.substring(0, 3)} : {item.openTime} -{' '}
+                                {item.closeTime}
+                              </Text>
                             ))}
                           </View>
                         </View>
 
                         <View style={{ width: '100%' }}>
                           <Text style={GlobalStyles.h2}>Menu</Text>
-                          {facilityInfo?.menus?.map(item => (
+                          {facilityInfo?.menus?.map((item) => (
                             <>
                               {item && (
                                 <Menu
@@ -887,20 +1138,24 @@ const MyPage = () => {
                         <View style={{ width: '100%' }}>
                           <Text style={GlobalStyles.h2}>Stamps</Text>
                           {!facilityInfoSub?.stamp ? (
-                            <Text style={{ textAlign: 'center' }}>Stamp not created</Text>
+                            <Text style={{ textAlign: 'center' }}>
+                              Stamp not created
+                            </Text>
                           ) : (
                             <Stamp
                               stamp={facilityInfoSub?.stamp}
-                              stampImage={facilityInfoSub?.stampImage ? { uri: facilityInfoSub?.stampImage } : ""}
+                              stampImage={
+                                facilityInfoSub?.stampImage
+                                  ? { uri: facilityInfoSub?.stampImage }
+                                  : ''
+                              }
                               number={facilityInfoSub?.stamp?.length}
                             />
                           )}
-
                         </View>
                       </>
                     )}
                   </View>
-
                 </View>
               </ScrollView>
             </SafeAreaView>
@@ -908,25 +1163,67 @@ const MyPage = () => {
               <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                 <View style={styles.overlay}>
                   <View style={styles.background}>
-                    <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
-                      <Text style={GlobalStyles.h2}>{translations.uploadNotice}</Text>
-                      <TouchableOpacity style={{ ...GlobalStyles.topIcon, marginRight: 0 }} onPress={toggleUpload}>
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <Text style={GlobalStyles.h2}>
+                        {translations.uploadNotice}
+                      </Text>
+                      <TouchableOpacity
+                        style={{ ...GlobalStyles.topIcon, marginRight: 0 }}
+                        onPress={toggleUpload}
+                      >
                         <Image
                           source={require('../assets/icons/navigate_close.png')}
                         />
                       </TouchableOpacity>
                     </View>
-                    <View style={{ width: '100%', alignItems: 'center', paddingVertical: 10 }}>
-                      <Text style={GlobalStyles.h3}>{translations.noticeImage}</Text>
-                      <TouchableOpacity style={{ width: '100%', justifyContent: 'center' }} onPress={saveNoticeImage}>
+                    <View
+                      style={{
+                        width: '100%',
+                        alignItems: 'center',
+                        paddingVertical: 10,
+                      }}
+                    >
+                      <Text style={GlobalStyles.h3}>
+                        {translations.noticeImage}
+                      </Text>
+                      <TouchableOpacity
+                        style={{ width: '100%', justifyContent: 'center' }}
+                        onPress={saveNoticeImage}
+                      >
                         {noticeImage ? (
-                          <Image source={Number.isInteger(noticeImage) ? noticeImage : { uri: noticeImage }} style={{ width: '100%', height: 140, borderRadius: Border.br_sm }} />
+                          <Image
+                            source={
+                              Number.isInteger(noticeImage)
+                                ? noticeImage
+                                : { uri: noticeImage }
+                            }
+                            style={{
+                              width: '100%',
+                              height: 140,
+                              borderRadius: Border.br_sm,
+                            }}
+                          />
                         ) : (
-                          <Image source={require('../assets/placeholders/long_image.png')} style={{ width: '100%', height: 140, borderRadius: Border.br_sm }} />
+                          <Image
+                            source={require('../assets/placeholders/long_image.png')}
+                            style={{
+                              width: '100%',
+                              height: 140,
+                              borderRadius: Border.br_sm,
+                            }}
+                          />
                         )}
                       </TouchableOpacity>
                       <View style={styles.inputSection}>
-                        <Text style={GlobalStyles.h3}>{translations.description}</Text>
+                        <Text style={GlobalStyles.h3}>
+                          {translations.description}
+                        </Text>
                         <View style={GlobalStyles.inputWrapper3}>
                           <TextInput
                             style={GlobalStyles.registrationInput2}
@@ -938,9 +1235,18 @@ const MyPage = () => {
                           />
                         </View>
                       </View>
-                      <View style={{ width: '100%', justifyContent: 'flex-end', flexDirection: 'row', paddingTop: 20 }}>
+                      <View
+                        style={{
+                          width: '100%',
+                          justifyContent: 'flex-end',
+                          flexDirection: 'row',
+                          paddingTop: 20,
+                        }}
+                      >
                         <TouchableOpacity onPress={sendNotice}>
-                          <Text style={GlobalStyles.h4}>{translations.send}</Text>
+                          <Text style={GlobalStyles.h4}>
+                            {translations.send}
+                          </Text>
                         </TouchableOpacity>
                       </View>
                     </View>
@@ -959,128 +1265,154 @@ const MyPage = () => {
               </View>
             )}
           </>
-        )
-        }
+        )}
 
         {/* -----------------Admin User---------------------- */}
-        {
-          (userType == 0) && (
-            <SafeAreaView style={GlobalStyles.background}>
-              <ScrollView showsVerticalScrollIndicator={false}>
-                <View style={GlobalStyles.content}>
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      marginTop: -27,
-                      paddingBottom: 10,
-                    }}>
-                    <Text style={GlobalStyles.h1}>{translations.myPage}</Text>
-                    <TouchableOpacity onPress={() => {
-                      navigation.navigate("Settings", {
+        {userType == 0 && (
+          <SafeAreaView style={GlobalStyles.background}>
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <View style={GlobalStyles.content}>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    marginTop: -27,
+                    paddingBottom: 10,
+                  }}
+                >
+                  <Text style={GlobalStyles.h1}>{translations.myPage}</Text>
+                  <TouchableOpacity
+                    onPress={() => {
+                      navigation.navigate('Settings', {
                         userName: userInfo.account_id,
                         userProfile: userProfile,
-                        userEmail: userInfo.email
+                        userEmail: userInfo.email,
                       });
-                    }}>
-                      <Image
-                        style={GlobalStyles.topIcon}
-                        source={require('../assets/icons/setting.png')}
-                      />
-                    </TouchableOpacity>
-                  </View>
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      width: '100%',
-                      justifyContent: 'flex-start',
-                      marginTop: 10,
-                    }}>
+                    }}
+                  >
                     <Image
-                      style={{ ...GlobalStyles.profileImage, marginRight: 20 }}
-                      source={Number.isInteger(userProfile) ? userProfile : { uri: userProfile }}
+                      style={GlobalStyles.topIcon}
+                      source={require('../assets/icons/setting.png')}
                     />
-                    <View style={{ justifyContent: 'center' }}>
-                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        <Text style={{ ...GlobalStyles.body, marginRight: 15 }}>
-                          {userInfo.account_id}
-                        </Text>
-                        <TouchableOpacity onPress={() => (navigation.navigate("EditProfile", { userInfo }))}>
-                          <Text style={GlobalStyles.body2}>{translations.edit}</Text>
-                        </TouchableOpacity>
-                      </View>
-                      <Text style={{ ...GlobalStyles.body2, textTransform: 'none' }}>
-                        {userInfo.email}
-                      </Text>
-                    </View>
-                  </View>
-
-                  <View
-                    style={{
-                      width: '100%',
-                      paddingVertical: 5,
-                    }}>
-                    <Text
-                      style={GlobalStyles.h2}>
-                      {translations.reviewReports}
-                    </Text>
-                     {reviewReports != [] && reviewReports
-                      .map(item => (
-                        <Review
-                          key={item?.id} // Make sure to provide a unique key prop
-                          reviewId={item?.review_id}
-                          userID={item?.review?.author_id}
-                          reviewDate={item?.created_at}
-                          reviewScore={0}
-                          reviewImage={item?.review?.img_uri}
-                          reviewContent={item?.content}
-                          reviewHashtags={[]}
-                          edit={false}
-                          admin={true}
-                          reviewreport={item?.id}
-                          navigation={navigation}
-                        />
-                      ))
+                  </TouchableOpacity>
+                </View>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    width: '100%',
+                    justifyContent: 'flex-start',
+                    marginTop: 10,
+                  }}
+                >
+                  <Image
+                    style={{ ...GlobalStyles.profileImage, marginRight: 20 }}
+                    source={
+                      Number.isInteger(userProfile)
+                        ? userProfile
+                        : { uri: userProfile }
                     }
-                  </View>
-
-                  <View
-                    style={{
-                      width: '100%',
-                      paddingVertical: 10,
-                    }}>
+                  />
+                  <View style={{ justifyContent: 'center' }}>
+                    <View
+                      style={{ flexDirection: 'row', alignItems: 'center' }}
+                    >
+                      <Text style={{ ...GlobalStyles.body, marginRight: 15 }}>
+                        {userInfo.account_id}
+                      </Text>
+                      <TouchableOpacity
+                        onPress={() =>
+                          navigation.navigate('EditProfile', { userInfo })
+                        }
+                      >
+                        <Text style={GlobalStyles.body2}>
+                          {translations.edit}
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
                     <Text
-                      style={GlobalStyles.h2}>
-                      {translations.facilityRegistration}
+                      style={{ ...GlobalStyles.body2, textTransform: 'none' }}
+                    >
+                      {userInfo.email}
                     </Text>
-                    <ScrollView
-                      horizontal
-                      style={{
-                        ...GlobalStyles.scroll,
-                        paddingBottom: 20,
-                        paddingTop: 5,
-                      }}
-                      showsHorizontalScrollIndicator={false}>
-                      {facilityRegistrations != [] && facilityRegistrations.map(item => (
-                        <TouchableOpacity onPress={() => {
-                          navigation.navigate("FacilityRegistrationRequest", { author_id: item?.author_id, facilityInfo: item?.content, requestID: item?.id });
-                        }}>
-                          <UserList UserImage={userImage} UserName={item.content.name} UserEnglishName={item.content.name} />
+                  </View>
+                </View>
+
+                <View
+                  style={{
+                    width: '100%',
+                    paddingVertical: 5,
+                  }}
+                >
+                  <Text style={GlobalStyles.h2}>
+                    {translations.reviewReports}
+                  </Text>
+                  {reviewReports != [] &&
+                    reviewReports.map((item) => (
+                      <Review
+                        key={item?.id} // Make sure to provide a unique key prop
+                        reviewId={item?.review_id}
+                        userID={item?.review?.author_id}
+                        reviewDate={item?.created_at}
+                        reviewScore={0}
+                        reviewImage={item?.review?.img_uri}
+                        reviewContent={item?.content}
+                        reviewHashtags={[]}
+                        edit={false}
+                        admin={true}
+                        reviewreport={item?.id}
+                        navigation={navigation}
+                      />
+                    ))}
+                </View>
+
+                <View
+                  style={{
+                    width: '100%',
+                    paddingVertical: 10,
+                  }}
+                >
+                  <Text style={GlobalStyles.h2}>
+                    {translations.facilityRegistration}
+                  </Text>
+                  <ScrollView
+                    horizontal
+                    style={{
+                      ...GlobalStyles.scroll,
+                      paddingBottom: 20,
+                      paddingTop: 5,
+                    }}
+                    showsHorizontalScrollIndicator={false}
+                  >
+                    {facilityRegistrations != [] &&
+                      facilityRegistrations.map((item) => (
+                        <TouchableOpacity
+                          onPress={() => {
+                            navigation.navigate('FacilityRegistrationRequest', {
+                              author_id: item?.author_id,
+                              facilityInfo: item?.content,
+                              requestID: item?.id,
+                            });
+                          }}
+                        >
+                          <UserList
+                            UserImage={userImage}
+                            UserName={item.content.name}
+                            UserEnglishName={item.content.name}
+                          />
                         </TouchableOpacity>
                       ))}
-                    </ScrollView>
-                  </View>
+                  </ScrollView>
+                </View>
 
-                  <View
-                    style={{
-                      width: '100%',
-                      paddingVertical: 5,
-                    }}>
-                    <Text
-                      style={GlobalStyles.h2}>
-                      {translations.bugReports}
-                    </Text>
-                    {bugReports != [] && bugReports.map(item => (
+                <View
+                  style={{
+                    width: '100%',
+                    paddingVertical: 5,
+                  }}
+                >
+                  <Text style={GlobalStyles.h2}>{translations.bugReports}</Text>
+                  {bugReports != [] &&
+                    bugReports.map((item) => (
                       <Report
                         userID={item?.author_id}
                         reportDate={item?.created_at}
@@ -1089,13 +1421,11 @@ const MyPage = () => {
                         navigation={navigation}
                       />
                     ))}
-
-                  </View>
                 </View>
-              </ScrollView>
-            </SafeAreaView>
-          )
-        }
+              </View>
+            </ScrollView>
+          </SafeAreaView>
+        )}
         <NavigationBar
           homeb={false}
           mapb={false}
@@ -1104,9 +1434,9 @@ const MyPage = () => {
           navigation={navigation}
         />
       </>
-    )
-  };
-}
+    );
+  }
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -1151,7 +1481,7 @@ const styles = StyleSheet.create({
     backgroundColor: Color.yellow_100,
     alignContent: 'center',
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
   },
   buttonIcon: {
     width: '30%',
@@ -1171,7 +1501,7 @@ const styles = StyleSheet.create({
     height: 15,
     marginTop: 2,
     marginLeft: 2,
-    marginRight: 7
+    marginRight: 7,
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
@@ -1187,7 +1517,7 @@ const styles = StyleSheet.create({
     borderRadius: Border.br_lg,
     padding: 30,
     paddingTop: 15,
-    alignItems: 'center'
+    alignItems: 'center',
   },
   inputSection: {
     width: '100%',

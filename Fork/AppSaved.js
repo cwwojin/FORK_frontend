@@ -1,5 +1,12 @@
-import React, { useEffect, useState  }  from 'react';
-import { StyleSheet, SafeAreaView, View, Alert, Platform, Text  } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import {
+  StyleSheet,
+  SafeAreaView,
+  View,
+  Alert,
+  Platform,
+  Text,
+} from 'react-native';
 //import { request, PERMISSIONS, RESULTS } from 'react-native-permissions';
 //import * as Permissions from 'expo-permissions';
 import * as Location from 'expo-location';
@@ -34,11 +41,13 @@ import FacilityDetail from './screens/FacilityDetail.js';
 import Settings from './screens/Settings.js';
 import Testing from './screens/Testing.js';
 
-
 const requestLocationPermission = async () => {
   let { status } = await Location.requestForegroundPermissionsAsync();
   if (status !== 'granted') {
-    Alert.alert('Permission denied', 'Location permission is required to use this feature.');
+    Alert.alert(
+      'Permission denied',
+      'Location permission is required to use this feature.'
+    );
   } else {
     console.log('Location permission granted');
   }
@@ -47,8 +56,6 @@ const requestLocationPermission = async () => {
 const Stack = createStackNavigator();
 
 const App = () => {
-  
-
   return (
     <SafeAreaView style={styles.safeArea}>
       <TranslatorProvider>
@@ -58,18 +65,32 @@ const App = () => {
             <Stack.Navigator
               screenOptions={{
                 headerShown: false,
-              }} initialRouteName="SignUpLogin">
+              }}
+              initialRouteName="SignUpLogin"
+            >
               <Stack.Screen name="SignUpLogIn" component={SignUpLogIn} />
               <Stack.Screen name="UserType" component={UserType} />
-              <Stack.Screen name="FacilityInformation" component={FacilityInformation} />
+              <Stack.Screen
+                name="FacilityInformation"
+                component={FacilityInformation}
+              />
               <Stack.Screen name="SignUpKaist" component={SignUpKaist} />
               <Stack.Screen name="SignUpFacility" component={SignUpFacility} />
               <Stack.Screen name="VerifyEmail" component={VerifyEmail} />
               <Stack.Screen name="Survey" component={Survey} />
               <Stack.Screen name="AdjustFilter" component={AdjustFilter} />
-              <Stack.Screen name="SuccessfulRegistration" component={SuccessfulRegistration} />
-              <Stack.Screen name="PushNotification" component={PushNotification} />
-              <Stack.Screen name="WaitingApproval" component={WaitingApproval} />
+              <Stack.Screen
+                name="SuccessfulRegistration"
+                component={SuccessfulRegistration}
+              />
+              <Stack.Screen
+                name="PushNotification"
+                component={PushNotification}
+              />
+              <Stack.Screen
+                name="WaitingApproval"
+                component={WaitingApproval}
+              />
               <Stack.Screen name="Login" component={Login} />
               <Stack.Screen name="ResetPassword" component={ResetPassword} />
               <Stack.Screen name="MyPage" component={MyPage} />
@@ -81,7 +102,7 @@ const App = () => {
               <Stack.Screen name="FacilityDetail" component={FacilityDetail} />
               <Stack.Screen name="MyStamps" component={MyStamps} />
               <Stack.Screen name="Settings" component={Settings} />
-              <Stack.Screen name='Testing' component={Testing} />
+              <Stack.Screen name="Testing" component={Testing} />
               {/* Register the FavoritesScreen */}
             </Stack.Navigator>
           </View>
@@ -92,7 +113,7 @@ const App = () => {
       </TranslatorProvider>
     </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   safeArea: {

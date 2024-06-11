@@ -1,10 +1,27 @@
-import React, { useEffect, useState, useRef, useCallback }  from 'react';
-import { StyleSheet, Text, View, Image, SafeAreaView, ScrollView, TextInput, Button, TouchableOpacity, Alert, Platform   } from 'react-native';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  Image,
+  SafeAreaView,
+  ScrollView,
+  TextInput,
+  Button,
+  TouchableOpacity,
+  Alert,
+  Platform,
+} from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 
 import NavigationBar from '../components/NavigationBar';
 import { WebView } from 'react-native-webview';
-import { fetchFacilityWithName, fetchFacilitiesInBounds, getParsedUserPreferences, LOGIN } from './api';
+import {
+  fetchFacilityWithName,
+  fetchFacilitiesInBounds,
+  getParsedUserPreferences,
+  LOGIN,
+} from './api';
 import { FacilityDetails } from './MapViewFunctions';
 import { isOpenNow } from './MapViewFunctions';
 import * as Location from 'expo-location';
@@ -15,7 +32,9 @@ const MapView = () => {
   const navigation = useNavigation();
 
   useEffect(() => {
-    if (!LOGIN) {navigation.replace("SignUpLogIn")};
+    if (!LOGIN) {
+      navigation.replace('SignUpLogIn');
+    }
   }, LOGIN);
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -24,12 +43,11 @@ const MapView = () => {
   const [displayedFacilities, setDisplayedFacilities] = useState([]);
   const [showOnlyOpen, setShowOnlyOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [mapCenter, setMapCenter] = useState({ lat: 36.3715, lng: 127.3625 }); 
-  const [mapZoom, setMapZoom] = useState(3); 
+  const [mapCenter, setMapCenter] = useState({ lat: 36.3715, lng: 127.3625 });
+  const [mapZoom, setMapZoom] = useState(3);
   const [filterExpanded, setFilterExpanded] = useState(false);
   const [userPreferencesActive, setUserPreferencesActive] = useState(false);
   const userBookmarkedActive = useRef(false);
-
 
   const [neLat, setNeLat] = useState(null);
   const [neLng, setNeLng] = useState(null);
@@ -37,33 +55,103 @@ const MapView = () => {
   const [swLng, setSwLng] = useState(null);
 
   const [selectedCuisines, setSelectedCuisines] = useState([]);
-  const [selectedDietaryPreferences, setSelectedDietaryPreferences] = useState([]);
+  const [selectedDietaryPreferences, setSelectedDietaryPreferences] = useState(
+    []
+  );
 
   var isUserMarkerVisible = false;
-  
+
   const cuisines = [
-    { id: 1, name: 'Korean', typeIcon: require('../assets/icons/attributes/korean.png') },
-    { id: 2, name: 'Japanese', typeIcon: require('../assets/icons/attributes/japanese.png') },
-    { id: 3, name: 'Chinese', typeIcon: require('../assets/icons/attributes/chinese.png') },
-    { id: 4, name: 'Asian', typeIcon: require('../assets/icons/attributes/asian.png') },
-    { id: 5, name: 'Western', typeIcon: require('../assets/icons/attributes/western.png') },
-    { id: 6, name: 'Pizza', typeIcon: require('../assets/icons/attributes/pizza.png') },
-    { id: 7, name: 'Burger', typeIcon: require('../assets/icons/attributes/burger.png') },
-    { id: 8, name: 'Chicken', typeIcon: require('../assets/icons/attributes/chicken.png') },
-    { id: 9, name: 'Salad', typeIcon: require('../assets/icons/attributes/salad.png') },
-    { id: 10, name: 'Cafe', typeIcon: require('../assets/icons/attributes/coffee.png') },
-    { id: 11, name: 'Bar', typeIcon: require('../assets/icons/attributes/bar.png') },
+    {
+      id: 1,
+      name: 'Korean',
+      typeIcon: require('../assets/icons/attributes/korean.png'),
+    },
+    {
+      id: 2,
+      name: 'Japanese',
+      typeIcon: require('../assets/icons/attributes/japanese.png'),
+    },
+    {
+      id: 3,
+      name: 'Chinese',
+      typeIcon: require('../assets/icons/attributes/chinese.png'),
+    },
+    {
+      id: 4,
+      name: 'Asian',
+      typeIcon: require('../assets/icons/attributes/asian.png'),
+    },
+    {
+      id: 5,
+      name: 'Western',
+      typeIcon: require('../assets/icons/attributes/western.png'),
+    },
+    {
+      id: 6,
+      name: 'Pizza',
+      typeIcon: require('../assets/icons/attributes/pizza.png'),
+    },
+    {
+      id: 7,
+      name: 'Burger',
+      typeIcon: require('../assets/icons/attributes/burger.png'),
+    },
+    {
+      id: 8,
+      name: 'Chicken',
+      typeIcon: require('../assets/icons/attributes/chicken.png'),
+    },
+    {
+      id: 9,
+      name: 'Salad',
+      typeIcon: require('../assets/icons/attributes/salad.png'),
+    },
+    {
+      id: 10,
+      name: 'Cafe',
+      typeIcon: require('../assets/icons/attributes/coffee.png'),
+    },
+    {
+      id: 11,
+      name: 'Bar',
+      typeIcon: require('../assets/icons/attributes/bar.png'),
+    },
   ];
 
   const dietaryPreferences = [
-    { id: 12, name: 'Vegetarian', typeIcon: require('../assets/icons/attributes/vegetarian.png')  },
-    { id: 13, name: 'Vegan', typeIcon: require('../assets/icons/attributes/salad.png')  },
-    { id: 14, name: 'Pescatarian', typeIcon: require('../assets/icons/attributes/pescatarian.png')  },
-    { id: 15, name: 'Halal', typeIcon: require('../assets/icons/attributes/halal.png')  },
-    { id: 16, name: 'LactoseFree', typeIcon: require('../assets/icons/attributes/lactosefree.png')  },
-    { id: 17, name: 'GlutenFree', typeIcon: require('../assets/icons/attributes/glutenfree.png')  },
+    {
+      id: 12,
+      name: 'Vegetarian',
+      typeIcon: require('../assets/icons/attributes/vegetarian.png'),
+    },
+    {
+      id: 13,
+      name: 'Vegan',
+      typeIcon: require('../assets/icons/attributes/salad.png'),
+    },
+    {
+      id: 14,
+      name: 'Pescatarian',
+      typeIcon: require('../assets/icons/attributes/pescatarian.png'),
+    },
+    {
+      id: 15,
+      name: 'Halal',
+      typeIcon: require('../assets/icons/attributes/halal.png'),
+    },
+    {
+      id: 16,
+      name: 'LactoseFree',
+      typeIcon: require('../assets/icons/attributes/lactosefree.png'),
+    },
+    {
+      id: 17,
+      name: 'GlutenFree',
+      typeIcon: require('../assets/icons/attributes/glutenfree.png'),
+    },
   ];
-  
+
   const [translations, setTranslations] = useState({
     filter: '',
     openFacilitiesOnly: '',
@@ -86,16 +174,20 @@ const MapView = () => {
   }, []);
 
   const handleSelectCuisine = (cuisine) => {
-    setSelectedCuisines(prev => {
-      const newCuisines = prev.includes(cuisine) ? prev.filter(item => item !== cuisine) : [...prev, cuisine];
+    setSelectedCuisines((prev) => {
+      const newCuisines = prev.includes(cuisine)
+        ? prev.filter((item) => item !== cuisine)
+        : [...prev, cuisine];
       fetchAndUpdateFacilities('', neLat, neLng, swLat, swLng);
       return newCuisines;
     });
   };
 
   const handleSelectDietaryPreference = (preference) => {
-    setSelectedDietaryPreferences(prev => {
-      const newPreferences = prev.includes(preference) ? prev.filter(item => item !== preference) : [...prev, preference];
+    setSelectedDietaryPreferences((prev) => {
+      const newPreferences = prev.includes(preference)
+        ? prev.filter((item) => item !== preference)
+        : [...prev, preference];
       fetchAndUpdateFacilities('', neLat, neLng, swLat, swLng);
       return newPreferences;
     });
@@ -108,26 +200,26 @@ const MapView = () => {
         Alert.alert('Permission to access location was denied');
         return;
       }
-      console.log("Permission to access location was granted")
+      console.log('Permission to access location was granted');
       let location = await Location.getCurrentPositionAsync({});
       const { latitude, longitude } = location.coords;
-      
+
       const locationData = {
         type: 'addUserMarker',
         lat: latitude,
-        lng: longitude
+        lng: longitude,
       };
       webViewRef.current.postMessage(JSON.stringify(locationData));
-    } else {  
+    } else {
       const removeMarkerData = {
-        type: 'removeUserMarker'
+        type: 'removeUserMarker',
       };
       webViewRef.current.postMessage(JSON.stringify(removeMarkerData));
     }
   };
   const handleLocate = async () => {
     const locationPermission = await AsyncStorage.getItem('locationPermission');
-    console.log("value in Map: "+ locationPermission);
+    console.log('value in Map: ' + locationPermission);
     if (locationPermission === 'true') {
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
@@ -137,17 +229,17 @@ const MapView = () => {
       console.log(translations.permissionGranted);
       let location = await Location.getCurrentPositionAsync({});
       const { latitude, longitude } = location.coords;
-      
+
       const locationData = {
         type: 'addUserMarker',
         lat: latitude,
-        lng: longitude
+        lng: longitude,
       };
       webViewRef.current.postMessage(JSON.stringify(locationData));
     } else {
       Alert.alert(translations.permissionDenied);
       const removeMarkerData = {
-        type: 'removeUserMarker'
+        type: 'removeUserMarker',
       };
       webViewRef.current.postMessage(JSON.stringify(removeMarkerData));
     }
@@ -161,23 +253,23 @@ const MapView = () => {
       //console.log("Preferences active");
       const preferences = getParsedUserPreferences();
       //console.log("Parsed preferences (IDs):", preferences);
-      
-    // Log each step in the filtering process
-    const newSelectedCuisines = preferences.filter(pref => {
-      const matched = cuisines.some(c => c.id === pref);
-      //console.log(`Checking cuisine ID ${pref}: ${matched}`);
-      return matched;
-    });
-    
-    const newSelectedDietaryPreferences = preferences.filter(pref => {
-      const matched = dietaryPreferences.some(d => d.id === pref);
-      //console.log(`Checking dietary preference ID ${pref}: ${matched}`);
-      return matched;
-    });
-      
+
+      // Log each step in the filtering process
+      const newSelectedCuisines = preferences.filter((pref) => {
+        const matched = cuisines.some((c) => c.id === pref);
+        //console.log(`Checking cuisine ID ${pref}: ${matched}`);
+        return matched;
+      });
+
+      const newSelectedDietaryPreferences = preferences.filter((pref) => {
+        const matched = dietaryPreferences.some((d) => d.id === pref);
+        //console.log(`Checking dietary preference ID ${pref}: ${matched}`);
+        return matched;
+      });
+
       setSelectedCuisines(newSelectedCuisines);
       setSelectedDietaryPreferences(newSelectedDietaryPreferences);
-      
+
       //console.log("New selected cuisines:", newSelectedCuisines);
       //console.log("New selected dietary preferences:", newSelectedDietaryPreferences);
     } else {
@@ -194,8 +286,7 @@ const MapView = () => {
     //console.log("new userBookmarkedActive" + userBookmarkedActive.current);
     fetchAndUpdateFacilities(searchQuery, neLat, neLng, swLat, swLng);
   };
-  
-  
+
   const mapHtml = `
   <!DOCTYPE html>
   <html>
@@ -520,88 +611,120 @@ const MapView = () => {
     fetchAndUpdateFacilities(searchQuery);
   };
 
-  const fetchAndUpdateFacilities = useCallback(async (searchQuery = '', neLat = null, neLng = null, swLat = null, swLng = null) => 
-  {
-    let facilities = [];
+  const fetchAndUpdateFacilities = useCallback(
+    async (
+      searchQuery = '',
+      neLat = null,
+      neLng = null,
+      swLat = null,
+      swLng = null
+    ) => {
+      let facilities = [];
 
-    try {
-      if (searchQuery) {
+      try {
+        if (searchQuery) {
           const result = await fetchFacilityWithName(searchQuery, showOnlyOpen);
           facilities = result || [];
-      } else if (neLat && neLng && swLat && swLng) {
+        } else if (neLat && neLng && swLat && swLng) {
           //console.log("userBookmarkedActive : "+userBookmarkedActive.current);
-          facilities = await fetchFacilitiesInBounds(neLat, neLng, swLat, swLng, userBookmarkedActive.current);
+          facilities = await fetchFacilitiesInBounds(
+            neLat,
+            neLng,
+            swLat,
+            swLng,
+            userBookmarkedActive.current
+          );
         }
 
-      if (showOnlyOpen & !searchQuery) {
-        facilities = facilities.filter(facility => {
-          const { status } = isOpenNow(facility.opening_hours);
-          return status === "Open";
-        })
-      }
+        if (showOnlyOpen & !searchQuery) {
+          facilities = facilities.filter((facility) => {
+            const { status } = isOpenNow(facility.opening_hours);
+            return status === 'Open';
+          });
+        }
 
-      if (selectedCuisines.length > 0 || selectedDietaryPreferences.length > 0) {
-        //console.log("selectedCuisines.length" + selectedCuisines);
-        //console.log("selectedCuisines" + selectedCuisines);
-        //console.log("selectedDiets.length" + selectedDietaryPreferences.length);
-        facilities = facilities.filter(facility => {
-          const validPreferences = facility.preferences ? facility.preferences.filter(pref => pref) : [];
-          //console.log("validPreferences" + validPreferences)
-          const facilityCuisines = validPreferences.filter(pref => pref.type === 0).map(pref => pref.id);
-          //console.log("facilityCuisines : " + facilityCuisines);
-          const facilityDiets = validPreferences.filter(pref => pref.type === 1).map(pref => pref.id);
-          //console.log(facility.name + " => Diet type : " + facilityDiets);
+        if (
+          selectedCuisines.length > 0 ||
+          selectedDietaryPreferences.length > 0
+        ) {
+          //console.log("selectedCuisines.length" + selectedCuisines);
           //console.log("selectedCuisines" + selectedCuisines);
-          const hasSelectedCuisine = selectedCuisines.some(cuisine => 
-            facilityCuisines.includes(cuisine));
-          //console.log("hasSelectedCuisine" + hasSelectedCuisine);
-          const hasSelectedDiet = selectedDietaryPreferences.some(diet => 
-            facilityDiets.map(c => c.toLowerCase()).includes(diet.toLowerCase()));
-          //console.log("BOOLEAN" + hasSelectedCuisine || hasSelectedDiet); 
-          return hasSelectedCuisine || hasSelectedDiet;
-        });
-      }
-
-      const uniqueFacilities = facilities.reduce((acc, current) => {
-        const x = acc.find(item => item.id === current.id);
-        if (!x) {
-          return acc.concat([current]);
-        } else {
-          return acc;
+          //console.log("selectedDiets.length" + selectedDietaryPreferences.length);
+          facilities = facilities.filter((facility) => {
+            const validPreferences = facility.preferences
+              ? facility.preferences.filter((pref) => pref)
+              : [];
+            //console.log("validPreferences" + validPreferences)
+            const facilityCuisines = validPreferences
+              .filter((pref) => pref.type === 0)
+              .map((pref) => pref.id);
+            //console.log("facilityCuisines : " + facilityCuisines);
+            const facilityDiets = validPreferences
+              .filter((pref) => pref.type === 1)
+              .map((pref) => pref.id);
+            //console.log(facility.name + " => Diet type : " + facilityDiets);
+            //console.log("selectedCuisines" + selectedCuisines);
+            const hasSelectedCuisine = selectedCuisines.some((cuisine) =>
+              facilityCuisines.includes(cuisine)
+            );
+            //console.log("hasSelectedCuisine" + hasSelectedCuisine);
+            const hasSelectedDiet = selectedDietaryPreferences.some((diet) =>
+              facilityDiets
+                .map((c) => c.toLowerCase())
+                .includes(diet.toLowerCase())
+            );
+            //console.log("BOOLEAN" + hasSelectedCuisine || hasSelectedDiet);
+            return hasSelectedCuisine || hasSelectedDiet;
+          });
         }
-      }, []);
-      //console.log("facilities : " + JSON.stringify(uniqueFacilities, null, 2));
-      //console.log(neLat + " " + neLng + " " + swLat + " " + swLng);
 
-      if (webViewRef.current && uniqueFacilities.length > 0) {
-        const { lat, lng, avg_score } = facilities[0];
-        webViewRef.current.postMessage(JSON.stringify({
-          type: 'centerMap',
-          facilities: uniqueFacilities,
-          shouldCenter: false
-        }));
+        const uniqueFacilities = facilities.reduce((acc, current) => {
+          const x = acc.find((item) => item.id === current.id);
+          if (!x) {
+            return acc.concat([current]);
+          } else {
+            return acc;
+          }
+        }, []);
+        //console.log("facilities : " + JSON.stringify(uniqueFacilities, null, 2));
+        //console.log(neLat + " " + neLng + " " + swLat + " " + swLng);
+
+        if (webViewRef.current && uniqueFacilities.length > 0) {
+          const { lat, lng, avg_score } = facilities[0];
+          webViewRef.current.postMessage(
+            JSON.stringify({
+              type: 'centerMap',
+              facilities: uniqueFacilities,
+              shouldCenter: false,
+            })
+          );
+        }
+        if (Array.isArray(uniqueFacilities) && uniqueFacilities.length > 0) {
+          setDisplayedFacilities(uniqueFacilities);
+        } else {
+          console.error('Fetched data is not an array:', uniqueFacilities);
+          setDisplayedFacilities([]);
+        }
+      } catch (error) {
+        console.error('Failed to fetch facilities:', error);
+        setDisplayedFacilities([]);
       }
-      if (Array.isArray(uniqueFacilities) && uniqueFacilities.length > 0) { 
-        setDisplayedFacilities(uniqueFacilities);
-      } else {
-        console.error("Fetched data is not an array:", uniqueFacilities);
-        setDisplayedFacilities([]);  
-      }
+    },
+    [
+      showOnlyOpen,
+      selectedCuisines,
+      selectedDietaryPreferences,
+      setDisplayedFacilities,
+      webViewRef,
+    ]
+  ); // Dependencies necessary for useCallback
 
-    } catch (error) {
-      console.error('Failed to fetch facilities:', error);
-      setDisplayedFacilities([]);
-    }
-  }, [showOnlyOpen, selectedCuisines, selectedDietaryPreferences, setDisplayedFacilities, webViewRef]);  // Dependencies necessary for useCallback
-
-  
   const onWebViewMessage = (event) => {
     const data = JSON.parse(event.nativeEvent.data);
     if (data.type === 'markerVisibilityChanged') {
       isUserMarkerVisible = data.isVisible;
-      console.log("heere");
+      console.log('heere');
       handleLocate();
-
     }
     if (data.type === 'updateBounds') {
       setNeLat(data.neLat);
@@ -609,14 +732,24 @@ const MapView = () => {
       setSwLat(data.swLat);
       setSwLng(data.swLng);
       if (!searchQuery) {
-        fetchAndUpdateFacilities('', data.neLat, data.neLng, data.swLat, data.swLng);
+        fetchAndUpdateFacilities(
+          '',
+          data.neLat,
+          data.neLng,
+          data.swLat,
+          data.swLng
+        );
       } else {
         //console.log("Bounds updated but not fetching new facilities due to active search");
       }
     }
     if (data.type === 'updateCenterAndZoom') {
-      setMapCenter((prev) => (prev.lat !== data.centerLat || prev.lng !== data.centerLng) ? { lat: data.centerLat, lng: data.centerLng } : prev);
-      setMapZoom((prev) => data.zoomLevel !== prev ? data.zoomLevel : prev);
+      setMapCenter((prev) =>
+        prev.lat !== data.centerLat || prev.lng !== data.centerLng
+          ? { lat: data.centerLat, lng: data.centerLng }
+          : prev
+      );
+      setMapZoom((prev) => (data.zoomLevel !== prev ? data.zoomLevel : prev));
     }
     if (data.type === 'locationUpdate') {
       //console.log('Updated Location:', data.lat, data.lon);
@@ -642,13 +775,13 @@ const MapView = () => {
       fetchAndUpdateFacilities(searchQuery, neLat, neLng, swLat, swLng);
     } else {
       if (!showOnlyOpen) {
-          const openFacilities = displayedFacilities.filter(facility => {
-              const { status } = isOpenNow(facility.opening_hours);
-              return status === "Open";
-          });
-          setDisplayedFacilities(openFacilities);
+        const openFacilities = displayedFacilities.filter((facility) => {
+          const { status } = isOpenNow(facility.opening_hours);
+          return status === 'Open';
+        });
+        setDisplayedFacilities(openFacilities);
       } else {
-          fetchAndUpdateFacilities('', neLat, neLng, swLat, swLng);
+        fetchAndUpdateFacilities('', neLat, neLng, swLat, swLng);
       }
     }
   };
@@ -656,25 +789,44 @@ const MapView = () => {
   useEffect(() => {
     //console.log("selectedCuisines updated:", selectedCuisines);
   }, [selectedCuisines]);
-  
+
   useEffect(() => {
     //console.log("selectedDietaryPreferences updated:", selectedDietaryPreferences);
   }, [selectedDietaryPreferences]);
-  
+
   useEffect(() => {
-    if (webViewReady && neLat && neLng && swLat && swLng && searchQuery === '') {
+    if (
+      webViewReady &&
+      neLat &&
+      neLng &&
+      swLat &&
+      swLng &&
+      searchQuery === ''
+    ) {
       fetchAndUpdateFacilities('', neLat, neLng, swLat, swLng);
     }
-  }, [showOnlyOpen, selectedCuisines, selectedDietaryPreferences, neLat, neLng, swLat, swLng, webViewReady, searchQuery]);
+  }, [
+    showOnlyOpen,
+    selectedCuisines,
+    selectedDietaryPreferences,
+    neLat,
+    neLng,
+    swLat,
+    swLng,
+    webViewReady,
+    searchQuery,
+  ]);
 
   useEffect(() => {
     if (webViewRef.current && webViewReady && isExpanded) {
-      webViewRef.current.postMessage(JSON.stringify({
-        type: 'restoreMapState',
-        lat: mapCenter.lat,
-        lng: mapCenter.lng,
-        zoom: mapZoom
-      }));
+      webViewRef.current.postMessage(
+        JSON.stringify({
+          type: 'restoreMapState',
+          lat: mapCenter.lat,
+          lng: mapCenter.lng,
+          zoom: mapZoom,
+        })
+      );
     }
   }, [webViewRef, webViewReady, mapCenter, mapZoom, isExpanded]);
 
@@ -692,69 +844,105 @@ const MapView = () => {
             />
             <TouchableOpacity onPress={handleSearch}>
               <Image
-                source={{ uri: 'https://icones.pro/wp-content/uploads/2021/02/loupe-et-icone-de-recherche-de-couleur-orange.png' }}
+                source={{
+                  uri: 'https://icones.pro/wp-content/uploads/2021/02/loupe-et-icone-de-recherche-de-couleur-orange.png',
+                }}
                 style={styles.icon}
               />
             </TouchableOpacity>
           </View>
           <View style={styles.allOptionsContainer}>
-            <TouchableOpacity onPress={() => setFilterExpanded(!filterExpanded)} style={styles.filterButton} activeOpacity={0.7}>
+            <TouchableOpacity
+              onPress={() => setFilterExpanded(!filterExpanded)}
+              style={styles.filterButton}
+              activeOpacity={0.7}
+            >
               <Text style={styles.filterButtonText}>{translations.filter}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => handleShowOnlyOpenToggle()}
               style={styles.toggleButton}
-              activeOpacity={0.7}>  
+              activeOpacity={0.7}
+            >
               <Text style={styles.toggleButtonText}>
-                {showOnlyOpen ? translations.allFacilities : translations.openFacilitiesOnly }
+                {showOnlyOpen
+                  ? translations.allFacilities
+                  : translations.openFacilitiesOnly}
               </Text>
             </TouchableOpacity>
           </View>
-          {filterExpanded && (<ScrollView style={filterExpanded? styles.filtersContainer: styles.filtersContainerCollapsed}>
-            <Text style={styles.subHeader}>{translations.cuisineType}</Text>
-            <View style={styles.grid}>
-              {cuisines.map((item) => (
-                <TouchableOpacity
-                  key={item.id}
-                  style={[styles.option, selectedCuisines.includes(item.id) && styles.selected]}
-                  onPress={() => handleSelectCuisine(item.id)}
-                >
-                  <Image source={item.typeIcon} style={styles.typeIcon} />
-                  {/* <Text>{item.name}</Text> */}
-                  <Text>{translations.pref[item.name]}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-
-            <Text style={styles.subHeader}>{translations.dietaryPreferences}</Text>
-            <View style={styles.grid}>
-              {dietaryPreferences.map((item) => (
-                <TouchableOpacity
-                  key={item.id}
-                  style={[styles.option, selectedDietaryPreferences.includes(item.id) && styles.selected]}
-                  onPress={() => handleSelectDietaryPreference(item.id)}
-                >
-                  <Image 
-                    source={item.typeIcon} 
+          {filterExpanded && (
+            <ScrollView
+              style={
+                filterExpanded
+                  ? styles.filtersContainer
+                  : styles.filtersContainerCollapsed
+              }
+            >
+              <Text style={styles.subHeader}>{translations.cuisineType}</Text>
+              <View style={styles.grid}>
+                {cuisines.map((item) => (
+                  <TouchableOpacity
+                    key={item.id}
                     style={[
-                      styles.typeIcon, 
-                      (item.id === 'lactose-free' || item.id === 'gluten-free') && styles.typeDoubleIconcon
+                      styles.option,
+                      selectedCuisines.includes(item.id) && styles.selected,
                     ]}
-                  />
-                  {/* <Text>{item.name}</Text> */}
-                  <Text>{translations.pref[item.name]}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </ScrollView>)}
+                    onPress={() => handleSelectCuisine(item.id)}
+                  >
+                    <Image source={item.typeIcon} style={styles.typeIcon} />
+                    {/* <Text>{item.name}</Text> */}
+                    <Text>{translations.pref[item.name]}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              <Text style={styles.subHeader}>
+                {translations.dietaryPreferences}
+              </Text>
+              <View style={styles.grid}>
+                {dietaryPreferences.map((item) => (
+                  <TouchableOpacity
+                    key={item.id}
+                    style={[
+                      styles.option,
+                      selectedDietaryPreferences.includes(item.id) &&
+                        styles.selected,
+                    ]}
+                    onPress={() => handleSelectDietaryPreference(item.id)}
+                  >
+                    <Image
+                      source={item.typeIcon}
+                      style={[
+                        styles.typeIcon,
+                        (item.id === 'lactose-free' ||
+                          item.id === 'gluten-free') &&
+                          styles.typeDoubleIconcon,
+                      ]}
+                    />
+                    {/* <Text>{item.name}</Text> */}
+                    <Text>{translations.pref[item.name]}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </ScrollView>
+          )}
         </View>
       )}
-      <View style={filterExpanded? styles.mainContainerExpanded: styles.mainContainer}>
-        <WebView 
+      <View
+        style={
+          filterExpanded ? styles.mainContainerExpanded : styles.mainContainer
+        }
+      >
+        <WebView
           ref={webViewRef}
           originWhitelist={['*']}
           source={{ html: mapHtml }}
-          style={(isExpanded || filterExpanded)? styles.webViewCollapsed : styles.webView}
+          style={
+            isExpanded || filterExpanded
+              ? styles.webViewCollapsed
+              : styles.webView
+          }
           onMessage={onWebViewMessage}
           onLoad={() => {
             //console.log("WebView loaded");
@@ -765,17 +953,38 @@ const MapView = () => {
             console.error('WebView error:', nativeEvent);
           }}
         />
-        <View style={isExpanded ? styles.subContainerExpanded : styles.subContainer}>
-          <TouchableOpacity style={styles.expandButton} onPress={() => setIsExpanded(!isExpanded)}>
+        <View
+          style={isExpanded ? styles.subContainerExpanded : styles.subContainer}
+        >
+          <TouchableOpacity
+            style={styles.expandButton}
+            onPress={() => setIsExpanded(!isExpanded)}
+          >
             <Image
-              source={{ uri: 'https://icones.pro/wp-content/uploads/2021/06/symbole-fleche-droite-orange.png' }}
-              style={isExpanded ? styles.expandImageRotated : styles.expandImage}
+              source={{
+                uri: 'https://icones.pro/wp-content/uploads/2021/06/symbole-fleche-droite-orange.png',
+              }}
+              style={
+                isExpanded ? styles.expandImageRotated : styles.expandImage
+              }
             />
           </TouchableOpacity>
           <ScrollView style={styles.ScrollView}>
-          {Array.isArray(displayedFacilities) ? displayedFacilities.map(facility => (
-            <FacilityDetails key={facility.id} facility={facility}  onPress={() => navigation.navigate('FacilityDetail', { facilityID: facility.id })}/>
-          )) : <Text>translations.loadingFacilities</Text>}
+            {Array.isArray(displayedFacilities) ? (
+              displayedFacilities.map((facility) => (
+                <FacilityDetails
+                  key={facility.id}
+                  facility={facility}
+                  onPress={() =>
+                    navigation.navigate('FacilityDetail', {
+                      facilityID: facility.id,
+                    })
+                  }
+                />
+              ))
+            ) : (
+              <Text>translations.loadingFacilities</Text>
+            )}
           </ScrollView>
         </View>
       </View>
@@ -803,7 +1012,7 @@ const styles = StyleSheet.create({
   },
   topContainer: {
     flex: 1,
-    backgroundColor: 'white', 
+    backgroundColor: 'white',
   },
   searchContainer: {
     flexDirection: 'row',
@@ -829,21 +1038,21 @@ const styles = StyleSheet.create({
 
   allOptionsContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-evenly', 
+    justifyContent: 'space-evenly',
     borderRadius: 20,
     marginRight: 10,
     marginLeft: 10,
-    backgroundColor: 'white', 
+    backgroundColor: 'white',
     height: 40,
   },
   filtersContainer: {
     flex: 1,
     marginLeft: 5,
-    backgroundColor: 'white', 
+    backgroundColor: 'white',
   },
   filtersContainerCollapsed: {
-    flex: 1, 
-    opacity: 0.0, 
+    flex: 1,
+    opacity: 0.0,
   },
   filterButton: {
     backgroundColor: '#EA7700',
@@ -873,9 +1082,9 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   toggleButtonText: {
-    color: 'white', 
+    color: 'white',
     fontSize: 10,
-    fontWeight: 'bold', 
+    fontWeight: 'bold',
   },
   subHeader: {
     fontSize: 18,
@@ -915,12 +1124,12 @@ const styles = StyleSheet.create({
 
   mainContainer: {
     flex: 8,
-    backgroundColor: 'white', 
+    backgroundColor: 'white',
   },
   mainContainerCollapsed: {
-    flex: 1, 
-    opacity: 0.0, 
-    backgroundColor: 'white', 
+    flex: 1,
+    opacity: 0.0,
+    backgroundColor: 'white',
   },
 
   webView: {
@@ -928,8 +1137,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   webViewCollapsed: {
-    flex: 1, 
-    opacity: 0.0, 
+    flex: 1,
+    opacity: 0.0,
   },
 
   subContainer: {
@@ -978,4 +1187,3 @@ const styles = StyleSheet.create({
 });
 
 export default MapView;
-

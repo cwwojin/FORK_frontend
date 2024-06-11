@@ -9,13 +9,19 @@ import {
   Alert,
   Keyboard,
   TextInput,
-  Button
+  Button,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { GlobalStyles, Color, Border, FontSize } from '../GlobalStyles';
-import { createFacilityMenu, sendBugReport, updateFacilityMenu, uploadMenuImage, LOGIN } from './api';
+import {
+  createFacilityMenu,
+  sendBugReport,
+  updateFacilityMenu,
+  uploadMenuImage,
+  LOGIN,
+} from './api';
 
 import placeholderImage from '../assets/placeholders/long_image.png';
 
@@ -24,15 +30,18 @@ const EditMenu = () => {
   const route = useRoute();
 
   useEffect(() => {
-    if (!LOGIN) {navigation.replace("SignUpLogIn")};
+    if (!LOGIN) {
+      navigation.replace('SignUpLogIn');
+    }
   }, LOGIN);
 
   const { facilityID, menu, facilityInfo } = route.params;
 
-  const [menuImage, setMenuImage] = useState(menu ? menu.img_uri : "");
+  const [menuImage, setMenuImage] = useState(menu ? menu.img_uri : '');
   const [menuImageEdit, setMenuImageEdit] = useState(false);
-  const [menuData, setMenuData] = useState(menu ? menu : { name: "", description: "", price: "", quantity: "" });
-
+  const [menuData, setMenuData] = useState(
+    menu ? menu : { name: '', description: '', price: '', quantity: '' }
+  );
 
   const requestMediaLibraryPermissions = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -55,7 +64,7 @@ const EditMenu = () => {
         quality: 1,
       });
 
-      console.log("Result object:", result);
+      console.log('Result object:', result);
       if (!result.canceled && result.assets && result.assets.length > 0) {
         const source = { uri: result.assets[0].uri };
 
@@ -66,12 +75,12 @@ const EditMenu = () => {
           { compress: 1, format: ImageManipulator.SaveFormat.JPEG }
         );
 
-        console.log("Compressed image uri:", uncompressedImage.uri);
+        console.log('Compressed image uri:', uncompressedImage.uri);
 
         setMenuImage(uncompressedImage.uri);
         setMenuImageEdit(true);
       } else {
-        console.log("Image selection was canceled");
+        console.log('Image selection was canceled');
       }
     } catch (error) {
       console.error('Error selecting image:', error);
@@ -82,34 +91,62 @@ const EditMenu = () => {
     try {
       if (menu.id) {
         if (menuImageEdit) {
-          await uploadMenuImage({ facilityId: facilityID, menuId: menu.id, imageUri: menuImage });
+          await uploadMenuImage({
+            facilityId: facilityID,
+            menuId: menu.id,
+            imageUri: menuImage,
+          });
         }
-        await updateFacilityMenu({ facilityID: facilityID, menuID: menu.id, menuData: menuData });
+        await updateFacilityMenu({
+          facilityID: facilityID,
+          menuID: menu.id,
+          menuData: menuData,
+        });
         Alert.alert('Success', 'Menu Information Successfully updated');
         navigation.goBack();
-        navigation.replace("FacilityInformationEdit", { facilityINFO: facilityInfo, userEmail: facilityInfo.email });
+        navigation.replace('FacilityInformationEdit', {
+          facilityINFO: facilityInfo,
+          userEmail: facilityInfo.email,
+        });
       } else {
-        const response = await createFacilityMenu({ facilityID: facilityID, menuData: [menuData] });
+        const response = await createFacilityMenu({
+          facilityID: facilityID,
+          menuData: [menuData],
+        });
         console.log(response);
         if (menuImageEdit) {
-          await uploadMenuImage({ facilityId: facilityID, menuId: response[0].id, imageUri: menuImage });
+          await uploadMenuImage({
+            facilityId: facilityID,
+            menuId: response[0].id,
+            imageUri: menuImage,
+          });
         }
         Alert.alert('Success', 'Menu Information Successfully updated');
         navigation.goBack();
-        navigation.replace("FacilityInformationEdit", { facilityINFO: facilityInfo, userEmail: facilityInfo.email });
+        navigation.replace('FacilityInformationEdit', {
+          facilityINFO: facilityInfo,
+          userEmail: facilityInfo.email,
+        });
       }
-
     } catch (error) {
       console.log(error.message);
-      Alert.alert('Error', 'Failed to send facility edits request. Please try again.');
+      Alert.alert(
+        'Error',
+        'Failed to send facility edits request. Please try again.'
+      );
       console.error('Error sending facility edit request:', error);
     }
   };
 
   const updateMenuItem = (field, value) => {
-    setMenuData(prevMenuData => ({
+    setMenuData((prevMenuData) => ({
       ...prevMenuData,
-      [field]: field === 'price' ? (isNaN(parseInt(value, 10)) ? '' : parseInt(value, 10)) : value
+      [field]:
+        field === 'price'
+          ? isNaN(parseInt(value, 10))
+            ? ''
+            : parseInt(value, 10)
+          : value,
     }));
   };
 
@@ -123,7 +160,14 @@ const EditMenu = () => {
               source={require('../assets/icons/navigate_left.png')}
             />
           </TouchableOpacity>
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: -27, paddingBottom: 10 }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              marginTop: -27,
+              paddingBottom: 10,
+            }}
+          >
             <Text style={GlobalStyles.h1}>Update Menu</Text>
           </View>
         </View>
@@ -142,7 +186,10 @@ const EditMenu = () => {
               value={menuData.name}
               placeholder="Menu Item Name"
             />
-            <Image source={require("../assets/icons/service.png")} style={GlobalStyles.inputIcon} />
+            <Image
+              source={require('../assets/icons/service.png')}
+              style={GlobalStyles.inputIcon}
+            />
           </View>
           <View style={{ ...GlobalStyles.inputWrapper2, marginLeft: '10%' }}>
             <TextInput
@@ -151,7 +198,10 @@ const EditMenu = () => {
               value={menuData.description}
               placeholder="Service Description"
             />
-            <Image source={require("../assets/icons/menuDescription.png")} style={GlobalStyles.inputIcon} />
+            <Image
+              source={require('../assets/icons/menuDescription.png')}
+              style={GlobalStyles.inputIcon}
+            />
           </View>
           <View style={{ ...GlobalStyles.inputWrapper2, marginLeft: '10%' }}>
             <TextInput
@@ -161,7 +211,10 @@ const EditMenu = () => {
               value={menuData.price?.toString()}
               placeholder="Price"
             />
-            <Image source={require("../assets/icons/price.png")} style={GlobalStyles.inputIcon} />
+            <Image
+              source={require('../assets/icons/price.png')}
+              style={GlobalStyles.inputIcon}
+            />
           </View>
           <View style={{ ...GlobalStyles.inputWrapper2, marginLeft: '10%' }}>
             <TextInput
@@ -170,10 +223,18 @@ const EditMenu = () => {
               value={menuData.quantity?.toString()}
               placeholder="Quantity"
             />
-            <Image source={require("../assets/icons/number.png")} style={GlobalStyles.inputIcon1} />
+            <Image
+              source={require('../assets/icons/number.png')}
+              style={GlobalStyles.inputIcon1}
+            />
           </View>
-          <TouchableOpacity style={{ paddingLeft: 10 }} onPress={handleUpdateMenu}>
-            <Text style={{ ...GlobalStyles.h1, color: Color.orange_700 }}>Save</Text>
+          <TouchableOpacity
+            style={{ paddingLeft: 10 }}
+            onPress={handleUpdateMenu}
+          >
+            <Text style={{ ...GlobalStyles.h1, color: Color.orange_700 }}>
+              Save
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -191,7 +252,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
   },
   overlayTouchable: {
     width: '80%',
@@ -209,7 +270,7 @@ const styles = StyleSheet.create({
     borderRadius: Border.br_lg,
     padding: 30,
     paddingTop: 15,
-    alignItems: 'center'
+    alignItems: 'center',
   },
   inputSection: {
     width: '100%',
@@ -242,7 +303,3 @@ const styles = StyleSheet.create({
 });
 
 export default EditMenu;
-
-
-
-

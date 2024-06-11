@@ -23,19 +23,21 @@ const SquareFacility = ({
       try {
         const imageUrl = await fetchImage(facilityImage);
         if (imageUrl != undefined) {
-          console.log("set image", imageUrl);
+          console.log('set image', imageUrl);
           setFacilityImages(imageUrl);
         }
       } catch (error) {
         console.log(error.message);
-      };
-    }
+      }
+    };
     const fetchLanguage = async () => {
       const currentLanguage = await getLanguageToken();
       console.log(currentLanguage);
       setLanguage(currentLanguage);
-      if (facilityImage != "") { fetchFacilityImage(); };
-    }
+      if (facilityImage != '') {
+        fetchFacilityImage();
+      }
+    };
     fetchLanguage();
   }, []);
 
@@ -52,21 +54,31 @@ const SquareFacility = ({
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'space-between',
-            width: '100%'
-          }}>
+            width: '100%',
+          }}
+        >
           <Text
             style={GlobalStyles.body}
             numberOfLines={1}
-            ellipsizeMode="tail">
+            ellipsizeMode="tail"
+          >
             {language === 'ko' ? facilityName : facilityEnglishName}
           </Text>
-          <View style={{ flexDirection: 'row', justifyContent: 'center', maxwidth: 20 }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'center',
+              maxwidth: 20,
+            }}
+          >
             <Image
               style={GlobalStyles.icon}
               contentFit="cover"
               source={require('../assets/icons/star.png')}
             />
-            <Text style={GlobalStyles.body3}>{facilityScore ? Math.round(facilityScore * 10) / 10 : '-'}</Text>
+            <Text style={GlobalStyles.body3}>
+              {facilityScore ? Math.round(facilityScore * 10) / 10 : '-'}
+            </Text>
           </View>
         </View>
         <Text style={GlobalStyles.body2} numberOfLines={1} ellipsizeMode="tail">

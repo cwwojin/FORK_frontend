@@ -3,7 +3,13 @@ import { useState, useEffect } from 'react';
 import { Text, View, SafeAreaView, ScrollView } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { GlobalStyles, Color } from '../GlobalStyles';
-import { USERID, getUserFavorites, fetchImage, getFavoritesNotices, LOGIN } from './api';
+import {
+  USERID,
+  getUserFavorites,
+  fetchImage,
+  getFavoritesNotices,
+  LOGIN,
+} from './api';
 
 import UserList from '../components/UserList';
 import Notice from '../components/Notice';
@@ -14,7 +20,11 @@ import userImage from '../assets/placeholders/User.png';
 //To be deleted
 import longImagePlaceholder from '../assets/placeholders/long_image.png';
 import { TouchableOpacity } from 'react-native-gesture-handler';
-import { getLanguageToken, getTranslations, getAllTranslations } from '../LanguageUtils';
+import {
+  getLanguageToken,
+  getTranslations,
+  getAllTranslations,
+} from '../LanguageUtils';
 
 const Favorites = () => {
   //Get Informations of facilities
@@ -45,15 +55,22 @@ const Favorites = () => {
         for (const item of data) {
           if (item.profile_img_uri) {
             const imageUrl = await fetchImage(item.profile_img_uri);
-            newfavoritesImage[item.id] = {image: imageUrl, name: item.name, english_name: item.english_name};
+            newfavoritesImage[item.id] = {
+              image: imageUrl,
+              name: item.name,
+              english_name: item.english_name,
+            };
           } else {
-            newfavoritesImage[item.id] = {image: userImage, name: item.name, english_name: item.english_nam};
+            newfavoritesImage[item.id] = {
+              image: userImage,
+              name: item.name,
+              english_name: item.english_nam,
+            };
           }
         }
         setFavoritesImageList(newfavoritesImage);
         setMyFavorites(data);
         fetchNotices();
-
       } catch (error) {
         console.log(error.message);
       }
@@ -74,7 +91,9 @@ const Favorites = () => {
   const navigation = useNavigation();
 
   useEffect(() => {
-    if (!LOGIN) {navigation.replace("SignUpLogIn")};
+    if (!LOGIN) {
+      navigation.replace('SignUpLogIn');
+    }
   }, LOGIN);
 
   return (
@@ -87,7 +106,8 @@ const Favorites = () => {
               alignItems: 'center',
               marginTop: -27,
               paddingBottom: 10,
-            }}>
+            }}
+          >
             <Text style={GlobalStyles.h1}>{translations.favorites}</Text>
           </View>
           <ScrollView
@@ -97,14 +117,24 @@ const Favorites = () => {
               paddingBottom: 20,
               paddingTop: 10,
             }}
-            showsHorizontalScrollIndicator={false}>
-            {myFavorites && myFavorites.map(item => (
-              <TouchableOpacity onPress={() => {
-                navigation.navigate("FacilityDetail", { facilityID: item.id });
-              }}>
-                <UserList UserImage={favoritesImageList[item.id]?.image} UserName={item.name} UserEnglishName={item.english_name} />
-              </TouchableOpacity>
-            ))}
+            showsHorizontalScrollIndicator={false}
+          >
+            {myFavorites &&
+              myFavorites.map((item) => (
+                <TouchableOpacity
+                  onPress={() => {
+                    navigation.navigate('FacilityDetail', {
+                      facilityID: item.id,
+                    });
+                  }}
+                >
+                  <UserList
+                    UserImage={favoritesImageList[item.id]?.image}
+                    UserName={item.name}
+                    UserEnglishName={item.english_name}
+                  />
+                </TouchableOpacity>
+              ))}
           </ScrollView>
 
           <ScrollView
@@ -113,19 +143,24 @@ const Favorites = () => {
               overflow: 'hidden',
               marginBottom: 150,
             }}
-            showsVerticalScrollIndicator={false}>
+            showsVerticalScrollIndicator={false}
+          >
             {notices && notices.length > 0 ? (
-              notices.map(item => (
+              notices.map((item) => (
                 <TouchableOpacity
                   key={item.id} // Always add a unique key for list items
                   onPress={() => {
-                    navigation.navigate("FacilityDetail", { facilityID: item.facility_id });
+                    navigation.navigate('FacilityDetail', {
+                      facilityID: item.facility_id,
+                    });
                   }}
                 >
                   <Notice
                     facilityImage={favoritesImageList[item.facility_id]?.image}
                     facilityName={favoritesImageList[item.facility_id]?.name}
-                    facilityEnglishName={favoritesImageList[item.facility_id]?.english_name}
+                    facilityEnglishName={
+                      favoritesImageList[item.facility_id]?.english_name
+                    }
                     noticeDate={item.post_date}
                     noticeImage={item.img_uri}
                     noticeContent={item.title + '\n' + item.content} // Corrected to '\n'

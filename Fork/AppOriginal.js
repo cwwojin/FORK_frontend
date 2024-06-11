@@ -1,6 +1,12 @@
-
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, SafeAreaView, View, Alert, Platform, Text } from 'react-native';
+import {
+  StyleSheet,
+  SafeAreaView,
+  View,
+  Alert,
+  Platform,
+  Text,
+} from 'react-native';
 import * as Location from 'expo-location';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
@@ -36,7 +42,10 @@ import Testing from './screens/Testing.js';
 const requestLocationPermission = async () => {
   let { status } = await Location.requestForegroundPermissionsAsync();
   if (status !== 'granted') {
-    Alert.alert('Permission denied', 'Location permission is required to use this feature.');
+    Alert.alert(
+      'Permission denied',
+      'Location permission is required to use this feature.'
+    );
   } else {
     console.log('Location permission granted');
   }
@@ -68,10 +77,12 @@ const App = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <TranslatorProvider translations={{
-        en: require('./locales/en.json'),
-        ko: require('./locales/ko.json')
-      }}>
+      <TranslatorProvider
+        translations={{
+          en: require('./locales/en.json'),
+          ko: require('./locales/ko.json'),
+        }}
+      >
         <NavigationContainer>
           <View style={styles.container}>
             <StatusBar style="auto" />
@@ -83,15 +94,27 @@ const App = () => {
             >
               <Stack.Screen name="SignUpLogIn" component={SignUpLogIn} />
               <Stack.Screen name="UserType" component={UserType} />
-              <Stack.Screen name="FacilityInformation" component={FacilityInformation} />
+              <Stack.Screen
+                name="FacilityInformation"
+                component={FacilityInformation}
+              />
               <Stack.Screen name="SignUpKaist" component={SignUpKaist} />
               <Stack.Screen name="SignUpFacility" component={SignUpFacility} />
               <Stack.Screen name="VerifyEmail" component={VerifyEmail} />
               <Stack.Screen name="Survey" component={Survey} />
               <Stack.Screen name="AdjustFilter" component={AdjustFilter} />
-              <Stack.Screen name="SuccessfulRegistration" component={SuccessfulRegistration} />
-              <Stack.Screen name="PushNotification" component={PushNotification} />
-              <Stack.Screen name="WaitingApproval" component={WaitingApproval} />
+              <Stack.Screen
+                name="SuccessfulRegistration"
+                component={SuccessfulRegistration}
+              />
+              <Stack.Screen
+                name="PushNotification"
+                component={PushNotification}
+              />
+              <Stack.Screen
+                name="WaitingApproval"
+                component={WaitingApproval}
+              />
               <Stack.Screen name="Login" component={Login} />
               <Stack.Screen name="ResetPassword" component={ResetPassword} />
               <Stack.Screen name="MyPage" component={MyPage} />

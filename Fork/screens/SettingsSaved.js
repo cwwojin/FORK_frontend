@@ -7,13 +7,12 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Alert
+  Alert,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import ToggleSwitch from 'toggle-switch-react-native';
 
 import { GlobalStyles, Color, Border, FontSize } from '../GlobalStyles';
-
 
 const Settings = () => {
   //Get Informations of facilities
@@ -47,21 +46,21 @@ const Settings = () => {
 
   const logout = () => {
     Alert.alert(
-      "Confirm Logout",
-      "Do you really want to logout?",
+      'Confirm Logout',
+      'Do you really want to logout?',
       [
         {
-          text: "No",
-          onPress: () => console.log("Logout cancelled"),
-          style: "cancel"
+          text: 'No',
+          onPress: () => console.log('Logout cancelled'),
+          style: 'cancel',
         },
         {
-          text: "Yes",
+          text: 'Yes',
           onPress: () => {
-            console.log("User logged out");
+            console.log('User logged out');
             // Add your logout logic here
-          }
-        }
+          },
+        },
       ],
       { cancelable: false }
     );
@@ -69,21 +68,21 @@ const Settings = () => {
 
   const deleteAccount = () => {
     Alert.alert(
-      "Delete Account",
-      "Do you really want to delete your account?",
+      'Delete Account',
+      'Do you really want to delete your account?',
       [
         {
-          text: "No",
-          onPress: () => console.log("Logout cancelled"),
-          style: "cancel"
+          text: 'No',
+          onPress: () => console.log('Logout cancelled'),
+          style: 'cancel',
         },
         {
-          text: "Yes",
+          text: 'Yes',
           onPress: () => {
-            console.log("User logged out");
+            console.log('User logged out');
             // Add your logout logic here
-          }
-        }
+          },
+        },
       ],
       { cancelable: false }
     );
@@ -96,7 +95,8 @@ const Settings = () => {
           <TouchableOpacity
             onPress={() => {
               navigation.goBack();
-            }}>
+            }}
+          >
             <Image
               style={GlobalStyles.icon}
               source={require('../assets/icons/navigate_left.png')}
@@ -108,7 +108,8 @@ const Settings = () => {
               alignItems: 'center',
               marginTop: -27,
               paddingBottom: 10,
-            }}>
+            }}
+          >
             <Text style={GlobalStyles.h1}>Settings</Text>
           </View>
         </View>
@@ -117,18 +118,21 @@ const Settings = () => {
           style={{
             alignItems: 'center',
             width: '100%',
-          }}>
+          }}
+        >
           <Image
             style={{
               ...GlobalStyles.profileImage,
               marginTop: 10,
-              marginBottom: 10
+              marginBottom: 10,
             }}
             contentFit="cover"
             source={userProfile}
           />
           <Text style={GlobalStyles.body}>{userName}</Text>
-          <Text style={{ ...GlobalStyles.body2, paddingVertical: 8 }}>{userEmail}</Text>
+          <Text style={{ ...GlobalStyles.body2, paddingVertical: 8 }}>
+            {userEmail}
+          </Text>
         </View>
 
         <View style={{ width: '100%', paddingVertical: 5 }}>
@@ -174,7 +178,9 @@ const Settings = () => {
               <Text style={GlobalStyles.body}>language</Text>
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Text style={{ ...GlobalStyles.body2, paddingHorizontal: 5 }}>ENG</Text>
+              <Text style={{ ...GlobalStyles.body2, paddingHorizontal: 5 }}>
+                ENG
+              </Text>
               <ToggleSwitch
                 isOn={language}
                 onColor={Color.orange_700}
@@ -182,7 +188,9 @@ const Settings = () => {
                 size="small"
                 onToggle={toggleLaguage}
               />
-              <Text style={{ ...GlobalStyles.body2, paddingHorizontal: 5 }}>KOR</Text>
+              <Text style={{ ...GlobalStyles.body2, paddingHorizontal: 5 }}>
+                KOR
+              </Text>
             </View>
           </View>
         </View>
@@ -212,7 +220,16 @@ const Settings = () => {
         <View style={{ width: '100%', paddingVertical: 5 }}>
           <Text style={GlobalStyles.h2}>Support</Text>
           <TouchableOpacity style={styles.container} onPress={toggleReport}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: Color.yellow_100, width: '100%', paddingVertical: 10, borderRadius: Border.br_2xs }}>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: Color.yellow_100,
+                width: '100%',
+                paddingVertical: 10,
+                borderRadius: Border.br_2xs,
+              }}
+            >
               <Image
                 source={require('../assets/icons/report.png')}
                 style={{ ...styles.icon, tintColor: Color.orange_700 }}
@@ -225,9 +242,18 @@ const Settings = () => {
         {report && (
           <View style={styles.overlay}>
             <View style={styles.background}>
-              <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+              >
                 <Text style={GlobalStyles.h2}>Issue Report</Text>
-                <TouchableOpacity style={{ ...GlobalStyles.topIcon, marginRight: 0 }} onPress={toggleReport}>
+                <TouchableOpacity
+                  style={{ ...GlobalStyles.topIcon, marginRight: 0 }}
+                  onPress={toggleReport}
+                >
                   <Image
                     source={require('../assets/icons/navigate_close.png')}
                   />
@@ -260,14 +286,20 @@ const Settings = () => {
                     />
                   </View>
                 </View>
-                <View style={{ width: '100%', justifyContent: 'flex-end', flexDirection: 'row', paddingTop: 20 }}>
+                <View
+                  style={{
+                    width: '100%',
+                    justifyContent: 'flex-end',
+                    flexDirection: 'row',
+                    paddingTop: 20,
+                  }}
+                >
                   <TouchableOpacity>
                     <Text style={GlobalStyles.h4}>Send</Text>
                   </TouchableOpacity>
                 </View>
               </View>
             </View>
-
           </View>
         )}
       </View>
@@ -279,14 +311,14 @@ const styles = StyleSheet.create({
   icon: {
     width: 30,
     height: 30,
-    marginRight: 10
+    marginRight: 10,
   },
   container: {
     width: '100%',
     flexDirection: 'row',
     justifyContent: 'space-between',
     padding: 10,
-    alignItems: 'center'
+    alignItems: 'center',
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
@@ -310,7 +342,7 @@ const styles = StyleSheet.create({
     borderRadius: Border.br_lg,
     padding: 30,
     paddingTop: 15,
-    alignItems: 'center'
+    alignItems: 'center',
   },
   inputSection: {
     width: '100%',
@@ -343,7 +375,3 @@ const styles = StyleSheet.create({
 });
 
 export default Settings;
-
-
-
-

@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   Alert,
   StyleSheet,
-  TextInput
+  TextInput,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useEffect, useState, useRef } from 'react';
@@ -17,9 +17,17 @@ import * as ImageManipulator from 'expo-image-manipulator';
 
 import { GlobalStyles, Color, FontSize } from '../GlobalStyles';
 import Review from '../components/Review';
-import { fetchImage, USERPREFERENCE, addUserPreference2, deleteUserPreference, updateUserProfile, uploadUserProfileImage, LOGIN, USERTYPE } from './api';
+import {
+  fetchImage,
+  USERPREFERENCE,
+  addUserPreference2,
+  deleteUserPreference,
+  updateUserProfile,
+  uploadUserProfileImage,
+  LOGIN,
+  USERTYPE,
+} from './api';
 import { getAllTranslations, getLanguageToken } from '../LanguageUtils';
-
 
 const EditProfiles = () => {
   //Get Informations of facilities
@@ -29,14 +37,18 @@ const EditProfiles = () => {
   const route = useRoute();
 
   useEffect(() => {
-    if (!LOGIN) {navigation.replace("SignUpLogIn")};
+    if (!LOGIN) {
+      navigation.replace('SignUpLogIn');
+    }
   }, LOGIN);
 
   const { userInfo } = route.params;
 
-  const [userProfile, setUserProfile] = useState(require('../assets/placeholders/User.png'));
+  const [userProfile, setUserProfile] = useState(
+    require('../assets/placeholders/User.png')
+  );
   const [userProfileEdit, setUserProfileEdit] = useState(false);
-  const [email, setEmail] = useState(userInfo.email)
+  const [email, setEmail] = useState(userInfo.email);
   const [password, setPassword] = useState();
   const userType = USERTYPE;
   const [translations, setTranslations] = useState({});
@@ -55,7 +67,7 @@ const EditProfiles = () => {
         if (userInfo.profile_img_uri) {
           const profileImage = await fetchImage(data.profile_img_uri);
           setUserProfile(profileImage);
-        };
+        }
       } catch (error) {
         console.log(error.message);
       }
@@ -82,10 +94,10 @@ const EditProfiles = () => {
         aspect: [1, 1],
         quality: 1,
       });
-      console.log("Result object:", result);
+      console.log('Result object:', result);
       if (!result.canceled && result.assets && result.assets.length > 0) {
         const source = { uri: result.assets[0].uri };
-        console.log("source uri : " + source.uri);
+        console.log('source uri : ' + source.uri);
 
         const uncompressedImage = await ImageManipulator.manipulateAsync(
           source.uri,
@@ -102,48 +114,140 @@ const EditProfiles = () => {
   };
 
   // Split initial preferences
-  const initialCuisines = Array.isArray(USERPREFERENCE) ? USERPREFERENCE.filter(pref => pref.type === 0).map(pref => pref.id) : [];
-  const initialDietaryPreferences = Array.isArray(USERPREFERENCE) ? USERPREFERENCE.filter(pref => pref.type === 1).map(pref => pref.id) : [];
+  const initialCuisines = Array.isArray(USERPREFERENCE)
+    ? USERPREFERENCE.filter((pref) => pref.type === 0).map((pref) => pref.id)
+    : [];
+  const initialDietaryPreferences = Array.isArray(USERPREFERENCE)
+    ? USERPREFERENCE.filter((pref) => pref.type === 1).map((pref) => pref.id)
+    : [];
 
   console.log(initialCuisines, initialDietaryPreferences);
 
-
   const [selectedCuisines, setSelectedCuisines] = useState(initialCuisines);
-  const [selectedDietaryPreferences, setSelectedDietaryPreferences] = useState(initialDietaryPreferences);
+  const [selectedDietaryPreferences, setSelectedDietaryPreferences] = useState(
+    initialDietaryPreferences
+  );
 
   const cuisines = [
-    { id: 1, type: 0, name: 'Korean', icon: require('../assets/icons/attributes/korean.png') },
-    { id: 2, type: 0, name: 'Japanese', icon: require('../assets/icons/attributes/japanese.png') },
-    { id: 3, type: 0, name: 'Chinese', icon: require('../assets/icons/attributes/chinese.png') },
-    { id: 4, type: 0, name: 'Asian', icon: require('../assets/icons/attributes/asian.png') },
-    { id: 5, type: 0, name: 'Western', icon: require('../assets/icons/attributes/western.png') },
-    { id: 6, type: 0, name: 'Pizza', icon: require('../assets/icons/attributes/pizza.png') },
-    { id: 7, type: 0, name: 'Burger', icon: require('../assets/icons/attributes/burger.png') },
-    { id: 8, type: 0, name: 'Chicken', icon: require('../assets/icons/attributes/chicken.png') },
-    { id: 9, type: 0, name: 'Salad', icon: require('../assets/icons/attributes/salad.png') },
-    { id: 10, type: 0, name: 'Cafe', icon: require('../assets/icons/attributes/coffee.png') },
-    { id: 11, type: 0, name: 'Bar', icon: require('../assets/icons/attributes/bar.png') },
+    {
+      id: 1,
+      type: 0,
+      name: 'Korean',
+      icon: require('../assets/icons/attributes/korean.png'),
+    },
+    {
+      id: 2,
+      type: 0,
+      name: 'Japanese',
+      icon: require('../assets/icons/attributes/japanese.png'),
+    },
+    {
+      id: 3,
+      type: 0,
+      name: 'Chinese',
+      icon: require('../assets/icons/attributes/chinese.png'),
+    },
+    {
+      id: 4,
+      type: 0,
+      name: 'Asian',
+      icon: require('../assets/icons/attributes/asian.png'),
+    },
+    {
+      id: 5,
+      type: 0,
+      name: 'Western',
+      icon: require('../assets/icons/attributes/western.png'),
+    },
+    {
+      id: 6,
+      type: 0,
+      name: 'Pizza',
+      icon: require('../assets/icons/attributes/pizza.png'),
+    },
+    {
+      id: 7,
+      type: 0,
+      name: 'Burger',
+      icon: require('../assets/icons/attributes/burger.png'),
+    },
+    {
+      id: 8,
+      type: 0,
+      name: 'Chicken',
+      icon: require('../assets/icons/attributes/chicken.png'),
+    },
+    {
+      id: 9,
+      type: 0,
+      name: 'Salad',
+      icon: require('../assets/icons/attributes/salad.png'),
+    },
+    {
+      id: 10,
+      type: 0,
+      name: 'Cafe',
+      icon: require('../assets/icons/attributes/coffee.png'),
+    },
+    {
+      id: 11,
+      type: 0,
+      name: 'Bar',
+      icon: require('../assets/icons/attributes/bar.png'),
+    },
   ];
 
   const dietaryPreferences = [
-    { id: 12, type: 1, name: 'Vegetarian', icon: require('../assets/icons/attributes/vegetarian.png') },
-    { id: 13, type: 1, name: 'Vegan', icon: require('../assets/icons/attributes/salad.png') },
-    { id: 14, type: 1, name: 'Pescatarian', icon: require('../assets/icons/attributes/pescatarian.png') },
-    { id: 15, type: 1, name: 'Halal', icon: require('../assets/icons/attributes/halal.png') },
-    { id: 16, type: 1, name: 'Lactose-Free', icon: require('../assets/icons/attributes/lactosefree.png') },
-    { id: 17, type: 1, name: 'Gluten-Free', icon: require('../assets/icons/attributes/glutenfree.png') },
+    {
+      id: 12,
+      type: 1,
+      name: 'Vegetarian',
+      icon: require('../assets/icons/attributes/vegetarian.png'),
+    },
+    {
+      id: 13,
+      type: 1,
+      name: 'Vegan',
+      icon: require('../assets/icons/attributes/salad.png'),
+    },
+    {
+      id: 14,
+      type: 1,
+      name: 'Pescatarian',
+      icon: require('../assets/icons/attributes/pescatarian.png'),
+    },
+    {
+      id: 15,
+      type: 1,
+      name: 'Halal',
+      icon: require('../assets/icons/attributes/halal.png'),
+    },
+    {
+      id: 16,
+      type: 1,
+      name: 'Lactose-Free',
+      icon: require('../assets/icons/attributes/lactosefree.png'),
+    },
+    {
+      id: 17,
+      type: 1,
+      name: 'Gluten-Free',
+      icon: require('../assets/icons/attributes/glutenfree.png'),
+    },
   ];
 
   const handleSelectCuisine = (cuisine) => {
-    setSelectedCuisines(prev => {
-      if (prev.includes(cuisine)) return prev.filter(item => item !== cuisine);
+    setSelectedCuisines((prev) => {
+      if (prev.includes(cuisine))
+        return prev.filter((item) => item !== cuisine);
       else return [...prev, cuisine];
     });
   };
 
   const handleSelectDietaryPreference = (preference) => {
-    setSelectedDietaryPreferences(prev => {
-      if (prev.includes(preference)) return prev.filter(item => item !== preference);
+    setSelectedDietaryPreferences((prev) => {
+      if (prev.includes(preference))
+        return prev.filter((item) => item !== preference);
       else return [...prev, preference];
     });
   };
@@ -152,22 +256,32 @@ const EditProfiles = () => {
     if (!password) {
       Alert.alert('Error', 'Either new or current password is required');
     } else {
-
       if (userProfileEdit) {
         try {
           await uploadUserProfileImage(userProfile);
         } catch (error) {
           console.error('Error updating preferences:', error);
-          Alert.alert('Error', 'An error occurred while uploading profile image');
+          Alert.alert(
+            'Error',
+            'An error occurred while uploading profile image'
+          );
         }
       }
 
       if (userType == 1) {
         // Find cuisines and dietary preferences to add
-        const cuisinesToAdd = selectedCuisines.filter(cuisine => !initialCuisines.includes(cuisine));
-        const cuisinesToRemove = initialCuisines.filter(cuisine => !selectedCuisines.includes(cuisine));
-        const dietaryPreferencesToAdd = selectedDietaryPreferences.filter(preference => !initialDietaryPreferences.includes(preference));
-        const dietaryPreferencesToRemove = initialDietaryPreferences.filter(preference => !selectedDietaryPreferences.includes(preference));
+        const cuisinesToAdd = selectedCuisines.filter(
+          (cuisine) => !initialCuisines.includes(cuisine)
+        );
+        const cuisinesToRemove = initialCuisines.filter(
+          (cuisine) => !selectedCuisines.includes(cuisine)
+        );
+        const dietaryPreferencesToAdd = selectedDietaryPreferences.filter(
+          (preference) => !initialDietaryPreferences.includes(preference)
+        );
+        const dietaryPreferencesToRemove = initialDietaryPreferences.filter(
+          (preference) => !selectedDietaryPreferences.includes(preference)
+        );
 
         try {
           await updateUserProfile({ email: email, password: password });
@@ -190,7 +304,7 @@ const EditProfiles = () => {
 
           Alert.alert('Success', 'Profile updated successfully');
           navigation.goBack();
-          navigation.replace("MyPage");
+          navigation.replace('MyPage');
         } catch (error) {
           console.error('Error updating preferences:', error);
           Alert.alert('Error', 'An error occurred while updating preferences');
@@ -200,14 +314,12 @@ const EditProfiles = () => {
           await updateUserProfile({ email: email, password: password });
           Alert.alert('Success', 'Profile updated successfully');
           navigation.goBack();
-          navigation.replace("MyPage");
+          navigation.replace('MyPage');
         } catch (error) {
           console.error('Error updating preferences:', error);
           Alert.alert('Error', 'An error occurred while updating preferences');
         }
       }
-
-
     }
   };
 
@@ -218,7 +330,8 @@ const EditProfiles = () => {
           <TouchableOpacity
             onPress={() => {
               navigation.goBack();
-            }}>
+            }}
+          >
             <Image
               style={GlobalStyles.icon}
               source={require('../assets/icons/navigate_left.png')}
@@ -230,7 +343,8 @@ const EditProfiles = () => {
               alignItems: 'center',
               marginTop: -27,
               paddingBottom: 10,
-            }}>
+            }}
+          >
             <Text style={GlobalStyles.h1}>{translations.editProfil}</Text>
           </View>
         </View>
@@ -240,17 +354,34 @@ const EditProfiles = () => {
             overflow: 'hidden',
             marginBottom: -27,
           }}
-          showsVerticalScrollIndicator={false}>
+          showsVerticalScrollIndicator={false}
+        >
           <View style={{ alignItems: 'center', width: '100%', paddingTop: 30 }}>
             <TouchableOpacity onPress={saveProfileImage}>
               {userProfile ? (
-                <Image source={Number.isInteger(userProfile) ? userProfile : { uri: userProfile }}
-                  style={{ ...GlobalStyles.profileImage, marginTop: 10, marginBottom: 10 }}
-                  contentFit="cover" />
+                <Image
+                  source={
+                    Number.isInteger(userProfile)
+                      ? userProfile
+                      : { uri: userProfile }
+                  }
+                  style={{
+                    ...GlobalStyles.profileImage,
+                    marginTop: 10,
+                    marginBottom: 10,
+                  }}
+                  contentFit="cover"
+                />
               ) : (
-                <Image source={require('../assets/placeholders/long_image.png')}
-                  style={{ ...GlobalStyles.profileImage, marginTop: 10, marginBottom: 10 }}
-                  contentFit="cover" />
+                <Image
+                  source={require('../assets/placeholders/long_image.png')}
+                  style={{
+                    ...GlobalStyles.profileImage,
+                    marginTop: 10,
+                    marginBottom: 10,
+                  }}
+                  contentFit="cover"
+                />
               )}
             </TouchableOpacity>
 
@@ -289,54 +420,82 @@ const EditProfiles = () => {
               </View>
             </View>
 
-            {(userType == 1) && (
+            {userType == 1 && (
               <>
-                <Text style={{ ...GlobalStyles.h2, textAlign: 'center' }}>{translations.foodPreferences}</Text>
+                <Text style={{ ...GlobalStyles.h2, textAlign: 'center' }}>
+                  {translations.foodPreferences}
+                </Text>
 
-                <Text style={{ ...GlobalStyles.h4, textAlign: 'center' }}>{translations.cuisineTypes}</Text>
-                 <View style={styles.grid}>
-                  {translations.pref && cuisines.map((item) => (
-                    <TouchableOpacity
-                      key={item.id}
-                      style={[styles.option, selectedCuisines.includes(item.id) && styles.selected]}
-                      onPress={() => handleSelectCuisine(item.id)}
-                    >
-                      <Image source={item.icon} style={styles.icon} />
-                      <Text style={{ textAlign: 'center' }}>{translations.pref[item.name]}</Text>
-                    </TouchableOpacity>
-                  ))}
+                <Text style={{ ...GlobalStyles.h4, textAlign: 'center' }}>
+                  {translations.cuisineTypes}
+                </Text>
+                <View style={styles.grid}>
+                  {translations.pref &&
+                    cuisines.map((item) => (
+                      <TouchableOpacity
+                        key={item.id}
+                        style={[
+                          styles.option,
+                          selectedCuisines.includes(item.id) && styles.selected,
+                        ]}
+                        onPress={() => handleSelectCuisine(item.id)}
+                      >
+                        <Image source={item.icon} style={styles.icon} />
+                        <Text style={{ textAlign: 'center' }}>
+                          {translations.pref[item.name]}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
                 </View>
 
-               <Text style={{ ...GlobalStyles.h4, textAlign: 'center' }}>{translations.dietaryPreferences}</Text>
+                <Text style={{ ...GlobalStyles.h4, textAlign: 'center' }}>
+                  {translations.dietaryPreferences}
+                </Text>
                 <View style={styles.grid}>
-                  {translations.pref && dietaryPreferences.map((item) => (
-                    <TouchableOpacity
-                      key={item.id}
-                      style={[styles.option, selectedDietaryPreferences.includes(item.id) && styles.selected]}
-                      onPress={() => handleSelectDietaryPreference(item.id)}
-                    >
-                      <Image
-                        source={item.icon}
+                  {translations.pref &&
+                    dietaryPreferences.map((item) => (
+                      <TouchableOpacity
+                        key={item.id}
                         style={[
-                          styles.icon,
-                          (item.id === 16 || item.id === 17) && styles.doubleIcon
+                          styles.option,
+                          selectedDietaryPreferences.includes(item.id) &&
+                            styles.selected,
                         ]}
-                      />
-                      <Text style={{ textAlign: 'center' }}>{translations.pref[item.name]}</Text>
-                    </TouchableOpacity>
-                  ))}
+                        onPress={() => handleSelectDietaryPreference(item.id)}
+                      >
+                        <Image
+                          source={item.icon}
+                          style={[
+                            styles.icon,
+                            (item.id === 16 || item.id === 17) &&
+                              styles.doubleIcon,
+                          ]}
+                        />
+                        <Text style={{ textAlign: 'center' }}>
+                          {translations.pref[item.name]}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
                 </View>
               </>
             )}
 
             <View style={{ marginTop: 30, width: '100%' }}>
               <TouchableOpacity onPress={handleSubmit}>
-                <Text style={{ ...GlobalStyles.h4, marginLeft: 0, fontSize: FontSize.size_xl, textAlign: 'center' }}>{translations.save}</Text>
+                <Text
+                  style={{
+                    ...GlobalStyles.h4,
+                    marginLeft: 0,
+                    fontSize: FontSize.size_xl,
+                    textAlign: 'center',
+                  }}
+                >
+                  {translations.save}
+                </Text>
               </TouchableOpacity>
-            </View> 
+            </View>
           </View>
         </ScrollView>
-
       </View>
     </SafeAreaView>
   );
@@ -367,7 +526,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     paddingBottom: 50,
     paddingTop: 20,
-    paddingHorizontal: '10%'
+    paddingHorizontal: '10%',
   },
   option: {
     padding: 10,
@@ -386,14 +545,14 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     marginBottom: 15,
-    marginTop: 5
+    marginTop: 5,
   },
   doubleIcon: {
     width: 40,
     height: 20,
     marginTop: 15,
     marginBottom: 15,
-  }
+  },
 });
 
 export default EditProfiles;

@@ -1,7 +1,15 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { View, Text, Button, StyleSheet, Image, TouchableOpacity, SafeAreaView } from 'react-native';
-import {LinearGradient}  from 'expo-linear-gradient';
-import { Border, Color, GlobalStyles } from "../GlobalStyles.js";
+import {
+  View,
+  Text,
+  Button,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  SafeAreaView,
+} from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Border, Color, GlobalStyles } from '../GlobalStyles.js';
 import { getAllTranslations, getLanguageToken } from '../LanguageUtils';
 
 const UserType = ({ navigation }) => {
@@ -15,11 +23,11 @@ const UserType = ({ navigation }) => {
     fetchTranslations();
   }, []);
   const onFacilityOwner = useCallback(() => {
-    navigation.navigate("SignUpFacility"); 
+    navigation.navigate('SignUpFacility');
   }, [navigation]);
 
   const onKaistMember = useCallback(() => {
-    navigation.navigate("SignUpKaist");
+    navigation.navigate('SignUpKaist');
   }, [navigation]);
 
   return (
@@ -29,11 +37,21 @@ const UserType = ({ navigation }) => {
           <Text style={GlobalStyles.title}>{translations.whichUserAreYou}</Text>
         </View>
         <View style={GlobalStyles.authOptions}>
-          <TouchableOpacity style={GlobalStyles.registerButton} onPress={onFacilityOwner}>
-            <Text style={GlobalStyles.registerButtonText}>{translations.facilityOwner}</Text>
+          <TouchableOpacity
+            style={GlobalStyles.registerButton}
+            onPress={onFacilityOwner}
+          >
+            <Text style={GlobalStyles.registerButtonText}>
+              {translations.facilityOwner}
+            </Text>
           </TouchableOpacity>
-          <TouchableOpacity style={GlobalStyles.registerButton} onPress={onKaistMember}>
-            <Text style={GlobalStyles.registerButtonText}>{translations.kaistMember}</Text>
+          <TouchableOpacity
+            style={GlobalStyles.registerButton}
+            onPress={onKaistMember}
+          >
+            <Text style={GlobalStyles.registerButtonText}>
+              {translations.kaistMember}
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -51,12 +69,12 @@ const styles = StyleSheet.create({
   mainArea: {
     height: 80,
     width: 300,
-    alignItems: 'center', 
+    alignItems: 'center',
     justifyContent: 'center',
     resizeMode: 'cover',
-    marginBottom: 100, 
+    marginBottom: 100,
     marginTop: 30,
-  }
+  },
 });
 
 export default UserType;

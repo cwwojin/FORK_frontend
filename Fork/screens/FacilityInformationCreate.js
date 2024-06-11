@@ -1,13 +1,30 @@
 import React, { useCallback, useState, useEffect } from 'react';
-import { ScrollView, View, Text, TouchableOpacity, StyleSheet, Image, TextInput, Button } from 'react-native';
-import { Border, Color, GlobalStyles } from "../GlobalStyles.js"; 
+import {
+  ScrollView,
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
+  TextInput,
+  Button,
+} from 'react-native';
+import { Border, Color, GlobalStyles } from '../GlobalStyles.js';
 import placeholderImage from '../assets/placeholders/long_image.png';
 import * as ImagePicker from 'expo-image-picker';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import axios from 'axios';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { registerFacility, LOGIN } from './api';
-const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+const daysOfWeek = [
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+  'Sunday',
+];
 import { getAllTranslations, getLanguageToken } from '../LanguageUtils';
 
 const dayToNumber = {
@@ -17,35 +34,97 @@ const dayToNumber = {
   Thursday: 4,
   Friday: 5,
   Saturday: 6,
-  Sunday: 7
+  Sunday: 7,
 };
 
 const cuisines = [
-  { id: 1, name: 'Korean', icon: require('../assets/icons/attributes/korean.png') },
-  { id: 2, name: 'Japanese', icon: require('../assets/icons/attributes/japanese.png') },
-  { id: 3, name: 'Chinese', icon: require('../assets/icons/attributes/chinese.png') },
-  { id: 4, name: 'Asian', icon: require('../assets/icons/attributes/asian.png') },
-  { id: 5, name: 'Western', icon: require('../assets/icons/attributes/western.png') },
-  { id: 6, name: 'Pizza', icon: require('../assets/icons/attributes/pizza.png') },
-  { id: 7, name: 'Burger', icon: require('../assets/icons/attributes/burger.png') },
-  { id: 8, name: 'Chicken', icon: require('../assets/icons/attributes/chicken.png') },
-  { id: 9, name: 'Salad', icon: require('../assets/icons/attributes/salad.png') },
-  { id: 10, name: 'Cafe', icon: require('../assets/icons/attributes/coffee.png') },
+  {
+    id: 1,
+    name: 'Korean',
+    icon: require('../assets/icons/attributes/korean.png'),
+  },
+  {
+    id: 2,
+    name: 'Japanese',
+    icon: require('../assets/icons/attributes/japanese.png'),
+  },
+  {
+    id: 3,
+    name: 'Chinese',
+    icon: require('../assets/icons/attributes/chinese.png'),
+  },
+  {
+    id: 4,
+    name: 'Asian',
+    icon: require('../assets/icons/attributes/asian.png'),
+  },
+  {
+    id: 5,
+    name: 'Western',
+    icon: require('../assets/icons/attributes/western.png'),
+  },
+  {
+    id: 6,
+    name: 'Pizza',
+    icon: require('../assets/icons/attributes/pizza.png'),
+  },
+  {
+    id: 7,
+    name: 'Burger',
+    icon: require('../assets/icons/attributes/burger.png'),
+  },
+  {
+    id: 8,
+    name: 'Chicken',
+    icon: require('../assets/icons/attributes/chicken.png'),
+  },
+  {
+    id: 9,
+    name: 'Salad',
+    icon: require('../assets/icons/attributes/salad.png'),
+  },
+  {
+    id: 10,
+    name: 'Cafe',
+    icon: require('../assets/icons/attributes/coffee.png'),
+  },
   { id: 11, name: 'Bar', icon: require('../assets/icons/attributes/bar.png') },
 ];
 
-
 const dietaryOptions = [
-  { id: 12, name: 'Vegetarian', icon: require('../assets/icons/attributes/vegetarian.png') },
-  { id: 13, name: 'Vegan', icon: require('../assets/icons/attributes/salad.png') },
-  { id: 14, name: 'Pescatarian', icon: require('../assets/icons/attributes/pescatarian.png') },
-  { id: 15, name: 'Halal', icon: require('../assets/icons/attributes/halal.png') },
-  { id: 16, name: 'LactoseFree', icon: require('../assets/icons/attributes/lactosefree.png') },
-  { id: 17, name: 'GlutenFree', icon: require('../assets/icons/attributes/glutenfree.png') },
+  {
+    id: 12,
+    name: 'Vegetarian',
+    icon: require('../assets/icons/attributes/vegetarian.png'),
+  },
+  {
+    id: 13,
+    name: 'Vegan',
+    icon: require('../assets/icons/attributes/salad.png'),
+  },
+  {
+    id: 14,
+    name: 'Pescatarian',
+    icon: require('../assets/icons/attributes/pescatarian.png'),
+  },
+  {
+    id: 15,
+    name: 'Halal',
+    icon: require('../assets/icons/attributes/halal.png'),
+  },
+  {
+    id: 16,
+    name: 'LactoseFree',
+    icon: require('../assets/icons/attributes/lactosefree.png'),
+  },
+  {
+    id: 17,
+    name: 'GlutenFree',
+    icon: require('../assets/icons/attributes/glutenfree.png'),
+  },
 ];
 
 const DayHoursInput = ({ day, hours, setHours }) => {
-  
   const [translations, setTranslations] = useState({});
 
   useEffect(() => {
@@ -76,7 +155,10 @@ const DayHoursInput = ({ day, hours, setHours }) => {
           value={hours.open}
           placeholder={translations.openTimePlaceholder}
         />
-        <Image source={require("../assets/icons/hour.png")} style={GlobalStyles.inputIcon} />
+        <Image
+          source={require('../assets/icons/hour.png')}
+          style={GlobalStyles.inputIcon}
+        />
       </View>
       <View style={GlobalStyles.inputWrapper1}>
         <TextInput
@@ -85,7 +167,10 @@ const DayHoursInput = ({ day, hours, setHours }) => {
           value={hours.close}
           placeholder={translations.closeTimePlaceholder}
         />
-        <Image source={require("../assets/icons/hour.png")} style={GlobalStyles.inputIcon} />
+        <Image
+          source={require('../assets/icons/hour.png')}
+          style={GlobalStyles.inputIcon}
+        />
       </View>
     </View>
   );
@@ -93,21 +178,23 @@ const DayHoursInput = ({ day, hours, setHours }) => {
 
 const API_KEY = '609b3e6da632a6e07f4cc1bd8a5fa05c';
 
-const FacilityInformationCreate = ({navigation}) => {
+const FacilityInformationCreate = ({ navigation }) => {
   const route = useRoute();
   const authorId = route.params.authorId;
   const email = route.params.email;
 
   useEffect(() => {
-    if (!LOGIN) {navigation.replace("SignUpLogIn")};
+    if (!LOGIN) {
+      navigation.replace('SignUpLogIn');
+    }
   }, LOGIN);
 
   const [facilityInfo, setFacilityInfo] = useState({
     menuItems: [],
     stampProgram: {
       imageUri: '',
-      rewards: [{ name: '', cnt: '' }]
-    } 
+      rewards: [{ name: '', cnt: '' }],
+    },
   });
 
   const [translations, setTranslations] = useState({});
@@ -149,70 +236,77 @@ const FacilityInformationCreate = ({navigation}) => {
   const [lng, setLng] = useState(1.0);
 
   const handleSelectCuisine = (cuisine) => {
-    setCuisineType(prev => {
-      if (prev.includes(cuisine)) return prev.filter(item => item !== cuisine);
+    setCuisineType((prev) => {
+      if (prev.includes(cuisine))
+        return prev.filter((item) => item !== cuisine);
       else return [...prev, cuisine];
     });
   };
 
   const handleSelectDietaryPreference = (preference) => {
-    setDietaryPreferences(prev => {
-      if (prev.includes(preference)) return prev.filter(item => item !== preference);
+    setDietaryPreferences((prev) => {
+      if (prev.includes(preference))
+        return prev.filter((item) => item !== preference);
       else return [...prev, preference];
     });
   };
-  
-  const getCoordinates = async (address) => {
-    console.log("address: " + address);
-    try {
-        const response = await axios.get('https://dapi.kakao.com/v2/local/search/address.json', {
-            headers: {
-                Authorization: `KakaoAK ${API_KEY}`
-            },
-            params: {
-                query: address
-            }
-        });
 
-        const { documents } = response.data;
-        if (documents.length > 0) {
-            const { x, y } = documents[0].address || documents[0].road_address;
-            return { latitude: parseFloat(y), longitude: parseFloat(x) };
-        } else {
-            console.error('No address found');
-            return { latitude: 0, longitude: 0 };
+  const getCoordinates = async (address) => {
+    console.log('address: ' + address);
+    try {
+      const response = await axios.get(
+        'https://dapi.kakao.com/v2/local/search/address.json',
+        {
+          headers: {
+            Authorization: `KakaoAK ${API_KEY}`,
+          },
+          params: {
+            query: address,
+          },
         }
-    } catch (error) {
-        console.error('Error fetching coordinates: ', error);
+      );
+
+      const { documents } = response.data;
+      if (documents.length > 0) {
+        const { x, y } = documents[0].address || documents[0].road_address;
+        return { latitude: parseFloat(y), longitude: parseFloat(x) };
+      } else {
+        console.error('No address found');
         return { latitude: 0, longitude: 0 };
+      }
+    } catch (error) {
+      console.error('Error fetching coordinates: ', error);
+      return { latitude: 0, longitude: 0 };
     }
   };
 
   const handleRegisterationRequest = async () => {
-    console.log("In handle registration request");
+    console.log('In handle registration request');
     const { latitude, longitude } = await getCoordinates(roadAddress);
     //await getCoordinates("대전 유성구 대학로 291 카이스트 학술문화관 2층");
-    console.log("latitude : " + latitude + ", longitude : " + longitude);
-    const rewards = facilityInfo.stampProgram.rewards.map(reward => ({
+    console.log('latitude : ' + latitude + ', longitude : ' + longitude);
+    const rewards = facilityInfo.stampProgram.rewards.map((reward) => ({
       name: reward.name,
-      cnt: parseInt(reward.cnt, 10) || 0
+      cnt: parseInt(reward.cnt, 10) || 0,
     }));
-  
+
     const totalCnt = rewards.reduce((acc, reward) => acc + reward.cnt, 0);
-  
+
     const facilityData = {
       authorId,
       title: name,
       content: {
         name,
         englishName,
-        type: "",
+        type: '',
         businessId: businessRegNo,
         phone: phoneNumber,
         email,
         url: websiteURL,
         description: serviceDescription,
-        profileImgFile: facilityImageUri ? facilityImageUri.split('/').pop() : '',
+        profileImgFile: facilityImageUri
+          ? facilityImageUri.split('/').pop()
+          : '',
         address: {
           postNumber,
           country,
@@ -220,77 +314,97 @@ const FacilityInformationCreate = ({navigation}) => {
           roadAddress,
           englishAddress,
           lat: latitude,
-          lng: longitude
+          lng: longitude,
         },
-        openingHours: Object.keys(openingHours).map(day => {
-          const hours = openingHours[day];
-          if (hours.open !== 'Closed' && hours.close !== 'Closed' && hours.open !== '' && hours.close !== '' ) {
-            return {
-              day: dayToNumber[day],
-              openTime: hours.open,
-              closeTime: hours.close
-            };
-          } 
-          return null;
-        }).filter(Boolean),
-        menu: facilityInfo.menuItems.map(item => ({
+        openingHours: Object.keys(openingHours)
+          .map((day) => {
+            const hours = openingHours[day];
+            if (
+              hours.open !== 'Closed' &&
+              hours.close !== 'Closed' &&
+              hours.open !== '' &&
+              hours.close !== ''
+            ) {
+              return {
+                day: dayToNumber[day],
+                openTime: hours.open,
+                closeTime: hours.close,
+              };
+            }
+            return null;
+          })
+          .filter(Boolean),
+        menu: facilityInfo.menuItems.map((item) => ({
           name: item.name,
           description: item.serviceDescription,
           price: item.price,
           quantity: item.quantity,
-          imgFile: item.imageUri ? item.imageUri.split('/').pop() : ''
+          imgFile: item.imageUri ? item.imageUri.split('/').pop() : '',
         })),
-        preferences: [...cuisineType, ...dietaryPreferences], 
+        preferences: [...cuisineType, ...dietaryPreferences],
         stampRuleset: {
           totalCnt: totalCnt,
-          logoImgFile: facilityInfo.stampProgram.imageUri ? facilityInfo.stampProgram.imageUri.split('/').pop() : '',
-          rewards: rewards
-        }
-      }
+          logoImgFile: facilityInfo.stampProgram.imageUri
+            ? facilityInfo.stampProgram.imageUri.split('/').pop()
+            : '',
+          rewards: rewards,
+        },
+      },
     };
-  
+
     const images = [];
     if (facilityImageUri) images.push({ uri: facilityImageUri });
-    facilityInfo.menuItems.forEach(item => {
+    facilityInfo.menuItems.forEach((item) => {
       if (item.imageUri) images.push({ uri: item.imageUri });
     });
-    if (facilityInfo.stampProgram.imageUri) images.push({ uri: facilityInfo.stampProgram.imageUri });
-  
+    if (facilityInfo.stampProgram.imageUri)
+      images.push({ uri: facilityInfo.stampProgram.imageUri });
+
     try {
       //console.log('starting');
       //console.log("images : "+JSON.stringify(images, null, 2));
       const response = await registerFacility(facilityData, images);
-      console.log('Facility registration request sent successfully:', JSON.stringify(response.data, null, 2));
+      console.log(
+        'Facility registration request sent successfully:',
+        JSON.stringify(response.data, null, 2)
+      );
       navigation.goBack();
-      navigation.replace("MyPage");  
+      navigation.replace('MyPage');
     } catch (error) {
-      Alert.alert('Error', 'Failed to send facility registration request. Please try again.');
+      Alert.alert(
+        'Error',
+        'Failed to send facility registration request. Please try again.'
+      );
       console.error('Error sending facility registration request:', error);
     }
   };
-  
 
   const addMenuItem = () => {
-    setFacilityInfo(prevState => ({
+    setFacilityInfo((prevState) => ({
       ...prevState,
-      menuItems: [...prevState.menuItems, { name: '', serviceDescription: '', price: '', quantity: '' }]
+      menuItems: [
+        ...prevState.menuItems,
+        { name: '', serviceDescription: '', price: '', quantity: '' },
+      ],
     }));
   };
 
   const updateStampProgram = (field, value) => {
-    setFacilityInfo(prevState => ({
+    setFacilityInfo((prevState) => ({
       ...prevState,
       stampProgram: {
         ...prevState.stampProgram,
-        [field]: value
-      }
+        [field]: value,
+      },
     }));
   };
 
   const handleRewardChange = (rewardIndex, field, value) => {
     const newRewards = [...facilityInfo.stampProgram.rewards];
     if (field === 'cnt') {
-      newRewards[rewardIndex][field] = isNaN(parseInt(value, 10)) ? '' : parseInt(value, 10);
+      newRewards[rewardIndex][field] = isNaN(parseInt(value, 10))
+        ? ''
+        : parseInt(value, 10);
     } else {
       newRewards[rewardIndex][field] = value;
     }
@@ -298,15 +412,18 @@ const FacilityInformationCreate = ({navigation}) => {
   };
 
   const addReward = () => {
-    const newRewards = [...facilityInfo.stampProgram.rewards, { name: '', cnt: '' }];
+    const newRewards = [
+      ...facilityInfo.stampProgram.rewards,
+      { name: '', cnt: '' },
+    ];
     updateStampProgram('rewards', newRewards);
   };
 
   const requestMediaLibraryPermissions = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
-        alert('Sorry, we need camera roll permissions to make this work!');
-        return false;
+      alert('Sorry, we need camera roll permissions to make this work!');
+      return false;
     }
     return true;
   };
@@ -315,26 +432,26 @@ const FacilityInformationCreate = ({navigation}) => {
     try {
       const hasPermission = await requestMediaLibraryPermissions();
       if (!hasPermission) return;
-  
+
       let result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [4, 3],
         quality: 1,
       });
-  
-      console.log("Result object:", result);
+
+      console.log('Result object:', result);
       if (!result.canceled && result.assets && result.assets.length > 0) {
         const source = { uri: result.assets[0].uri };
-  
+
         const compressedImage = await ImageManipulator.manipulateAsync(
           source.uri,
           [],
           { compress: 0.5, format: ImageManipulator.SaveFormat.JPEG }
         );
-  
-        console.log("Compressed image uri:", compressedImage.uri);
-  
+
+        console.log('Compressed image uri:', compressedImage.uri);
+
         if (type === 'facility') {
           setFacilityImageUri(compressedImage.uri);
         } else if (type === 'menu') {
@@ -342,21 +459,29 @@ const FacilityInformationCreate = ({navigation}) => {
           newMenuItems[index].imageUri = compressedImage.uri;
           setFacilityInfo({ ...facilityInfo, menuItems: newMenuItems });
         } else if (type === 'stamp') {
-          const updatedStampProgram = { ...facilityInfo.stampProgram, imageUri: compressedImage.uri };
-          setFacilityInfo({ ...facilityInfo, stampProgram: updatedStampProgram });
+          const updatedStampProgram = {
+            ...facilityInfo.stampProgram,
+            imageUri: compressedImage.uri,
+          };
+          setFacilityInfo({
+            ...facilityInfo,
+            stampProgram: updatedStampProgram,
+          });
         }
       } else {
-        console.log("Image selection was canceled");
+        console.log('Image selection was canceled');
       }
     } catch (error) {
       console.error('Error selecting image:', error);
     }
   };
-  
+
   const updateMenuItem = (index, field, value) => {
     const newMenuItems = [...facilityInfo.menuItems];
     if (field === 'price') {
-      newMenuItems[index][field] = isNaN(parseInt(value, 10)) ? '' : parseInt(value, 10); 
+      newMenuItems[index][field] = isNaN(parseInt(value, 10))
+        ? ''
+        : parseInt(value, 10);
     } else {
       newMenuItems[index][field] = value;
     }
@@ -364,9 +489,9 @@ const FacilityInformationCreate = ({navigation}) => {
   };
 
   const setDayHours = (day, hours) => {
-    setOpeningHours(prevHours => ({
+    setOpeningHours((prevHours) => ({
       ...prevHours,
-      [day]: hours
+      [day]: hours,
     }));
   };
 
@@ -379,7 +504,9 @@ const FacilityInformationCreate = ({navigation}) => {
           <TouchableOpacity onPress={() => selectImage(null, 'facility')}>
             <Image
               style={styles.image}
-              source={facilityImageUri ? { uri: facilityImageUri } : placeholderImage}
+              source={
+                facilityImageUri ? { uri: facilityImageUri } : placeholderImage
+              }
             />
           </TouchableOpacity>
         </View>
@@ -390,7 +517,10 @@ const FacilityInformationCreate = ({navigation}) => {
             value={name}
             placeholder={translations.name}
           />
-          <Image source={require("../assets/icons/facility.png")} style={GlobalStyles.inputIcon} />
+          <Image
+            source={require('../assets/icons/facility.png')}
+            style={GlobalStyles.inputIcon}
+          />
         </View>
         <View style={GlobalStyles.inputWrapper1}>
           <TextInput
@@ -399,7 +529,10 @@ const FacilityInformationCreate = ({navigation}) => {
             value={englishName}
             placeholder={translations.englishName}
           />
-          <Image source={require("../assets/icons/facility.png")} style={GlobalStyles.inputIcon} />
+          <Image
+            source={require('../assets/icons/facility.png')}
+            style={GlobalStyles.inputIcon}
+          />
         </View>
         <View style={GlobalStyles.inputWrapper1}>
           <TextInput
@@ -408,7 +541,10 @@ const FacilityInformationCreate = ({navigation}) => {
             value={serviceDescription}
             placeholder={translations.serviceDescription}
           />
-          <Image source={require("../assets/icons/service.png")} style={GlobalStyles.inputIcon1} />
+          <Image
+            source={require('../assets/icons/service.png')}
+            style={GlobalStyles.inputIcon1}
+          />
         </View>
         <View style={GlobalStyles.inputWrapper1}>
           <TextInput
@@ -417,7 +553,10 @@ const FacilityInformationCreate = ({navigation}) => {
             value={websiteURL}
             placeholder={translations.websiteURL}
           />
-          <Image source={require("../assets/icons/url.png")} style={GlobalStyles.inputIcon} />
+          <Image
+            source={require('../assets/icons/url.png')}
+            style={GlobalStyles.inputIcon}
+          />
         </View>
         <View style={GlobalStyles.inputWrapper1}>
           <TextInput
@@ -426,7 +565,10 @@ const FacilityInformationCreate = ({navigation}) => {
             value={phoneNumber}
             placeholder={translations.phoneNumber}
           />
-          <Image source={require("../assets/icons/phone.png")} style={GlobalStyles.inputIcon} />
+          <Image
+            source={require('../assets/icons/phone.png')}
+            style={GlobalStyles.inputIcon}
+          />
         </View>
         <View style={GlobalStyles.inputWrapper1}>
           <TextInput
@@ -435,7 +577,10 @@ const FacilityInformationCreate = ({navigation}) => {
             value={businessRegNo}
             placeholder={translations.businessRegistrationNumber}
           />
-          <Image source={require("../assets/icons/business.png")} style={GlobalStyles.inputIcon3} />
+          <Image
+            source={require('../assets/icons/business.png')}
+            style={GlobalStyles.inputIcon3}
+          />
         </View>
         <View style={GlobalStyles.inputWrapper1}>
           <TextInput
@@ -444,7 +589,10 @@ const FacilityInformationCreate = ({navigation}) => {
             value={roadAddress}
             placeholder={translations.roadAddress}
           />
-          <Image source={require("../assets/icons/location.png")} style={GlobalStyles.inputIcon4} />
+          <Image
+            source={require('../assets/icons/location.png')}
+            style={GlobalStyles.inputIcon4}
+          />
         </View>
         <View style={GlobalStyles.inputWrapper1}>
           <TextInput
@@ -453,7 +601,10 @@ const FacilityInformationCreate = ({navigation}) => {
             value={englishAddress}
             placeholder={translations.englishAddress}
           />
-          <Image source={require("../assets/icons/location.png")} style={GlobalStyles.inputIcon4} />
+          <Image
+            source={require('../assets/icons/location.png')}
+            style={GlobalStyles.inputIcon4}
+          />
         </View>
         <View style={GlobalStyles.inputWrapper1}>
           <TextInput
@@ -462,7 +613,10 @@ const FacilityInformationCreate = ({navigation}) => {
             value={postNumber}
             placeholder={translations.postNumber}
           />
-          <Image source={require("../assets/icons/location.png")} style={GlobalStyles.inputIcon4} />
+          <Image
+            source={require('../assets/icons/location.png')}
+            style={GlobalStyles.inputIcon4}
+          />
         </View>
         <View style={GlobalStyles.inputWrapper1}>
           <TextInput
@@ -471,7 +625,10 @@ const FacilityInformationCreate = ({navigation}) => {
             value={city}
             placeholder={translations.city}
           />
-          <Image source={require("../assets/icons/location.png")} style={GlobalStyles.inputIcon4} />
+          <Image
+            source={require('../assets/icons/location.png')}
+            style={GlobalStyles.inputIcon4}
+          />
         </View>
         <View style={GlobalStyles.inputWrapper1}>
           <TextInput
@@ -480,7 +637,10 @@ const FacilityInformationCreate = ({navigation}) => {
             value={country}
             placeholder={translations.country}
           />
-          <Image source={require("../assets/icons/location.png")} style={GlobalStyles.inputIcon4} />
+          <Image
+            source={require('../assets/icons/location.png')}
+            style={GlobalStyles.inputIcon4}
+          />
         </View>
       </View>
       <View style={styles.line}></View>
@@ -489,7 +649,10 @@ const FacilityInformationCreate = ({navigation}) => {
         {cuisines.map((item) => (
           <TouchableOpacity
             key={item.id}
-            style={[styles.option, cuisineType.includes(item.id) && styles.selected]}
+            style={[
+              styles.option,
+              cuisineType.includes(item.id) && styles.selected,
+            ]}
             onPress={() => handleSelectCuisine(item.id)}
           >
             <Image source={item.icon} style={styles.icon1} />
@@ -504,7 +667,10 @@ const FacilityInformationCreate = ({navigation}) => {
         {dietaryOptions.map((item) => (
           <TouchableOpacity
             key={item.id}
-            style={[styles.option, dietaryPreferences.includes(item.id) && styles.selected]}
+            style={[
+              styles.option,
+              dietaryPreferences.includes(item.id) && styles.selected,
+            ]}
             onPress={() => handleSelectDietaryPreference(item.id)}
           >
             <Image source={item.icon} style={styles.icon1} />
@@ -515,7 +681,7 @@ const FacilityInformationCreate = ({navigation}) => {
       </View>
       <View style={styles.line}></View>
       <Text style={styles.subHeader1}>{translations.openingHours}</Text>
-      {daysOfWeek.map(day => (
+      {daysOfWeek.map((day) => (
         <DayHoursInput
           key={day}
           day={day}
@@ -528,9 +694,9 @@ const FacilityInformationCreate = ({navigation}) => {
       {facilityInfo.menuItems.map((item, index) => (
         <View key={index} style={styles.menuItem}>
           <TouchableOpacity onPress={() => selectImage(index, 'menu')}>
-            <Image 
-              source={item.imageUri ? { uri: item.imageUri } : placeholderImage} 
-              style={styles.image} 
+            <Image
+              source={item.imageUri ? { uri: item.imageUri } : placeholderImage}
+              style={styles.image}
             />
           </TouchableOpacity>
           <View style={GlobalStyles.inputWrapper2}>
@@ -540,16 +706,24 @@ const FacilityInformationCreate = ({navigation}) => {
               value={item.name}
               placeholder={translations.menuItemName}
             />
-            <Image source={require("../assets/icons/service.png")} style={GlobalStyles.inputIcon} />
+            <Image
+              source={require('../assets/icons/service.png')}
+              style={GlobalStyles.inputIcon}
+            />
           </View>
           <View style={GlobalStyles.inputWrapper2}>
             <TextInput
               style={GlobalStyles.registrationInput1}
-              onChangeText={(text) => updateMenuItem(index, 'serviceDescription', text)}
+              onChangeText={(text) =>
+                updateMenuItem(index, 'serviceDescription', text)
+              }
               value={item.serviceDescription}
               placeholder={translations.serviceDescription}
             />
-            <Image source={require("../assets/icons/menuDescription.png")} style={GlobalStyles.inputIcon} />
+            <Image
+              source={require('../assets/icons/menuDescription.png')}
+              style={GlobalStyles.inputIcon}
+            />
           </View>
           <View style={GlobalStyles.inputWrapper2}>
             <TextInput
@@ -559,7 +733,10 @@ const FacilityInformationCreate = ({navigation}) => {
               value={item.price}
               placeholder={translations.price}
             />
-            <Image source={require("../assets/icons/price.png")} style={GlobalStyles.inputIcon} />
+            <Image
+              source={require('../assets/icons/price.png')}
+              style={GlobalStyles.inputIcon}
+            />
           </View>
           <View style={GlobalStyles.inputWrapper2}>
             <TextInput
@@ -568,52 +745,89 @@ const FacilityInformationCreate = ({navigation}) => {
               value={item.quantity.toString()}
               placeholder={translations.quantity}
             />
-            <Image source={require("../assets/icons/number.png")} style={GlobalStyles.inputIcon1} />
+            <Image
+              source={require('../assets/icons/number.png')}
+              style={GlobalStyles.inputIcon1}
+            />
           </View>
         </View>
       ))}
 
-      <Button title={translations.menuItem || 'Add Menu Item'} onPress={addMenuItem} color={Color.orange_700} marginBottom={15}/>
+      <Button
+        title={translations.menuItem || 'Add Menu Item'}
+        onPress={addMenuItem}
+        color={Color.orange_700}
+        marginBottom={15}
+      />
       <View style={styles.line}></View>
       <Text style={styles.subHeader1}>{translations.stamps}</Text>
       <View style={styles.menuItem}>
         <TouchableOpacity onPress={() => selectImage(null, 'stamp')}>
-          <Image 
-            source={facilityInfo.stampProgram.imageUri ? { uri: facilityInfo.stampProgram.imageUri } : placeholderImage} 
-            style={styles.image} 
+          <Image
+            source={
+              facilityInfo.stampProgram.imageUri
+                ? { uri: facilityInfo.stampProgram.imageUri }
+                : placeholderImage
+            }
+            style={styles.image}
           />
         </TouchableOpacity>
         <View style={GlobalStyles.inputWrapper2}>
-          <Text style={styles.totalStampsText}>Total Number of Stamps: {facilityInfo.stampProgram.rewards.reduce((acc, reward) => acc + (parseInt(reward.cnt, 10) || 0), 0)}</Text>
+          <Text style={styles.totalStampsText}>
+            Total Number of Stamps:{' '}
+            {facilityInfo.stampProgram.rewards.reduce(
+              (acc, reward) => acc + (parseInt(reward.cnt, 10) || 0),
+              0
+            )}
+          </Text>
         </View>
         {facilityInfo.stampProgram.rewards.map((reward, rewardIndex) => (
           <View key={rewardIndex}>
             <View style={GlobalStyles.inputWrapper2}>
               <TextInput
                 style={GlobalStyles.registrationInput1}
-                onChangeText={text => handleRewardChange(rewardIndex, 'name', text)}
+                onChangeText={(text) =>
+                  handleRewardChange(rewardIndex, 'name', text)
+                }
                 value={reward.name}
                 placeholder={translations.rewardName}
               />
-              <Image source={require("../assets/icons/stamp.png")} style={GlobalStyles.inputIcon5} />
+              <Image
+                source={require('../assets/icons/stamp.png')}
+                style={GlobalStyles.inputIcon5}
+              />
             </View>
             <View style={GlobalStyles.inputWrapper2}>
               <TextInput
                 style={GlobalStyles.registrationInput1}
-                onChangeText={text => handleRewardChange(rewardIndex, 'cnt', text)}
+                onChangeText={(text) =>
+                  handleRewardChange(rewardIndex, 'cnt', text)
+                }
                 value={reward.cnt.toString()}
                 keyboardType="numeric"
                 placeholder={translations.numberOfStampsRequired}
               />
-              <Image source={require("../assets/icons/number.png")} style={GlobalStyles.inputIcon1} />
+              <Image
+                source={require('../assets/icons/number.png')}
+                style={GlobalStyles.inputIcon1}
+              />
             </View>
           </View>
         ))}
-        <Button title={translations.reward || 'Add Reward'} onPress={addReward} color={Color.orange_700} />
+        <Button
+          title={translations.reward || 'Add Reward'}
+          onPress={addReward}
+          color={Color.orange_700}
+        />
       </View>
       <View style={styles.mainArea}>
-        <TouchableOpacity style={GlobalStyles.confirmButton} onPress={handleRegisterationRequest}>
-          <Text style={GlobalStyles.confirmButtonText}>{translations.confirm}</Text>
+        <TouchableOpacity
+          style={GlobalStyles.confirmButton}
+          onPress={handleRegisterationRequest}
+        >
+          <Text style={GlobalStyles.confirmButtonText}>
+            {translations.confirm}
+          </Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -624,7 +838,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: 'white'
+    backgroundColor: 'white',
   },
   mainArea: {
     flex: 1,
@@ -633,7 +847,7 @@ const styles = StyleSheet.create({
     backgroundColor: Color.white,
     marginBottom: 70,
     marginTop: 40,
-    gap: 40, 
+    gap: 40,
   },
   header: {
     fontSize: 18,
@@ -684,8 +898,8 @@ const styles = StyleSheet.create({
     marginLeft: 15,
   },
   line: {
-    height: 2, 
-    backgroundColor: 'grey', 
+    height: 2,
+    backgroundColor: 'grey',
     marginHorizontal: 3,
   },
   menuItem: {
@@ -693,15 +907,14 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   totalStampsText: {
-    color: Color.orange_700, 
-    marginBottom: 10, 
+    color: Color.orange_700,
+    marginBottom: 10,
   },
   dayText: {
-    color: Color.orange_700, 
+    color: Color.orange_700,
     marginBottom: 5,
     marginLeft: 5,
     fontSize: 16,
-
   },
   dayHoursContainer: {
     flexDirection: 'column',
@@ -738,7 +951,7 @@ const styles = StyleSheet.create({
     width: 50,
     height: 30,
     marginBottom: 5,
-  }
+  },
 });
 
 export default FacilityInformationCreate;

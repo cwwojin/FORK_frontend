@@ -1,13 +1,21 @@
-import React, { useCallback, useState }  from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Image, TouchableOpacity, SafeAreaView } from 'react-native';
-import {LinearGradient}  from 'expo-linear-gradient';
-import { Border, Color, GlobalStyles } from "../GlobalStyles.js"; 
+import React, { useCallback, useState } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  Button,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  SafeAreaView,
+} from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Border, Color, GlobalStyles } from '../GlobalStyles.js';
 import { useNavigation } from '@react-navigation/native';
 
-const AdjustFilter = ({navigation}) => {
-
+const AdjustFilter = ({ navigation }) => {
   const onConfirm = useCallback(() => {
-    navigation.navigate("SuccessfulRegistration");
+    navigation.navigate('SuccessfulRegistration');
   }, [navigation]);
 
   return (
@@ -15,16 +23,25 @@ const AdjustFilter = ({navigation}) => {
       <View style={styles.container}>
         <View style={styles.mainArea}>
           <Text style={GlobalStyles.title}>Adjust filters</Text>
-          <Text style={styles.text}>Do you want your food preferences to be always applied by default? You will still be able to remove these filters manually anytime.</Text>
+          <Text style={styles.text}>
+            Do you want your food preferences to be always applied by default?
+            You will still be able to remove these filters manually anytime.
+          </Text>
         </View>
         <View style={styles.subArea}>
-            <TouchableOpacity style={GlobalStyles.confirmButton} onPress={onConfirm}>
+          <TouchableOpacity
+            style={GlobalStyles.confirmButton}
+            onPress={onConfirm}
+          >
             <Text style={GlobalStyles.confirmButtonText}>Yes</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={GlobalStyles.confirmButton1} onPress={onConfirm}>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={GlobalStyles.confirmButton1}
+            onPress={onConfirm}
+          >
             <Text style={GlobalStyles.confirmButtonText1}>No</Text>
-            </TouchableOpacity>
-          </View>
+          </TouchableOpacity>
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -61,7 +78,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 16,
     fontWeight: 'bold',
-    marginBottom: 50, 
+    marginBottom: 50,
   },
 });
 

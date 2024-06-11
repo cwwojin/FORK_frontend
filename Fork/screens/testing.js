@@ -9,12 +9,15 @@ const Testing = () => {
   useEffect(() => {
     const fetchImage = async () => {
       try {
-        const response = await fetch('https://taqjpw7a54.execute-api.ap-southeast-2.amazonaws.com/stage-001/s3/fork-foodies/images%2F2024-05-18%2F1716012725953_IMG_1951.png', {
-          method: 'GET',
-          headers: {
-            'Accept': 'image/png',
-          },
-        });
+        const response = await fetch(
+          'https://taqjpw7a54.execute-api.ap-southeast-2.amazonaws.com/stage-001/s3/fork-foodies/images%2F2024-05-18%2F1716012725953_IMG_1951.png',
+          {
+            method: 'GET',
+            headers: {
+              Accept: 'image/png',
+            },
+          }
+        );
 
         if (response.ok) {
           const imageUrl = response.url;
@@ -54,12 +57,8 @@ const Testing = () => {
       {imageUrl && (
         <>
           <Text>My Image</Text>
-          <Image
-            source={{ uri: imageUrl }}
-            style={styles.image}
-          />
+          <Image source={{ uri: imageUrl }} style={styles.image} />
         </>
-
       )}
     </View>
   );

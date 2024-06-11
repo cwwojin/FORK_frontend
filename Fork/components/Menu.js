@@ -4,9 +4,7 @@ import { fetchImage } from '../screens/api.js';
 import { useEffect, useState } from 'react';
 import longImagePlaceholder from '../assets/placeholders/long_image.png';
 import { getLanguageToken } from '../LanguageUtils';
-import Translator, {
-  useTranslator,
-} from 'react-native-translator';
+import Translator, { useTranslator } from 'react-native-translator';
 
 const Menu = ({
   menuName,
@@ -33,18 +31,28 @@ const Menu = ({
           setMenuImages(imageUrl);
         }
         const currentLanguage = await getLanguageToken();
-    
+
         const targetLanguage = currentLanguage === 'ko' ? 'en' : 'kr';
         let translatedMenuData = {
           name: await translate(targetLanguage, currentLanguage, menuName, {
             timeout: 5000,
           }),
-          description: await translate(targetLanguage, currentLanguage, menuDescription, {
-            timeout: 5000,
-          }),
-          quantity: await translate(targetLanguage, currentLanguage, menuQuantity, {
+          description: await translate(
+            targetLanguage,
+            currentLanguage,
+            menuDescription,
+            {
               timeout: 5000,
-          })
+            }
+          ),
+          quantity: await translate(
+            targetLanguage,
+            currentLanguage,
+            menuQuantity,
+            {
+              timeout: 5000,
+            }
+          ),
         };
         setTranslatedMenu(translatedMenuData);
         setLanguage(targetLanguage);
@@ -53,7 +61,7 @@ const Menu = ({
       } finally {
         setLoading(false);
       }
-    }; 
+    };
     fetchData();
   }, [language]);
 
@@ -69,12 +77,17 @@ const Menu = ({
           alignItems: 'center',
           width: '100%',
           justifyContent: 'space-between',
-          paddingVertical: 10
-        }}>
+          paddingVertical: 10,
+        }}
+      >
         <Image
           style={GlobalStyles.squareImage2}
           contentFit="cover"
-          source={(menuImages && menuImages != undefined) ? { uri: menuImages } : longImagePlaceholder}
+          source={
+            menuImages && menuImages != undefined
+              ? { uri: menuImages }
+              : longImagePlaceholder
+          }
         />
         <View style={{ width: '60%', paddingVertical: 10 }}>
           <View style={{ paddingBottom: 10 }}>
@@ -82,23 +95,24 @@ const Menu = ({
               style={{
                 ...GlobalStyles.body,
                 padding: 3,
-              }}>
+              }}
+            >
               {translatedMenu.name}
             </Text>
             <Text
               style={{
                 ...GlobalStyles.body2,
                 padding: 3,
-
-              }}>
+              }}
+            >
               {translatedMenu.description}
             </Text>
             <Text
               style={{
                 ...GlobalStyles.body2,
                 padding: 3,
-
-              }}>
+              }}
+            >
               {translatedMenu.quantity}
             </Text>
           </View>
