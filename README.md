@@ -12,19 +12,33 @@
 2024 Spring CS350 Project - FORK
 
 ## Installation <a name="installation"></a>
-### Run the App with Expo GO
-1. Download [Expo GO](https://apps.apple.com/kr/app/expo-go/id982107779) on your IOS device
-2. Clone this Repository
-3. Setup [Expo-CLI](https://docs.expo.dev/more/expo-cli/), [Yarn](https://classic.yarnpkg.com/lang/en/docs/install/#mac-stable)
-4. Install Dependencies
+
+### Setup the Expo Project
+1. Clone this Repository
+2. Setup [EAS-CLI](https://docs.expo.dev/build/setup/#install-the-latest-eas-cli) (run as `sudo` if necessary)
    ```shell
-   $ cd fork && yarn install
+   $ npm i -g eas-cli
    ```
-5. Run via Expo
+3. Login to your Expo Account
    ```shell
-   $ npx expo start
+   $ eas login -u <username> -p <password>
    ```
-6. Open the app on your IOS device by scanning the QR code
+4. Setup the Expo Project
+   ```shell
+   $ cd fork && eas init && cd ..
+   ```
+   This will ask you to setup a project for your Expo Account
+
+### Run the App via Docker, Expo GO
+1. Install [Docker, Docker Compose](https://docs.docker.com/compose/install/)
+2. Download [Expo GO](https://apps.apple.com/kr/app/expo-go/id982107779) on your IOS device
+3. Launch Dev Container from Terminal
+   ```shell
+   $ 
+   $ bash compose.sh -u <expo_username> -p <expo_password>
+   ```
+   **You must provide your Expo account (same one as your project owner)**
+4. Open the app on your IOS device by scanning the QR code
 
 ## Contribution <a name="contribution"></a>
 ### Branch rules

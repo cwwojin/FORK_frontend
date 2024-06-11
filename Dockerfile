@@ -1,5 +1,8 @@
 FROM node:lts-alpine
 
+ARG EXPO_USERNAME
+ARG EXPO_PASSWORD
+
 # Set timezone
 ENV TZ=Asia/Seoul
 RUN apk add tzdata && ln -s /usr/share/zoneinfo/Asia/Seoul /etc/localtime
@@ -12,4 +15,4 @@ COPY ./fork .
 # Install packages & run
 RUN yarn install
 EXPOSE 8081 19000 19001 19002
-CMD [ "npx", "expo", "start" ]
+RUN npx expo login -u ${EXPO_USERNAME} -p ${EXPO_PASSWORD}
