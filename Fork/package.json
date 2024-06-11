@@ -4,7 +4,8 @@
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "prettier": "prettier --write *.js **/*.js"
   },
   "dependencies": {
     "@babel/runtime": "^7.24.7",
@@ -53,7 +54,8 @@
     "toggle-switch-react-native": "^3.3.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.20.0"
+    "@babel/core": "^7.20.0",
+    "prettier": "^3.3.1"
   },
   "private": true,
   "name": "fork",
