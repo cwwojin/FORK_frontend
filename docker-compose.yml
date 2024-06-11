@@ -1,0 +1,16 @@
+services:
+  backend-dev:
+    container_name: fork_expo_go
+    env_file: .env
+    build:
+      dockerfile: ./Dockerfile
+    image: fork_expo
+    pull_policy: build
+    stdin_open: true
+    tty: true
+    ports:
+      - "8081:8081"
+      - "19000:19000"
+      - "19001:19001"
+      - "19002:19002"
+    restart: unless-stopped
