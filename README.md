@@ -29,7 +29,24 @@
    ```
    This will ask you to setup a project for your Expo Account
 
-### Run the App via Docker, Expo GO
+### Option 1. Run the App Locally
+1. Download [Expo GO](https://apps.apple.com/kr/app/expo-go/id982107779) on your IOS device
+2. Install [Yarn](https://classic.yarnpkg.com/lang/en/docs/install/#mac-stable)
+   ```shell
+   $ npm i -g yarn
+   ```
+3. Do the [Setup the Expo Project](#setup-the-expo-project) step.
+4. Install Dependencies with Yarn
+   ```shell
+   $ cd fork && yarn install
+   ```
+5. Launch the development server with Expo CLI
+   ```shell
+   $ npx expo start
+   ```
+6. Open the app on your IOS device by scanning the QR code
+
+### Option 2. Run the App with Docker
 1. Install [Docker, Docker Compose](https://docs.docker.com/compose/install/)
 2. Download [Expo GO](https://apps.apple.com/kr/app/expo-go/id982107779) on your IOS device
 3. Launch Dev Container from Terminal
