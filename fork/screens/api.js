@@ -3,15 +3,23 @@ import FacilityDetail from './FacilityDetail';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Alert } from 'react-native';
 
-const BASE_URL =
-  'https://taqjpw7a54.execute-api.ap-southeast-2.amazonaws.com/stage-dev/prod/api';
+// const NODE_ENV = process.env.NODE_ENV || 'production';
+const NODE_ENV = 'production';
+const suffix_map = {
+  'development': 'dev',
+  'production': 'prod',
+  'test': 'test',
+};
 
 // This is the base-url that leads to all backend & S3
 const API_ENDPOINT =
-  'https://taqjpw7a54.execute-api.ap-southeast-2.amazonaws.com/stage-dev';
+  `https://taqjpw7a54.execute-api.ap-southeast-2.amazonaws.com/stage-dev`;
+
+const BASE_URL =
+  `${API_ENDPOINT}/${suffix_map[NODE_ENV]}/api`;
 
 // Backend API endpoint
-const FORK_URL = `${API_ENDPOINT}/prod/`;
+const FORK_URL = `${API_ENDPOINT}/${suffix_map[NODE_ENV]}/`;
 
 // S3 endpoint
 const S3_ENDPOINT = `${API_ENDPOINT}/s3`;
