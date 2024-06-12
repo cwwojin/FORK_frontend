@@ -4,7 +4,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Alert } from 'react-native';
 
 // const NODE_ENV = process.env.NODE_ENV || 'production';
+
+// TEMPORARY CODE - change here for dev/prod switching
 const NODE_ENV = 'production';
+
 const suffix_map = {
   'development': 'dev',
   'production': 'prod',
