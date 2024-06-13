@@ -665,7 +665,8 @@ export const fetchFacilitiesInBounds = async (
   northEastLng,
   southWestLat,
   southWestLng,
-  favorite
+  favorite,
+  openNow = false,
 ) => {
   //console.log( "USERID : " + USERID );
   //console.log( "USERPREFERENCE : " + JSON.stringify(USERPREFERENCE, null, 2));
@@ -674,10 +675,13 @@ export const fetchFacilitiesInBounds = async (
     const latMax = Math.max(northEastLat, southWestLat);
     const lngMin = Math.min(northEastLng, southWestLng);
     const lngMax = Math.max(northEastLng, southWestLng);
-    const url = favorite
+    let url = favorite
       ? `${FORK_URL}api/map/search?latMin=${encodeURIComponent(latMin)}&lngMin=${encodeURIComponent(lngMin)}&latMax=${encodeURIComponent(latMax)}&lngMax=${encodeURIComponent(lngMax)}&favorite=true`
       : `${FORK_URL}api/map/search?latMin=${encodeURIComponent(latMin)}&lngMin=${encodeURIComponent(lngMin)}&latMax=${encodeURIComponent(latMax)}&lngMax=${encodeURIComponent(lngMax)}`;
 
+    if (openNow) {
+      url += `&openNow=${openNow}`;
+    }
     if (favorite) {
       //console.log("UserBookmarkedActive");
       //console.log("url : " + url);
@@ -707,7 +711,7 @@ export const fetchFacilitiesInBounds = async (
     return facilitiesData;
   } catch (error) {
     console.error('Error fetching facilities in real fetchMethod:', error);
-    throw error;
+    //throw error;
   }
 };
 

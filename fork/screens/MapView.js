@@ -193,30 +193,6 @@ const MapView = () => {
     });
   };
 
-  const handleLocate1 = async () => {
-    if (isUserMarkerVisible) {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert('Permission to access location was denied');
-        return;
-      }
-      console.log('Permission to access location was granted');
-      let location = await Location.getCurrentPositionAsync({});
-      const { latitude, longitude } = location.coords;
-
-      const locationData = {
-        type: 'addUserMarker',
-        lat: latitude,
-        lng: longitude,
-      };
-      webViewRef.current.postMessage(JSON.stringify(locationData));
-    } else {
-      const removeMarkerData = {
-        type: 'removeUserMarker',
-      };
-      webViewRef.current.postMessage(JSON.stringify(removeMarkerData));
-    }
-  };
   const handleLocate = async () => {
     const locationPermission = await AsyncStorage.getItem('locationPermission');
     console.log('value in Map: ' + locationPermission);
@@ -246,44 +222,30 @@ const MapView = () => {
   };
 
   const handleTogglePreferences = () => {
-    //("In handleTogglePreferences");
     const newActiveState = !userPreferencesActive;
     setUserPreferencesActive(newActiveState);
     if (newActiveState) {
-      //console.log("Preferences active");
       const preferences = getParsedUserPreferences();
-      //console.log("Parsed preferences (IDs):", preferences);
-
-      // Log each step in the filtering process
       const newSelectedCuisines = preferences.filter((pref) => {
         const matched = cuisines.some((c) => c.id === pref);
-        //console.log(`Checking cuisine ID ${pref}: ${matched}`);
         return matched;
       });
 
       const newSelectedDietaryPreferences = preferences.filter((pref) => {
         const matched = dietaryPreferences.some((d) => d.id === pref);
-        //console.log(`Checking dietary preference ID ${pref}: ${matched}`);
         return matched;
       });
-
       setSelectedCuisines(newSelectedCuisines);
       setSelectedDietaryPreferences(newSelectedDietaryPreferences);
-
-      //console.log("New selected cuisines:", newSelectedCuisines);
-      //console.log("New selected dietary preferences:", newSelectedDietaryPreferences);
     } else {
-      //console.log("Preferences not active");
       setSelectedCuisines([]);
       setSelectedDietaryPreferences([]);
     }
   };
 
   const handleToggleBookmarked = () => {
-    //console.log("In handleToggleBookmarked");
     newActiveState = !userBookmarkedActive.current;
     userBookmarkedActive.current = newActiveState;
-    //console.log("new userBookmarkedActive" + userBookmarkedActive.current);
     fetchAndUpdateFacilities(searchQuery, neLat, neLng, swLat, swLng);
   };
 
@@ -462,25 +424,10 @@ const MapView = () => {
           }
         }
         if (data.type === 'addUserMarker') {
-          const addingMarker = {
-            type: 'debug', 
-            message:"Adding marker at latitude: " + data.lat + ", longitude: " + data.lng + ", result: " + newMarkerPosition + ", target:" + window.userMarker
-          };
-          // window.ReactNativeWebView.postMessage(JSON.stringify(addingMarker));
           if (window.userMarker) {
-            const updateMarker = {
-              type: 'debug', 
-              message:"Update user marker"
-            };
-            // window.ReactNativeWebView.postMessage(JSON.stringify(updateMarker));
             var newMarkerPosition = new kakao.maps.LatLng(data.lat, data.lng);
             window.userMarker.setPosition(newMarkerPosition);
           } else {
-            const updateMarker = {
-              type: 'debug', 
-              message:"New user marker"
-            };
-            // window.ReactNativeWebView.postMessage(JSON.stringify(updateMarker));
             var imgUrl = 'https://images.emojiterra.com/google/android-12l/512px/1f4cd.png';
             var imgSize = new kakao.maps.Size(90, 90); 
             var img = new kakao.maps.MarkerImage(imgUrl, new kakao.maps.Size(imgSize, imgSize));
@@ -522,11 +469,6 @@ const MapView = () => {
             marker.setImage(markerImage);
           }
         });
-        /* if (window.userMarker) {
-            var newUserMarkerSize = new kakao.maps.Size(size, size);
-            var newUserMarkerImage = new kakao.maps.MarkerImage(window.userMarker.getImage().src, newUserMarkerSize);
-            window.userMarker.setImage(newUserMarkerImage);
-        } */
       }
       
       function createOrUpdateMarker(data) {
@@ -545,9 +487,7 @@ const MapView = () => {
             window.overlays.forEach(overlay => overlay.setMap(null));
             window.overlays = [];
           }
-
-
-          // Iterate over facilities data if it's an array
+         
           data.facilities.forEach(facility => {
             var position = new kakao.maps.LatLng(facility.lat, facility.lng);
             var markerSize = calculateMarkerSize(map.getLevel());
@@ -560,16 +500,26 @@ const MapView = () => {
                 image: markerImage
             });
             window.markers.push(marker);
-
-            var content = '<div class="overlay">' + facility.avg_score.toFixed(1) + '</div>';
-            var overlay = new kakao.maps.CustomOverlay({
-                map: map,
-                position: position,
-                content: content,
-                yAnchor: 0.75,
-                xAnchor: 0.5
+            
+            if(facility.avg_score) {
+              var content = '<div class="overlay">' + (facility.avg_score ? facility.avg_score.toFixed(1) : 'N/A') + '</div>';
+              var overlay = new kakao.maps.CustomOverlay({
+                  map: map,
+                  position: position,
+                  content: content,
+                  yAnchor: 0.75,
+                  xAnchor: 0.5
+              });
+              window.overlays.push(overlay);
+            }
+            kakao.maps.event.addListener(marker, 'click', function () {
+              const markerClickMessage = {
+                type: 'markerClick',
+                facilityId: facility.id,
+                facilityName: facility.name
+              };
+              window.ReactNativeWebView.postMessage(JSON.stringify(markerClickMessage));
             });
-            window.overlays.push(overlay);
           });
         }
       }  
@@ -611,98 +561,42 @@ const MapView = () => {
     fetchAndUpdateFacilities(searchQuery);
   };
 
-  const fetchAndUpdateFacilities = useCallback(
-    async (
-      searchQuery = '',
-      neLat = null,
-      neLng = null,
-      swLat = null,
-      swLng = null
-    ) => {
-      let facilities = [];
 
+  const fetchAndUpdateFacilities = useCallback(
+    async (searchQuery = '', neLat = null, neLng = null, swLat = null, swLng = null) => {
+      let facilities = [];
+  
       try {
         if (searchQuery) {
           const result = await fetchFacilityWithName(searchQuery, showOnlyOpen);
           facilities = result || [];
         } else if (neLat && neLng && swLat && swLng) {
-          //console.log("userBookmarkedActive : "+userBookmarkedActive.current);
-          facilities = await fetchFacilitiesInBounds(
-            neLat,
-            neLng,
-            swLat,
-            swLng,
-            userBookmarkedActive.current
-          );
+          facilities = await fetchFacilitiesInBounds(neLat, neLng, swLat, swLng, userBookmarkedActive.current, showOnlyOpen);
         }
-
-        if (showOnlyOpen & !searchQuery) {
-          facilities = facilities.filter((facility) => {
-            const { status } = isOpenNow(facility.opening_hours);
-            return status === 'Open';
-          });
-        }
-
-        if (
-          selectedCuisines.length > 0 ||
-          selectedDietaryPreferences.length > 0
-        ) {
-          //console.log("selectedCuisines.length" + selectedCuisines);
-          //console.log("selectedCuisines" + selectedCuisines);
-          //console.log("selectedDiets.length" + selectedDietaryPreferences.length);
-          facilities = facilities.filter((facility) => {
-            const validPreferences = facility.preferences
-              ? facility.preferences.filter((pref) => pref)
-              : [];
-            //console.log("validPreferences" + validPreferences)
-            const facilityCuisines = validPreferences
-              .filter((pref) => pref.type === 0)
-              .map((pref) => pref.id);
-            //console.log("facilityCuisines : " + facilityCuisines);
-            const facilityDiets = validPreferences
-              .filter((pref) => pref.type === 1)
-              .map((pref) => pref.id);
-            //console.log(facility.name + " => Diet type : " + facilityDiets);
-            //console.log("selectedCuisines" + selectedCuisines);
-            const hasSelectedCuisine = selectedCuisines.some((cuisine) =>
-              facilityCuisines.includes(cuisine)
-            );
-            //console.log("hasSelectedCuisine" + hasSelectedCuisine);
-            const hasSelectedDiet = selectedDietaryPreferences.some((diet) =>
-              facilityDiets
-                .map((c) => c.toLowerCase())
-                .includes(diet.toLowerCase())
-            );
-            //console.log("BOOLEAN" + hasSelectedCuisine || hasSelectedDiet);
+  
+        if (selectedCuisines.length > 0 || selectedDietaryPreferences.length > 0) {
+          facilities = facilities.filter(facility => {
+            const validPreferences = facility.preferences ? facility.preferences.filter(pref => pref) : [];
+            const facilityCuisines = validPreferences.filter(pref => pref.type === 0).map(pref => pref.id);
+            const facilityDiets = validPreferences.filter(pref => pref.type === 1).map(pref => pref.id);
+            const hasSelectedCuisine = selectedCuisines.some(cuisine => facilityCuisines.includes(cuisine));
+            const hasSelectedDiet = selectedDietaryPreferences.some(diet => facilityDiets.map(c => c.toLowerCase()).includes(diet.toLowerCase()));
             return hasSelectedCuisine || hasSelectedDiet;
           });
         }
-
+  
         const uniqueFacilities = facilities.reduce((acc, current) => {
-          const x = acc.find((item) => item.id === current.id);
+          const x = acc.find(item => item.id === current.id);
           if (!x) {
             return acc.concat([current]);
           } else {
             return acc;
           }
         }, []);
-        //console.log("facilities : " + JSON.stringify(uniqueFacilities, null, 2));
-        //console.log(neLat + " " + neLng + " " + swLat + " " + swLng);
-
-        if (webViewRef.current && uniqueFacilities.length > 0) {
-          const { lat, lng, avg_score } = facilities[0];
-          webViewRef.current.postMessage(
-            JSON.stringify({
-              type: 'centerMap',
-              facilities: uniqueFacilities,
-              shouldCenter: false,
-            })
-          );
-        }
+  
         if (Array.isArray(uniqueFacilities) && uniqueFacilities.length > 0) {
           setDisplayedFacilities(uniqueFacilities);
         } else {
-          console.error('Fetched data is not an array:', uniqueFacilities);
           setDisplayedFacilities([]);
         }
       } catch (error) {
@@ -710,20 +604,13 @@ const MapView = () => {
         setDisplayedFacilities([]);
       }
     },
-    [
-      showOnlyOpen,
-      selectedCuisines,
-      selectedDietaryPreferences,
-      setDisplayedFacilities,
-      webViewRef,
-    ]
-  ); // Dependencies necessary for useCallback
-
+    [showOnlyOpen, selectedCuisines, selectedDietaryPreferences]
+  );
+  
   const onWebViewMessage = (event) => {
     const data = JSON.parse(event.nativeEvent.data);
     if (data.type === 'markerVisibilityChanged') {
       isUserMarkerVisible = data.isVisible;
-      console.log('heere');
       handleLocate();
     }
     if (data.type === 'updateBounds') {
@@ -732,15 +619,7 @@ const MapView = () => {
       setSwLat(data.swLat);
       setSwLng(data.swLng);
       if (!searchQuery) {
-        fetchAndUpdateFacilities(
-          '',
-          data.neLat,
-          data.neLng,
-          data.swLat,
-          data.swLng
-        );
-      } else {
-        //console.log("Bounds updated but not fetching new facilities due to active search");
+        fetchAndUpdateFacilities('', data.neLat, data.neLng, data.swLat, data.swLng);
       }
     }
     if (data.type === 'updateCenterAndZoom') {
@@ -751,72 +630,34 @@ const MapView = () => {
       );
       setMapZoom((prev) => (data.zoomLevel !== prev ? data.zoomLevel : prev));
     }
-    if (data.type === 'locationUpdate') {
-      //console.log('Updated Location:', data.lat, data.lon);
-    }
     if (data.type === 'debug') {
-      //console.log('DEBUG', data.message);
+      console.log('DEBUG', data.message);
     }
     if (data.type === 'togglePreferences') {
-      //console.log("received togglePreferences data type");
       handleTogglePreferences();
     }
     if (data.type === 'toggleBookmarked') {
-      //console.log("received toggleBookmarked data type");
       handleToggleBookmarked();
+    }
+    if (data.type === 'markerClick') {
+      navigation.navigate('FacilityDetail', {
+        facilityID: data.facilityId,
+      });
     }
   };
 
   const handleShowOnlyOpenToggle = () => {
     const newShowOnlyOpen = !showOnlyOpen;
     setShowOnlyOpen(newShowOnlyOpen);
-    //console.log("handleShowOnlyOpenToggle triggered:", { searchQuery, newShowOnlyOpen });
-    if (searchQuery) {
-      fetchAndUpdateFacilities(searchQuery, neLat, neLng, swLat, swLng);
-    } else {
-      if (!showOnlyOpen) {
-        const openFacilities = displayedFacilities.filter((facility) => {
-          const { status } = isOpenNow(facility.opening_hours);
-          return status === 'Open';
-        });
-        setDisplayedFacilities(openFacilities);
-      } else {
-        fetchAndUpdateFacilities('', neLat, neLng, swLat, swLng);
-      }
-    }
   };
 
   useEffect(() => {
-    //console.log("selectedCuisines updated:", selectedCuisines);
-  }, [selectedCuisines]);
-
-  useEffect(() => {
-    //console.log("selectedDietaryPreferences updated:", selectedDietaryPreferences);
-  }, [selectedDietaryPreferences]);
-
-  useEffect(() => {
-    if (
-      webViewReady &&
-      neLat &&
-      neLng &&
-      swLat &&
-      swLng &&
-      searchQuery === ''
-    ) {
+    if (webViewReady && neLat && neLng && swLat && swLng && searchQuery === '') {
       fetchAndUpdateFacilities('', neLat, neLng, swLat, swLng);
     }
-  }, [
-    showOnlyOpen,
-    selectedCuisines,
-    selectedDietaryPreferences,
-    neLat,
-    neLng,
-    swLat,
-    swLng,
-    webViewReady,
-    searchQuery,
-  ]);
+  }, [showOnlyOpen, selectedCuisines, selectedDietaryPreferences, neLat, neLng, swLat, swLng, webViewReady, searchQuery,]);
 
+  
   useEffect(() => {
     if (webViewRef.current && webViewReady && isExpanded) {
       webViewRef.current.postMessage(
@@ -825,10 +666,23 @@ const MapView = () => {
           lat: mapCenter.lat,
           lng: mapCenter.lng,
           zoom: mapZoom,
+          facilities: displayedFacilities,
         })
       );
     }
-  }, [webViewRef, webViewReady, mapCenter, mapZoom, isExpanded]);
+  }, [webViewRef, webViewReady, mapCenter, mapZoom, isExpanded, displayedFacilities]);
+
+  useEffect(() => {
+      if (webViewRef.current) {
+        webViewRef.current.postMessage(
+          JSON.stringify({
+            type: 'centerMap',
+            facilities: displayedFacilities,
+            shouldCenter: false,
+          })
+        );
+      }
+  }, [displayedFacilities]);
 
   return (
     <View style={styles.container}>
@@ -891,7 +745,6 @@ const MapView = () => {
                     onPress={() => handleSelectCuisine(item.id)}
                   >
                     <Image source={item.typeIcon} style={styles.typeIcon} />
-                    {/* <Text>{item.name}</Text> */}
                     <Text>{translations.pref[item.name]}</Text>
                   </TouchableOpacity>
                 ))}
@@ -945,7 +798,6 @@ const MapView = () => {
           }
           onMessage={onWebViewMessage}
           onLoad={() => {
-            //console.log("WebView loaded");
             setWebViewReady(true);
           }}
           onError={(syntheticEvent) => {

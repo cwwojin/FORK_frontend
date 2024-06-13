@@ -95,15 +95,16 @@ const FacilityDetail = () => {
     };
     fetchTranslations();
   }, []);
-
+    
   useEffect(() => {
     const initializeLanguage = async () => {
       const savedLanguage = await getLanguageToken();
       setLanguage(savedLanguage);
     };
-
     const fetchFacilityData = async () => {
       try {
+        const currentLanguage = await getLanguageToken();
+        const targetLanguage = currentLanguage === 'ko' ? 'en' : 'kr';
         const data = await getFacilityByID(facilityID);
         setFacilityInfo(data);
 
@@ -111,24 +112,15 @@ const FacilityDetail = () => {
           const imageUrl = await fetchImage(data.profile_img_uri);
           setProfileImage(imageUrl);
         }
-
-        if (language !== 'ko') {
-          const translatedDesc = await translate(
-            'ko',
-            language,
-            data.description
-          );
-          setTranslatedDescription(translatedDesc);
-        } else {
-          setTranslatedDescription(data.description);
-        }
+        let translatedDescription = await translate(targetLanguage, currentLanguage, data.description, { timeout: 5000, });
+        setTranslatedDescription(translatedDescription);
+        setLanguage(targetLanguage);
       } catch (error) {
         console.log(error.message);
       } finally {
         setIsLoading(false);
       }
     };
-
     initializeLanguage().then(fetchFacilityData);
   }, [facilityID, language]);
 
