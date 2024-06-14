@@ -269,39 +269,12 @@ const EditProfiles = () => {
       }
 
       if (userType == 1) {
-        // Find cuisines and dietary preferences to add
-        const cuisinesToAdd = selectedCuisines.filter(
-          (cuisine) => !initialCuisines.includes(cuisine)
-        );
-        const cuisinesToRemove = initialCuisines.filter(
-          (cuisine) => !selectedCuisines.includes(cuisine)
-        );
-        const dietaryPreferencesToAdd = selectedDietaryPreferences.filter(
-          (preference) => !initialDietaryPreferences.includes(preference)
-        );
-        const dietaryPreferencesToRemove = initialDietaryPreferences.filter(
-          (preference) => !selectedDietaryPreferences.includes(preference)
-        );
-
         try {
-          await updateUserProfile({ email: email, password: password });
-
-          // Send requests to add preferences
-          for (const cuisine of cuisinesToAdd) {
-            await addUserPreference2(cuisine);
-          }
-          for (const preference of dietaryPreferencesToAdd) {
-            await addUserPreference2(preference);
-          }
-
-          // Send requests to remove preferences
-          for (const cuisine of cuisinesToRemove) {
-            await deleteUserPreference(cuisine);
-          }
-          for (const preference of dietaryPreferencesToRemove) {
-            await deleteUserPreference(preference);
-          }
-
+          await updateUserProfile({
+            email: email,
+            password: password,
+            preferences: [...selectedCuisines, ...selectedDietaryPreferences],
+          });
           Alert.alert('Success', 'Profile updated successfully');
           navigation.goBack();
           navigation.replace('MyPage');

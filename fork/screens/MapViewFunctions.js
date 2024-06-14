@@ -164,7 +164,7 @@ export const FacilityDetails = ({ facility, onPress }) => {
                 source={require('../assets/icons/star.png')}
               />
               <Text style={GlobalStyles.body3}>
-                {facility.avg_score ? facility.avg_score : '-'}
+                {facility.avg_score ? facility.avg_score.toFixed(1) : '-'}
               </Text>
             </View>
           </View>
