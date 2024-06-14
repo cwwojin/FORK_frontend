@@ -270,7 +270,11 @@ const EditProfiles = () => {
 
       if (userType == 1) {
         try {
-          await updateUserProfile({ email: email, password: password, preferences: [...selectedCuisines, ...selectedDietaryPreferences] });
+          await updateUserProfile({
+            email: email,
+            password: password,
+            preferences: [...selectedCuisines, ...selectedDietaryPreferences],
+          });
           Alert.alert('Success', 'Profile updated successfully');
           navigation.goBack();
           navigation.replace('MyPage');
