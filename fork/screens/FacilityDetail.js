@@ -95,7 +95,7 @@ const FacilityDetail = () => {
     };
     fetchTranslations();
   }, []);
-    
+
   useEffect(() => {
     const initializeLanguage = async () => {
       const savedLanguage = await getLanguageToken();
@@ -112,7 +112,12 @@ const FacilityDetail = () => {
           const imageUrl = await fetchImage(data.profile_img_uri);
           setProfileImage(imageUrl);
         }
-        let translatedDescription = await translate(targetLanguage, currentLanguage, data.description, { timeout: 5000, });
+        let translatedDescription = await translate(
+          targetLanguage,
+          currentLanguage,
+          data.description,
+          { timeout: 5000 }
+        );
         setTranslatedDescription(translatedDescription);
         setLanguage(targetLanguage);
       } catch (error) {

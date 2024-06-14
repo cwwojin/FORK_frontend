@@ -666,7 +666,7 @@ export const fetchFacilitiesInBounds = async (
   southWestLat,
   southWestLng,
   favorite,
-  openNow = false,
+  openNow = false
 ) => {
   //console.log( "USERID : " + USERID );
   //console.log( "USERPREFERENCE : " + JSON.stringify(USERPREFERENCE, null, 2));

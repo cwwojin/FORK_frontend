@@ -561,39 +561,64 @@ const MapView = () => {
     fetchAndUpdateFacilities(searchQuery);
   };
 
-
   const fetchAndUpdateFacilities = useCallback(
-    async (searchQuery = '', neLat = null, neLng = null, swLat = null, swLng = null) => {
+    async (
+      searchQuery = '',
+      neLat = null,
+      neLng = null,
+      swLat = null,
+      swLng = null
+    ) => {
       let facilities = [];
-  
+
       try {
         if (searchQuery) {
           const result = await fetchFacilityWithName(searchQuery, showOnlyOpen);
           facilities = result || [];
         } else if (neLat && neLng && swLat && swLng) {
-          facilities = await fetchFacilitiesInBounds(neLat, neLng, swLat, swLng, userBookmarkedActive.current, showOnlyOpen);
+          facilities = await fetchFacilitiesInBounds(
+            neLat,
+            neLng,
+            swLat,
+            swLng,
+            userBookmarkedActive.current,
+            showOnlyOpen
+          );
         }
-  
-        if (selectedCuisines.length > 0 || selectedDietaryPreferences.length > 0) {
-          facilities = facilities.filter(facility => {
-            const validPreferences = facility.preferences ? facility.preferences.filter(pref => pref) : [];
-            const facilityCuisines = validPreferences.filter(pref => pref.type === 0).map(pref => pref.id);
-            const facilityDiets = validPreferences.filter(pref => pref.type === 1).map(pref => pref.id);
-            const hasSelectedCuisine = selectedCuisines.some(cuisine => facilityCuisines.includes(cuisine));
-            const hasSelectedDiet = selectedDietaryPreferences.some(diet => facilityDiets.map(c => c.toLowerCase()).includes(diet.toLowerCase()));
+
+        if (
+          selectedCuisines.length > 0 ||
+          selectedDietaryPreferences.length > 0
+        ) {
+          facilities = facilities.filter((facility) => {
+            const validPreferences = facility.preferences
+              ? facility.preferences.filter((pref) => pref)
+              : [];
+            const facilityCuisines = validPreferences
+              .filter((pref) => pref.type === 0)
+              .map((pref) => pref.id);
+            const facilityDiets = validPreferences
+              .filter((pref) => pref.type === 1)
+              .map((pref) => pref.id);
+            const hasSelectedCuisine = selectedCuisines.some((cuisine) =>
+              facilityCuisines.includes(cuisine)
+            );
+            const hasSelectedDiet = selectedDietaryPreferences.some((diet) =>
+              facilityDiets.includes(diet)
+            );
             return hasSelectedCuisine || hasSelectedDiet;
           });
         }
-  
+
         const uniqueFacilities = facilities.reduce((acc, current) => {
-          const x = acc.find(item => item.id === current.id);
+          const x = acc.find((item) => item.id === current.id);
           if (!x) {
             return acc.concat([current]);
           } else {
             return acc;
           }
         }, []);
-  
+
         if (Array.isArray(uniqueFacilities) && uniqueFacilities.length > 0) {
           setDisplayedFacilities(uniqueFacilities);
         } else {
@@ -606,7 +631,7 @@ const MapView = () => {
     },
     [showOnlyOpen, selectedCuisines, selectedDietaryPreferences]
   );
-  
+
   const onWebViewMessage = (event) => {
     const data = JSON.parse(event.nativeEvent.data);
     if (data.type === 'markerVisibilityChanged') {
@@ -619,7 +644,13 @@ const MapView = () => {
       setSwLat(data.swLat);
       setSwLng(data.swLng);
       if (!searchQuery) {
-        fetchAndUpdateFacilities('', data.neLat, data.neLng, data.swLat, data.swLng);
+        fetchAndUpdateFacilities(
+          '',
+          data.neLat,
+          data.neLng,
+          data.swLat,
+          data.swLng
+        );
       }
     }
     if (data.type === 'updateCenterAndZoom') {
@@ -652,12 +683,28 @@ const MapView = () => {
   };
 
   useEffect(() => {
-    if (webViewReady && neLat && neLng && swLat && swLng && searchQuery === '') {
+    if (
+      webViewReady &&
+      neLat &&
+      neLng &&
+      swLat &&
+      swLng &&
+      searchQuery === ''
+    ) {
       fetchAndUpdateFacilities('', neLat, neLng, swLat, swLng);
     }
-  }, [showOnlyOpen, selectedCuisines, selectedDietaryPreferences, neLat, neLng, swLat, swLng, webViewReady, searchQuery,]);
+  }, [
+    showOnlyOpen,
+    selectedCuisines,
+    selectedDietaryPreferences,
+    neLat,
+    neLng,
+    swLat,
+    swLng,
+    webViewReady,
+    searchQuery,
+  ]);
 
-  
   useEffect(() => {
     if (webViewRef.current && webViewReady && isExpanded) {
       webViewRef.current.postMessage(
@@ -670,18 +717,25 @@ const MapView = () => {
         })
       );
     }
-  }, [webViewRef, webViewReady, mapCenter, mapZoom, isExpanded, displayedFacilities]);
+  }, [
+    webViewRef,
+    webViewReady,
+    mapCenter,
+    mapZoom,
+    isExpanded,
+    displayedFacilities,
+  ]);
 
   useEffect(() => {
-      if (webViewRef.current) {
-        webViewRef.current.postMessage(
-          JSON.stringify({
-            type: 'centerMap',
-            facilities: displayedFacilities,
-            shouldCenter: false,
-          })
-        );
-      }
+    if (webViewRef.current) {
+      webViewRef.current.postMessage(
+        JSON.stringify({
+          type: 'centerMap',
+          facilities: displayedFacilities,
+          shouldCenter: false,
+        })
+      );
+    }
   }, [displayedFacilities]);
 
   return (
