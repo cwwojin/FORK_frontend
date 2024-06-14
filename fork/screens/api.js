@@ -1042,7 +1042,7 @@ export const deleteUserPreference = async (preferenceId) => {
   }
 };
 
-export const updateUserProfile = async ({ email, password }) => {
+export const updateUserProfile = async ({ email, password, preferences }) => {
   try {
     const response = await fetch(
       `${BASE_URL}/users/profile/${encodeURIComponent(USERID)}`,
@@ -1052,10 +1052,11 @@ export const updateUserProfile = async ({ email, password }) => {
           'Content-Type': 'application/json',
           Authorization: USERTOKEN,
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, preferences }),
       }
     );
     const data = await response.json();
+    USERPREFERENCE = await getUserPreferences(USERID);
     if (response.status === 201) {
       console.log('Profile updated successfully:', data);
     } else {
